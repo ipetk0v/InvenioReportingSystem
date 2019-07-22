@@ -1,0 +1,415 @@
+﻿@model Invenio.Admin.Models.Report.ReportListModel
+@{
+    /**/
+
+    var defaultGridPageSize = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+
+    //page title
+    ViewBag.Title = T("Admin.ContentManagement.Report").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("Report");
+
+    int? filterByReportId = ViewBag.FilterByReportPostId;
+}
+
+@Html.AntiForgeryToken()
+<div class="content-header clearfix">
+    <h1 class="pull-left">
+        @T("Admin.Report.Title")
+    </h1>
+    <div class="pull-right">
+        <button type="button" id="approve-selected" class="btn bg-green">
+            <i class="fa fa-check-square-o"></i>
+            @T("Admin.Report.ApproveSelected")
+        </button>
+        <button type="button" id="disapprove-selected" class="btn bg-navy">
+            <i class="fa fa-minus-square-o"></i>
+            @T("Admin.Report.DisapproveSelected")
+        </button>
+        <button type="button" id="delete-selected" class="btn bg-red">
+            <i class="fa fa-trash-o"></i>
+            @T("Admin.Report.DeleteSelected")
+        </button>
+    </div>
+</div>
+
+<div class="content">
+    <div class="form-horizontal">
+        <div class="panel-group">
+            <div class="panel panel-default panel-search">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.CreatedOnFrom)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopEditorFor(model => model.CreatedOnFrom)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.CreatedOnTo)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopEditorFor(model => model.CreatedOnTo)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-8 col-md-offset-4">
+                                    <button type="button" id="search-reports" class="btn btn-primary btn-search">
+                                        <i class="fa fa-search"></i>
+                                        @T("Admin.Common.Search")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.SearchApprovedId)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopDropDownList("SearchApprovedId", Model.AvailableApprovedOptions)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="reports-grid"></div>
+
+                    <script>
+                        $(document).ready(function() {
+                            $("#reports-grid").kendoGrid({
+                                dataSource: {
+                                    type: "json",
+                                    transport: {
+                                        read: {
+                                            url: "@Url.Action("List", "Report", new { filterByReportId = filterByReportId.HasValue ? filterByReportId : null })",
+                                            type: "POST",
+                                            dataType: "json",
+                                            data: additionalData
+                                        },
+                                        update: {
+                                            url: "@Html.Raw(Url.Action("Update", "Report"))",
+                                            type: "POST",
+                                            dataType: "json",
+                                            data: addAntiForgeryToken
+                                        },
+                                        destroy: {
+                                            url: "@Html.Raw(Url.Action("Delete", "Report"))",
+                                            type: "POST",
+                                            dataType: "json",
+                                            data: addAntiForgeryToken
+                                        }
+                                    },
+                                    schema: {
+                                        data: "Data",
+                                        total: "Total",
+                                        errors: "Errors",
+                                        model: {
+                                            id: "Id",
+                                            fields: {
+                                                Id: { editable: false, type: "number" },
+                                                UserName: { editable: false, type: "string" },
+                                                WorkShiftName: { editable: false, type: "string" },
+                                                OrderNumber: { editable: false, type: "string" },
+                                                CustomerName: { editable: false, type: "string" },
+                                                OkPartsQuantity: { editable: true, type: "long" },
+                                                NokPartsQuantity: { editable: true, type:"long"},
+                                                ReworkPartsQuantity: { editable: true, type:"long"},
+                                                Approved: { editable: true, type: "boolean" },
+                                                CreatedOn: { editable: false, type: "date" },
+                                                DateOfInspection: { editable: false, type: "date" },
+                                                ApprovedOn: { editable: false, type: "string" }
+                                            }
+                                        }
+                                    },
+                                    requestEnd: function(e) {
+                                        if (e.type == "update") {
+                                            this.read();
+                                        }
+                                    },
+                                    error: function(e) {
+                                        display_kendoui_grid_error(e);
+                                        // Cancel the changes
+                                        this.cancelChanges();
+                                    },
+                                    pageSize: @(defaultGridPageSize),
+                                    serverPaging: true,
+                                    serverFiltering: true,
+                                    serverSorting: true
+                                },
+                                pageable: {
+                                    refresh: true,
+                                    pageSizes: [@(gridPageSizes)],
+                                    @Html.Partial("_GridPagerMessages")
+                                },
+                                editable: {
+                                    confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                    mode: "inline"
+                                },
+                                scrollable: false,
+                                dataBound: onDataBound,
+                                columns: [
+                                    {
+                                        field: "Id",
+                                        headerTemplate: "<input id='mastercheckbox' type='checkbox'/>",
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" },
+                                        template: "<input type='checkbox' value='#=Id#' class='checkboxGroups'/>",
+                                        width: 50
+                                    },{
+                                        field: "UserName",
+                                        title: "@T("Admin.Reports.Fields.UserName")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" }
+                                    },{
+                                        field: "WorkShiftName",
+                                        title: "@T("Admin.Reports.Fields.WorkShiftName")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" }
+                                    },{
+                                        field: "OrderNumber",
+                                        title: "@T("Admin.Reports.Fields.OrderNumber")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" }
+                                    },{
+                                        field: "CustomerName",
+                                        title: "@T("Admin.Reports.Fields.CustomerName")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" }
+                                    },{
+                                        field: "OkPartsQuantity",
+                                        title: "@T("Admin.Reports.Fields.OkPartsQuantity")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" }
+                                    },{
+                                        field: "NokPartsQuantity",
+                                        title: "@T("Admin.Reports.Fields.NokPartsQuantity")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" }
+                                    },{
+                                        field: "ReworkPartsQuantity",
+                                        title: "@T("Admin.Reports.Fields.ReworkPartsQuantity")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" }
+                                    },{
+                                        field: "Approved",
+                                        title: "@T("Admin.Reports.Fields.IsApproved")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" },
+                                        template: '# if(Approved) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
+                                    },{
+                                        field: "DateOfInspection",
+                                        title: "@T("Admin.Reports.Fields.DateOfInspection")",
+                                        width: 100,
+                                        type: "date",
+                                        format: "{0:dd MMM yyyy}"
+                                    },{
+                                        field: "ApprovedOn",
+                                        title: "@T("Admin.Reports.Fields.ApprovedOn")",
+                                        width: 100,
+                                        type: "date",
+                                        format: "{0:dd MMM yyyy}",
+                                        template: "#= ApprovedOn != '0001-01-01T00:00:00' ? kendo.toString(kendo.parseDate(ApprovedOn), 'dd MMM yyyy') : ''  #"
+                                    },{
+                                        field: "CreatedOn",
+                                        title: "@T("Admin.Reports.Fields.CreatedOn")",
+                                        width: 100,
+                                        type: "date",
+                                        format: "{0:dd MMM yyyy}"
+                                    }, {
+                                        command: [
+                                            {
+                                                name: "edit",
+                                                text: {
+                                                    edit: "@T("Admin.Common.Edit")",
+                                                    update: "@T("Admin.Common.Update")",
+                                                    cancel: "@T("Admin.Common.Cancel")"
+                                                }
+                                            }, {
+                                                name: "destroy",
+                                                text: "@T("Admin.Common.Delete")"
+                                            }
+                                        ],
+                                        width: 200
+                                    }
+                                ]
+                            });
+                        });
+                    </script>
+
+                    <script type="text/javascript">
+                        var selectedIds = [];
+
+                        $(document).ready(function() {
+                            //search button
+                            $('#search-reports')
+                                .click(function() {
+                                    //search
+                                    var grid = $('#reports-grid').data('kendoGrid');
+                                    grid.dataSource.page(1); //new search. Set page size to 1
+                                    //grid.dataSource.read(); we already loaded the grid above using "page" function
+                                    //clear selected checkboxes
+                                    $('.checkboxGroups').attr('checked', false).change();
+                                    selectedIds = [];
+                                    return false;
+                                });
+
+                            //"delete selected" button
+                            $('#delete-selected').click(function(e) {
+                                e.preventDefault();
+
+                                var postData = {
+                                    selectedIds: selectedIds
+                                };
+                                addAntiForgeryToken(postData);
+
+                                $.ajax({
+                                    cache: false,
+                                    type: "POST",
+                                    url: "@(Url.Action("DeleteSelected", "Report"))",
+                                    data: postData,
+                                    complete: function(data) {
+                                        //reload grid
+                                        var grid = $('#reports-grid').data('kendoGrid');
+                                        grid.dataSource.read();
+                                    },
+                                    error: function(xhr, ajaxOptions, thrownError) {
+                                        alert(thrownError);
+                                    },
+                                    traditional: true
+                                });
+                                return false;
+                            });
+
+                            //"approve selected" button
+                            $('#approve-selected')
+                                .click(function(e) {
+                                    e.preventDefault();
+
+                                    var postData = {
+                                        selectedIds: selectedIds
+                                    };
+                                    addAntiForgeryToken(postData);
+
+                                    $.ajax({
+                                        cache: false,
+                                        type: "POST",
+                                        url: "@(Url.Action("ApproveSelected", "Report"))",
+                                        data: postData,
+                                        complete: function(data) {
+                                            //reload grid
+                                            var grid = $('#reports-grid').data('kendoGrid');
+                                            grid.dataSource.read();
+                                        },
+                                        error: function(xhr, ajaxOptions, thrownError) {
+                                            alert(thrownError);
+                                        },
+                                        traditional: true
+                                    });
+                                    return false;
+                                });
+
+                            //"disapprove selected" button
+                            $('#disapprove-selected')
+                                .click(function(e) {
+                                    e.preventDefault();
+
+                                    var postData = {
+                                        selectedIds: selectedIds
+                                    };
+                                    addAntiForgeryToken(postData);
+
+                                    $.ajax({
+                                        cache: false,
+                                        type: "POST",
+                                        url: "@(Url.Action("DisapproveSelected", "Report"))",
+                                        data: postData,
+                                        complete: function(data) {
+                                            //reload grid
+                                            var grid = $('#reports-grid').data('kendoGrid');
+                                            grid.dataSource.read();
+                                        },
+                                        error: function(xhr, ajaxOptions, thrownError) {
+                                            alert(thrownError);
+                                        },
+                                        traditional: true
+                                    });
+                                    return false;
+                                });
+
+                            $('#mastercheckbox').click(function() {
+                                $('.checkboxGroups').attr('checked', $(this).is(':checked')).change();
+                            });
+
+                            //wire up checkboxes.
+                            $('#reports-grid').on('change', 'input[type=checkbox][id!=mastercheckbox][class=checkboxGroups]', function(e) {
+                                var $check = $(this);
+                                if ($check.is(":checked") == true) {
+                                    var checked = jQuery.inArray($check.val(), selectedIds);
+                                    if (checked == -1) {
+                                        //add id to selectedIds.
+                                        selectedIds.push($check.val());
+                                    }
+                                } else {
+                                    var checked = jQuery.inArray($check.val(), selectedIds);
+                                    if (checked > -1) {
+                                        //remove id from selectedIds.
+                                        selectedIds = $.grep(selectedIds, function(item, index) {
+                                            return item != $check.val();
+                                        });
+                                    }
+                                }
+                                updateMasterCheckbox();
+                            });
+                        });
+
+                        function onDataBound(e) {
+
+                            $('#reports-grid input[type=checkbox][id!=mastercheckbox][class=checkboxGroups]').each(function() {
+                                var currentId = $(this).val();
+                                var checked = jQuery.inArray(currentId, selectedIds);
+                                //set checked based on if current checkbox's value is in selectedIds.
+                                $(this).attr('checked', checked > -1);
+                            });
+
+                            updateMasterCheckbox();
+                        }
+
+                        function updateMasterCheckbox() {
+                            var numChkBoxes = $('#reports-grid input[type=checkbox][id!=mastercheckbox][class=checkboxGroups]').length;
+                            var numChkBoxesChecked = $('#reports-grid input[type=checkbox][id!=mastercheckbox][class=checkboxGroups]:checked').length;
+                            $('#mastercheckbox').attr('checked', numChkBoxes == numChkBoxesChecked && numChkBoxes > 0);
+                        }
+
+                        function additionalData() {
+                            var data = {
+                                CreatedOnFrom: $('#@Html.FieldIdFor(model => model.CreatedOnFrom)').val(),
+                                CreatedOnTo: $('#@Html.FieldIdFor(model => model.CreatedOnTo)').val(),
+                                SearchText: $('#@Html.FieldIdFor(model => model.SearchText)').val(),
+                                SearchApprovedId: $('#SearchApprovedId').val()
+                            };
+                            addAntiForgeryToken(data);
+                            return data;
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

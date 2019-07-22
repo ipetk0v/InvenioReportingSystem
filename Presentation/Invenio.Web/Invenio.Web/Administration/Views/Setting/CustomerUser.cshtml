@@ -1,0 +1,993 @@
+﻿@model CustomerUserSettingsModel
+
+@using Invenio.Core.Domain.Users;
+@using Invenio.Services
+
+@{
+    //page title
+    ViewBag.Title = T("Admin.Configuration.Settings.CustomerUser").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("User and user settings");
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="content-header clearfix">
+        <h1 class="pull-left">
+            @T("Admin.Configuration.Settings.CustomerUser")
+        </h1>
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                @T("Admin.Common.Save")
+            </button>
+        </div>
+    </div>
+    @Html.ValidationSummary(false)
+
+    <script>
+        $(document).ready(function () {
+            bindBootstrapTabSelectEvent('Usersettings-edit');
+        });
+    </script>
+
+    <div class="content">
+        <div class="form-horizontal">
+            @*@Html.Action("Mode", "Setting")*@
+
+            <div id="Usersettings-edit" class="nav-tabs-custom">
+                <ul class="nav nav-tabs">
+                    @Html.RenderBootstrapTabHeader("tab-User", @T("Admin.Configuration.Settings.CustomerUser.UserSettings"), true)
+                    @Html.RenderBootstrapTabHeader("tab-Userformfields", @T("Admin.Configuration.Settings.CustomerUser.UserFormFields"))
+                    @Html.RenderBootstrapTabHeader("tab-addressformfields", @T("Admin.Configuration.Settings.CustomerUser.AddressFormFields"))
+                </ul>
+                <div class="tab-content">
+                    @Html.RenderBootstrapTabContent("tab-User", @TabUserSettings(), true)
+                    @Html.RenderBootstrapTabContent("tab-Userformfields", @TabUserFormFields())
+                    @Html.RenderBootstrapTabContent("tab-addressformfields", @TabAddressFormFields())
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {
+        //custom tabs
+        var eventMessage = new AdminTabStripCreated(this.Html, "Usersettings-edit");
+        EngineContext.Current.Resolve<IEventPublisher>().Publish(eventMessage);
+        foreach (var eventBlock in eventMessage.BlocksToRender)
+        {
+            @eventBlock
+        }
+    }
+
+    @*save selected tab name*@
+    <input type="hidden" id="selected-tab-name" name="selected-tab-name" value="@(Html.GetSelectedTabName())">
+}
+
+@helper TabUserSettings()
+{
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Common")
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.UserRegistrationType)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopDropDownListFor(model => model.UserSettings.UserRegistrationType, ((UserRegistrationType)Model.UserSettings.UserRegistrationType).ToSelectList())
+                        @Html.ValidationMessageFor(model => model.UserSettings.UserRegistrationType)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.NotifyNewUserRegistration)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.NotifyNewUserRegistration)
+                        @Html.ValidationMessageFor(model => model.UserSettings.NotifyNewUserRegistration)
+                    </div>
+                </div>
+                @*<div class="form-group advanced-setting">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.RequireRegistrationForDownloadableProducts)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.RequireRegistrationForDownloadableProducts)
+                        @Html.ValidationMessageFor(model => model.UserSettings.RequireRegistrationForDownloadableProducts)
+                    </div>
+                </div>*@
+            </div>
+        </div>
+        <div class="panel panel-default advanced-setting">
+            <div class="panel-heading">
+                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Password")
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.PasswordMinLength)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.PasswordMinLength)
+                        @Html.ValidationMessageFor(model => model.UserSettings.PasswordMinLength)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.UnduplicatedPasswordsNumber)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.UnduplicatedPasswordsNumber)
+                        @Html.ValidationMessageFor(model => model.UserSettings.UnduplicatedPasswordsNumber)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.DefaultPasswordFormat)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopDropDownListFor(model => model.UserSettings.DefaultPasswordFormat, ((PasswordFormat)Model.UserSettings.DefaultPasswordFormat).ToSelectList())
+                        @Html.ValidationMessageFor(model => model.UserSettings.DefaultPasswordFormat)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.PasswordLifetime)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.PasswordLifetime)
+                        @Html.ValidationMessageFor(model => model.UserSettings.PasswordLifetime)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.PasswordRecoveryLinkDaysValid)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.PasswordRecoveryLinkDaysValid)
+                        @Html.ValidationMessageFor(model => model.UserSettings.PasswordRecoveryLinkDaysValid)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.FailedPasswordAllowedAttempts)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.FailedPasswordAllowedAttempts)
+                        @Html.ValidationMessageFor(model => model.UserSettings.FailedPasswordAllowedAttempts)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlFailedPasswordLockoutMinutes">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.FailedPasswordLockoutMinutes)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.FailedPasswordLockoutMinutes)
+                        @Html.ValidationMessageFor(model => model.UserSettings.FailedPasswordLockoutMinutes)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.EnteringEmailTwice)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.EnteringEmailTwice)
+                        @Html.ValidationMessageFor(model => model.UserSettings.EnteringEmailTwice)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default advanced-setting">
+            <div class="panel-heading">
+                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Account")
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.UsernamesEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.UsernamesEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.UsernamesEnabled)
+                    </div>
+                </div>
+                <div class="form-group advanced-setting" id="pnlAllowUsersToChangeUsernames">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.AllowUsersToChangeUsernames)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.AllowUsersToChangeUsernames)
+                        @Html.ValidationMessageFor(model => model.UserSettings.AllowUsersToChangeUsernames)
+                    </div>
+                </div>
+                <div class="form-group advanced-setting" id="pnlCheckUsernameAvailability">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.CheckUsernameAvailabilityEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.CheckUsernameAvailabilityEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.CheckUsernameAvailabilityEnabled)
+                    </div>
+                </div>
+                <div class="form-group advanced-setting">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.UserNameFormat)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopDropDownListFor(model => model.UserSettings.UserNameFormat, ((UserNameFormat)Model.UserSettings.UserNameFormat).ToSelectList())
+                        @Html.ValidationMessageFor(model => model.UserSettings.UserNameFormat)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.AllowUsersToUploadAvatars)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.AllowUsersToUploadAvatars)
+                        @Html.ValidationMessageFor(model => model.UserSettings.AllowUsersToUploadAvatars)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlDefaultAvatarEnabled">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.DefaultAvatarEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.DefaultAvatarEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.DefaultAvatarEnabled)
+                    </div>
+                </div>
+                @*<div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.HideDownloadableProductsTab)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.HideDownloadableProductsTab)
+                        @Html.ValidationMessageFor(model => model.UserSettings.HideDownloadableProductsTab)
+                    </div>
+                </div>*@
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.HideBackInStockSubscriptionsTab)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.HideBackInStockSubscriptionsTab)
+                        @Html.ValidationMessageFor(model => model.UserSettings.HideBackInStockSubscriptionsTab)
+                    </div>
+                </div>
+                @*<div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.HideNewsletterBlock)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.HideNewsletterBlock)
+                        @Html.ValidationMessageFor(model => model.UserSettings.HideNewsletterBlock)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlNewsletterBlockAllowToUnsubscribe">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.NewsletterBlockAllowToUnsubscribe)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.NewsletterBlockAllowToUnsubscribe)
+                        @Html.ValidationMessageFor(model => model.UserSettings.NewsletterBlockAllowToUnsubscribe)
+                    </div>
+                </div>*@
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.StoreLastVisitedPage)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.StoreLastVisitedPage)
+                        @Html.ValidationMessageFor(model => model.UserSettings.StoreLastVisitedPage)
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default advanced-setting">
+            <div class="panel-heading">
+                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Profile")
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.AllowViewingProfiles)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.AllowViewingProfiles)
+                        @Html.ValidationMessageFor(model => model.UserSettings.AllowViewingProfiles)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.ShowUsersLocation)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.ShowUsersLocation)
+                        @Html.ValidationMessageFor(model => model.UserSettings.ShowUsersLocation)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.ShowUsersJoinDate)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.ShowUsersJoinDate)
+                        @Html.ValidationMessageFor(model => model.UserSettings.ShowUsersJoinDate)
+                    </div>
+                </div>
+            </div>
+            <script type="text/javascript">
+                $(document).ready(function () {
+                    $("#@Html.FieldIdFor(model => model.UserSettings.AllowUsersToUploadAvatars)").click(toggleAvatar);
+                    $("#@Html.FieldIdFor(model => model.UserSettings.UsernamesEnabled)").click(toggleUsername);
+
+                    toggleAvatar();
+                    toggleUsername();
+                });
+
+                function toggleAvatar() {
+                    if ($('#@Html.FieldIdFor(model => model.UserSettings.AllowUsersToUploadAvatars)').is(':checked')) {
+                        $('#pnlDefaultAvatarEnabled').show();
+                    } else {
+                        $('#pnlDefaultAvatarEnabled').hide();
+                    }
+                }
+
+                function toggleUsername() {
+                    if ($('#@Html.FieldIdFor(model => model.UserSettings.UsernamesEnabled)').is(':checked')) {
+                        $('#pnlAllowUsersToChangeUsernames').show();
+                        $('#pnlCheckUsernameAvailability').show();
+                    } else {
+                        $('#pnlAllowUsersToChangeUsernames').hide();
+                        $('#pnlCheckUsernameAvailability').hide();
+                    }
+                }
+            </script>
+        </div>
+        <div class="panel panel-default advanced-setting">
+            <div class="panel-heading">
+                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.TimeZone")
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.DateTimeSettings.AllowUsersToSetTimeZone)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.DateTimeSettings.AllowUsersToSetTimeZone)
+                        @Html.ValidationMessageFor(model => model.DateTimeSettings.AllowUsersToSetTimeZone)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.DateTimeSettings.DefaultStoreTimeZoneId)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopDropDownListFor(model => model.DateTimeSettings.DefaultStoreTimeZoneId, Model.DateTimeSettings.AvailableTimeZones)
+                        @Html.ValidationMessageFor(model => model.DateTimeSettings.DefaultStoreTimeZoneId)
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*<div class="panel panel-default advanced-setting">
+            <div class="panel-heading">
+                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.ExternalAuthentication")
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.ExternalAuthenticationSettings.AutoRegisterEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.ExternalAuthenticationSettings.AutoRegisterEnabled)
+                        @Html.ValidationMessageFor(model => model.ExternalAuthenticationSettings.AutoRegisterEnabled)
+                    </div>
+                </div>
+            </div>
+        </div>*@
+    </div>
+}
+
+@helper TabUserFormFields()
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#@Html.FieldIdFor(model => model.UserSettings.DateOfBirthEnabled)").click(toggleUserRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.DateOfBirthRequired)").click(toggleUserRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.CountryEnabled)").click(toggleUserCountryFormField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.StateProvinceEnabled)").click(toggleUserStateProvinceFormField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.CompanyEnabled)").click(toggleUserRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.StreetAddressEnabled)").click(toggleUserRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.StreetAddress2Enabled)").click(toggleUserRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.ZipPostalCodeEnabled)").click(toggleUserRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.CityEnabled)").click(toggleUserRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.PhoneEnabled)").click(toggleUserRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.FaxEnabled)").click(toggleUserRequiredFormField);
+            @*$("#@Html.FieldIdFor(model => model.UserSettings.NewsletterEnabled)").click(toggleNewsletterEnabledField);
+            $("#@Html.FieldIdFor(model => model.UserSettings.HideNewsletterBlock)").click(toggleHideNewsletterBlock);*@
+
+            toggleUserCountryFormField();
+            toggleUserStateProvinceFormField();
+            toggleUserRequiredFormField();
+            //toggleNewsletterEnabledField();
+            //toggleHideNewsletterBlock();
+        });
+
+        function toggleUserCountryFormField() {
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.CountryEnabled)').is(':checked')) {
+                $('#pnlUserCountryRequired').show();
+                $('#pnlUserStateProvinceEnabled').show();
+                toggleUserStateProvinceFormField();
+            } else {
+                $('#pnlUserCountryRequired').hide();
+                $('#pnlUserStateProvinceEnabled').hide();
+                toggleUserStateProvinceFormField();
+            }
+        }
+
+        function toggleUserStateProvinceFormField() {
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.CountryEnabled)').is(':checked') &&
+                $('#@Html.FieldIdFor(model => model.UserSettings.StateProvinceEnabled)').is(':checked')) {
+                $('#pnlUserStateProvinceRequired').show();
+            } else {
+                $('#pnlUserStateProvinceRequired').hide();
+            }
+        }
+
+        function toggleUserRequiredFormField() {
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.DateOfBirthEnabled)').is(':checked')) {
+                $('#pnlUserDateOfBirthRequired').show();
+            } else {
+                $('#pnlUserDateOfBirthRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.DateOfBirthEnabled)').is(':checked') &&
+                $('#@Html.FieldIdFor(model => model.UserSettings.DateOfBirthRequired)').is(':checked')) {
+                $('#pnlDateOfBirthMinimumAge').show();
+            } else {
+                $('#pnlDateOfBirthMinimumAge').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.CompanyEnabled)').is(':checked')) {
+                $('#pnlUserCompanyRequired').show();
+            } else {
+                $('#pnlUserCompanyRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.StreetAddressEnabled)').is(':checked')) {
+                $('#pnlUserStreetAddressRequired').show();
+            } else {
+                $('#pnlUserStreetAddressRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.StreetAddress2Enabled)').is(':checked')) {
+                $('#pnlUserStreetAddress2Required').show();
+            } else {
+                $('#pnlUserStreetAddress2Required').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.ZipPostalCodeEnabled)').is(':checked')) {
+                $('#pnlUserZipPostalCodeRequired').show();
+            } else {
+                $('#pnlUserZipPostalCodeRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.CityEnabled)').is(':checked')) {
+                $('#pnlUserCityRequired').show();
+            } else {
+                $('#pnlUserCityRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.PhoneEnabled)').is(':checked')) {
+                $('#pnlUserPhoneRequired').show();
+            } else {
+                $('#pnlUserPhoneRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.FaxEnabled)').is(':checked')) {
+                $('#pnlUserFaxRequired').show();
+            } else {
+                $('#pnlUserFaxRequired').hide();
+            }
+        }
+
+        @*function toggleNewsletterEnabledField() {
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.NewsletterEnabled)').is(':checked')) {
+                $('#pnlUserNewsletterTickedByDefault').show();
+            } else {
+                $('#pnlUserNewsletterTickedByDefault').hide();
+            }
+        }
+
+        function toggleHideNewsletterBlock() {
+            if ($('#@Html.FieldIdFor(model => model.UserSettings.HideNewsletterBlock)').is(':checked')) {
+                $('#pnlNewsletterBlockAllowToUnsubscribe').hide();
+            }
+            else {
+                $('#pnlNewsletterBlockAllowToUnsubscribe').show();
+            }
+        }*@
+    </script>
+
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.DefaultFields")
+            </div>
+            <div class="panel-body">
+                <p>
+                    <em>@T("Admin.Configuration.Settings.CustomerUser.UserFormFields.Description")</em>
+                </p>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.GenderEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.GenderEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.GenderEnabled)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.DateOfBirthEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.DateOfBirthEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.DateOfBirthEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserDateOfBirthRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.DateOfBirthRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.DateOfBirthRequired)
+                        @Html.ValidationMessageFor(model => model.UserSettings.DateOfBirthRequired)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlDateOfBirthMinimumAge">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.DateOfBirthMinimumAge)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.DateOfBirthMinimumAge)
+                        @Html.ValidationMessageFor(model => model.UserSettings.DateOfBirthMinimumAge)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.CompanyEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.CompanyEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.CompanyEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserCompanyRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.CompanyRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.CompanyRequired)
+                        @Html.ValidationMessageFor(model => model.UserSettings.CompanyRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.StreetAddressEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.StreetAddressEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.StreetAddressEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserStreetAddressRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.StreetAddressRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.StreetAddressRequired)
+                        @Html.ValidationMessageFor(model => model.UserSettings.StreetAddressRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.StreetAddress2Enabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.StreetAddress2Enabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.StreetAddress2Enabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserStreetAddress2Required">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.StreetAddress2Required)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.StreetAddress2Required)
+                        @Html.ValidationMessageFor(model => model.UserSettings.StreetAddress2Required)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.ZipPostalCodeEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.ZipPostalCodeEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.ZipPostalCodeEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserZipPostalCodeRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.ZipPostalCodeRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.ZipPostalCodeRequired)
+                        @Html.ValidationMessageFor(model => model.UserSettings.ZipPostalCodeRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.CityEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.CityEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.CityEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserCityRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.CityRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.CityRequired)
+                        @Html.ValidationMessageFor(model => model.UserSettings.CityRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.CountryEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.CountryEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.CountryEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserCountryRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.CountryRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.CountryRequired)
+                        @Html.ValidationMessageFor(model => model.UserSettings.CountryRequired)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserStateProvinceEnabled">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.StateProvinceEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.StateProvinceEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.StateProvinceEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserStateProvinceRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.StateProvinceRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.StateProvinceRequired)
+                        @Html.ValidationMessageFor(model => model.UserSettings.StateProvinceRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.PhoneEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.PhoneEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.PhoneEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserPhoneRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.PhoneRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.PhoneRequired)
+                        @Html.ValidationMessageFor(model => model.UserSettings.PhoneRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.FaxEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.FaxEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.FaxEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserFaxRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.FaxRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.FaxRequired)
+                        @Html.ValidationMessageFor(model => model.UserSettings.FaxRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.AcceptPrivacyPolicyEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.AcceptPrivacyPolicyEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.AcceptPrivacyPolicyEnabled)
+                    </div>
+                </div>
+                @*<div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.NewsletterEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.NewsletterEnabled)
+                        @Html.ValidationMessageFor(model => model.UserSettings.NewsletterEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlUserNewsletterTickedByDefault">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.UserSettings.NewsletterTickedByDefault)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.UserSettings.NewsletterTickedByDefault)
+                        @Html.ValidationMessageFor(model => model.UserSettings.NewsletterTickedByDefault)
+                    </div>
+                </div>*@
+            </div>
+        </div>
+        @*render custom User attributes*@
+        @*@Html.Action("ListBlock", "UserAttribute")*@
+    </div>
+}
+
+@helper TabAddressFormFields()
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#@Html.FieldIdFor(model => model.AddressSettings.CountryEnabled)").click(toggleAddressCountryFormField);
+            $("#@Html.FieldIdFor(model => model.AddressSettings.CompanyEnabled)").click(toggleAddressRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.AddressSettings.StreetAddressEnabled)").click(toggleAddressRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.AddressSettings.StreetAddress2Enabled)").click(toggleAddressRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.AddressSettings.ZipPostalCodeEnabled)").click(toggleAddressRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.AddressSettings.CityEnabled)").click(toggleAddressRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.AddressSettings.PhoneEnabled)").click(toggleAddressRequiredFormField);
+            $("#@Html.FieldIdFor(model => model.AddressSettings.FaxEnabled)").click(toggleAddressRequiredFormField);
+
+            toggleAddressCountryFormField();
+            toggleAddressRequiredFormField();
+        });
+
+        function toggleAddressCountryFormField() {
+            if ($('#@Html.FieldIdFor(model => model.AddressSettings.CountryEnabled)').is(':checked')) {
+                $('#pnlAddressStateProvinceEnabled').show();
+            }
+            else {
+                $('#pnlAddressStateProvinceEnabled').hide();
+            }
+        }
+
+        function toggleAddressRequiredFormField() {
+            if ($('#@Html.FieldIdFor(model => model.AddressSettings.CompanyEnabled)').is(':checked')) {
+                $('#pnlAddressCompanyRequired').show();
+            }
+            else {
+                $('#pnlAddressCompanyRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.AddressSettings.StreetAddressEnabled)').is(':checked')) {
+                $('#pnlAddressStreetAddressRequired').show();
+            }
+            else {
+                $('#pnlAddressStreetAddressRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.AddressSettings.StreetAddress2Enabled)').is(':checked')) {
+                $('#pnlAddressStreetAddress2Required').show();
+            }
+            else {
+                $('#pnlAddressStreetAddress2Required').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.AddressSettings.ZipPostalCodeEnabled)').is(':checked')) {
+                $('#pnlAddressZipPostalCodeRequired').show();
+            }
+            else {
+                $('#pnlAddressZipPostalCodeRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.AddressSettings.CityEnabled)').is(':checked')) {
+                $('#pnlAddressCityRequired').show();
+            }
+            else {
+                $('#pnlAddressCityRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.AddressSettings.PhoneEnabled)').is(':checked')) {
+                $('#pnlAddressPhoneRequired').show();
+            }
+            else {
+                $('#pnlAddressPhoneRequired').hide();
+            }
+
+            if ($('#@Html.FieldIdFor(model => model.AddressSettings.FaxEnabled)').is(':checked')) {
+                $('#pnlAddressFaxRequired').show();
+            }
+            else {
+                $('#pnlAddressFaxRequired').hide();
+            }
+        }
+    </script>
+
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.DefaultFields")
+            </div>
+            <div class="panel-body">
+                <p>
+                    <em>@T("Admin.Configuration.Settings.CustomerUser.AddressFormFields.Description")</em>
+                </p>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.CompanyEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.CompanyEnabled)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.CompanyEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlAddressCompanyRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.CompanyRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.CompanyRequired)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.CompanyRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.StreetAddressEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.StreetAddressEnabled)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.StreetAddressEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlAddressStreetAddressRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.StreetAddressRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.StreetAddressRequired)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.StreetAddressRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.StreetAddress2Enabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.StreetAddress2Enabled)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.StreetAddress2Enabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlAddressStreetAddress2Required">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.StreetAddress2Required)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.StreetAddress2Required)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.StreetAddress2Required)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.ZipPostalCodeEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.ZipPostalCodeEnabled)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.ZipPostalCodeEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlAddressZipPostalCodeRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.ZipPostalCodeRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.ZipPostalCodeRequired)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.ZipPostalCodeRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.CityEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.CityEnabled)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.CityEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlAddressCityRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.CityRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.CityRequired)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.CityRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.CountryEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.CountryEnabled)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.CountryEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlAddressStateProvinceEnabled">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.StateProvinceEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.StateProvinceEnabled)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.StateProvinceEnabled)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.PhoneEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.PhoneEnabled)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.PhoneEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlAddressPhoneRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.PhoneRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.PhoneRequired)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.PhoneRequired)
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.FaxEnabled)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.FaxEnabled)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.FaxEnabled)
+                    </div>
+                </div>
+                <div class="form-group" id="pnlAddressFaxRequired">
+                    <div class="col-md-3">
+                        @Html.NopLabelFor(model => model.AddressSettings.FaxRequired)
+                    </div>
+                    <div class="col-md-9">
+                        @Html.NopEditorFor(model => model.AddressSettings.FaxRequired)
+                        @Html.ValidationMessageFor(model => model.AddressSettings.FaxRequired)
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*render custom address attributes*@
+        @*@Html.Action("ListBlock", "AddressAttribute")*@
+    </div>
+}

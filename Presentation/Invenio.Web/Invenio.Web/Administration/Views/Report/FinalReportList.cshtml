@@ -1,0 +1,175 @@
+﻿@model Invenio.Admin.Models.Report.FinalReportListModel
+@{
+    /**/
+
+    var defaultGridPageSize = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+
+    //page title
+    ViewBag.Title = T("Admin.ContentManagement.Report").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("Report");
+
+    int? filterByReportId = ViewBag.FilterByReportPostId;
+}
+
+@Html.AntiForgeryToken()
+<div class="content-header clearfix">
+    <h1 class="pull-left">
+        @T("Admin.Report.Title")
+    </h1>
+</div>
+
+<div class="content">
+    <div class="form-horizontal">
+        <div class="panel-group">
+            <div class="panel panel-default panel-search">
+                <div class="panel-body">
+                    <div class="row">
+                        @*<div class="col-md-6">
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.CreatedOnFrom)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopEditorFor(model => model.CreatedOnFrom)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.CreatedOnTo)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopEditorFor(model => model.CreatedOnTo)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-8 col-md-offset-4">
+                                    <button type="button" id="search-reports" class="btn btn-primary btn-search">
+                                        <i class="fa fa-search"></i>
+                                        @T("Admin.Common.Search")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>*@
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="final-reports-grid"></div>
+
+                    <script>
+                        $(document).ready(function() {
+                            $("#final-reports-grid").kendoGrid({
+                                dataSource: {
+                                    type: "json",
+                                    transport: {
+                                        read: {
+                                            url: "@Html.Raw(Url.Action("FinalReportList", "Report"))",
+                                            type: "POST",
+                                            dataType: "json",
+                                            data: additionalData
+                                        }
+                                    },
+                                    schema: {
+                                        data: "Data",
+                                        total: "Total",
+                                        errors: "Errors"
+                                    },
+                                    error: function(e) {
+                                        display_kendoui_grid_error(e);
+                                        // Cancel the changes
+                                        this.cancelChanges();
+                                    },
+                                    pageSize: @(defaultGridPageSize),
+                                    serverPaging: true,
+                                    serverFiltering: true,
+                                    serverSorting: true
+                                },
+                                pageable: {
+                                    refresh: true,
+                                    pageSizes: [@(gridPageSizes)],
+                                    @Html.Partial("_GridPagerMessages")
+                                },
+                                editable: {
+                                    confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                    mode: "inline"
+                                },
+                                scrollable: false,
+                                columns: [
+                                {
+                                    field: "OrderNumber",
+                                    title: "@T("Admin.Report.FinalReport.OrderNumber")"
+                                },
+                                {
+                                    field: "Customer",
+                                    title: "@T("Admin.Report.FinalReport.Customer")"
+                                },{
+                                    field: "OrderQuantity",
+                                    title: "@T("Admin.Report.FinalReport.OrderQuantity")"
+                                },{
+                                    field: "TotalChecked",
+                                    title: "@T("Admin.Report.FinalReport.TotalChecked")"
+                                },
+                                {
+                                    field: "TotalOk",
+                                    title: "@T("Admin.Report.FinalReport.TotalOk")"
+                                },
+                                {
+                                    field: "TotalBlocked",
+                                    title: "@T("Admin.Report.FinalReport.TotalBlocked")"
+                                },{
+                                    field: "TotalReworked",
+                                    title: "@T("Admin.Report.FinalReport.TotalReworked")"
+                                },{
+                                    field: "TotalNok",
+                                    title: "@T("Admin.Report.FinalReport.TotalNok")"
+                                },{
+                                    field: "NokPercentage",
+                                    title: "@T("Admin.Report.FinalReport.NokPercentage")"
+                                },{
+                                    field: "Id",
+                                    title: "@T("Admin.Common.View")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" },
+                                    template: '<a class="btn btn-default" href="DailyFinalReport/#=Id#"><i class="fa fa-eye"></i>@T("Admin.Common.View")</a>'                                }
+                                ]
+                            });
+                        });
+                    </script>
+
+                    <script type="text/javascript">
+                        var selectedIds = [];
+
+                        $(document).ready(function() {
+                            //search button
+                            $('#search-reports')
+                                .click(function() {
+                                    //search
+                                    var grid = $('#final-reports-grid').data('kendoGrid');
+                                    grid.dataSource.page(1); //new search. Set page size to 1
+                                    //grid.dataSource.read(); we already loaded the grid above using "page" function
+                                    //clear selected checkboxes
+                                    $('.checkboxGroups').attr('checked', false).change();
+                                    selectedIds = [];
+                                    return false;
+                                });
+                        });
+
+                        function additionalData() {
+                            var data = {
+                                CreatedOnFrom: $('#@Html.FieldIdFor(model => model.CreatedOnFrom)').val(),
+                                CreatedOnTo: $('#@Html.FieldIdFor(model => model.CreatedOnTo)').val(),
+                                SearchApprovedId: $('#SearchApprovedId').val()
+                            };
+                            addAntiForgeryToken(data);
+                            return data;
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

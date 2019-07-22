@@ -1,0 +1,52 @@
+﻿<div id="registered-Users-grid"></div>
+
+<script>
+    $(document).ready(function () {
+        $("#registered-Users-grid").kendoGrid({
+            dataSource: {
+                type: "json",
+                transport: {
+                    read: {
+                        url: "@Html.Raw(Url.Action("ReportRegisteredUsersList", "User"))",
+                        type: "POST",
+                        dataType: "json",
+                        data: addAntiForgeryToken
+                    }
+                },
+                schema: {
+                    data: "Data",
+                    total: "Total",
+                    errors: "Errors"
+                },
+                error: function (e) {
+                    display_kendoui_grid_error(e);
+                    // Cancel the changes
+                    this.cancelChanges();
+                },
+                serverPaging: true,
+                serverFiltering: true,
+                serverSorting: true
+            },
+            pageable: {
+                refresh: true,
+                numeric: false,
+                previousNext: false,
+                info: false,
+                @Html.Partial("_GridPagerMessages")
+            },
+            editable: {
+                confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                mode: "inline"
+            },
+            scrollable: false,
+            columns: [{
+                field: "Period",
+                title: "@T("Admin.Users.Reports.RegisteredUsers.Fields.Period")"
+            }, {
+                field: "Users",
+                title: "@T("Admin.Users.Reports.RegisteredUsers.Fields.Users")",
+                width: 150
+            }]
+        });
+    });
+</script>

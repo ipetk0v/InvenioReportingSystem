@@ -1,0 +1,139 @@
+﻿@using Invenio.Core.Infrastructure
+@using Invenio.Services.Security
+@model Invenio.Web.Models.Home.ReportModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container text-center">
+    <h1 class="mt-5 text-white font-weight-light">@T("Home.Index.Title")</h1>
+    <p class="lead text-white-50">@T("Home.Index.Title.Paragraph")</p>
+</div>
+<div class="controls">
+    @using (Html.BeginForm())
+    {
+        var validationSummary = Html.ValidationSummary(true, T("Account.Login.Unsuccessful").Text);
+        if (!MvcHtmlString.IsNullOrEmpty(validationSummary))
+        {
+            <div class="message-error">@validationSummary</div>
+        }
+
+        <div class="container" style="max-width:1500px;">
+            <div class="row" style="padding-top:4%; border: 0;box-shadow: 0 10px 10px -10px white inset;">
+                <div class="col-md-6">
+                    @Html.DropDownListFor(x => x.WorkShiftId, Model.WorkShifts, new { @class = "custom-select" })
+                </div>
+                <div class="col-md-6">
+                    <input type="date" name="Date" id="DateId" min="2012-01-01" max="3000-12-31" class="form-control">
+                </div>
+            </div>
+            <div id="reports">
+                <div class="row mt-5" style="border: 0;box-shadow: 0 10px 10px -10px white inset;" id="last-report">
+                    @*Order Info*@
+                    <div class="col-lg-4">
+                        <div>
+                            <h2 class="mt-3 text-white font-weight-light text-center">@T("Home.Index.Report.Order.Information")</h2> @*Информация за поръчка*@
+                        </div>
+                        <div class="mt-3">
+                            @Html.DropDownListFor(x => x.CustomerId, Model.Customers, new { @class = "custom-select", onChange = "orderFiltred(this)" })
+                        </div>
+                        <div class="mt-3">
+                            @Html.DropDownListFor(x => x.OrderId, Model.Orders, new { @class = "custom-select hidden", onChange = "GetPartsByOrder(this)" })
+                        </div>
+                        <div class="mt-3">
+                            @Html.DropDownListFor(x => x.PartId, Model.Parts, new { @class = "custom-select hidden", onChange = "GetDeliveryNumber(this)" })
+                        </div>
+                        <div class="mt-3">
+                            @Html.DropDownListFor(x => x.DeliveryNumberId, Model.DeliveryNumbers, new { @class = "custom-select hidden", onChange = "GetChargeNumbers(this)" })
+                        </div>
+                        <div class="mt-3">
+                            @Html.DropDownListFor(x => x.ChargeNumberId, Model.ChargeNumbers, new { @class = "custom-select hidden" })
+                        </div>
+                        <div class="row">
+                            <div class="mt-3 col-md-3">
+                                <label style="color:white;text-align:center; width: 95px;">@T("home.common.checked.parts")</label>
+                                @Html.TextBoxFor(m => m.CheckedQuantity, new {@class = "form-control", type = "number", onfocusout = "calculateOrderTotalByOkChange(this)"})
+                            </div>
+                            <div class="mt-3 col-md-3">
+                                <label style="color:white;text-align:center; width: 95px;">@T("home.common.ok.parts")</label>
+                                <input id="input-ok" class="form-control" disabled="disabled" type="number" placeholder="" style="border: 3px solid #28a745; padding: 5px 10px;"/>
+                            </div>
+                            <div class="mt-3 col-md-3">
+                                <label style="color:white;text-align:center; width: 95px;">@T("home.common.nok.parts")</label>
+                                <input id="input-nok" class="form-control" disabled="disabled" type="number" placeholder="" style="border: 3px solid #dc3545; padding: 5px 10px" />
+                            </div>
+                            <div class="mt-3 col-md-3">
+                                <label style="color:white;text-align:center; width: 95px;">@T("home.common.reworked.parts")</label>
+                                <input id="input-reworked" class="form-control" disabled="disabled" type="number" placeholder="" style="border: 3px solid #ffc107; padding: 5px 10px" />
+                            </div>
+                        </div>
+                    </div>
+                    @*Blocked parts*@
+                    <div class="col-lg-4" id="blocked-parts-list">
+                        <div class="">
+                            <h2 class="mt-3 text-white font-weight-light text-center">@T("Home.Index.Report.Blocked.Parts")</h2> @*Блокирани части*@
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-sm-9">
+                                @Html.DropDownListFor(x => x.BlockedPartId, Model.BlockedParts, new { @class = "custom-select", onChange = "addBlockedRow(this)" })
+                            </div>
+                            <div class="col-sm-3">
+                                <input type="number" class="form-control" onfocusout="calculatOrderTotal(this)">
+                            </div>
+                        </div>
+                        @*<div id="blocked-parts">
+                            </div>*@
+                    </div>
+                    @*Rework parts*@
+                    <div class="col-lg-4" id="reworked-parts-list">
+                        <div class="">
+                            <h2 class="mt-3 text-white font-weight-light text-center">@T("Home.Index.Report.Reworked.Parts")</h2> @*Преработени части*@
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-sm-9">
+                                @Html.DropDownListFor(x => x.ReworkedPartId, Model.ReworkedParts, new { @class = "custom-select", onChange = "addReworkRow(this)" })
+                            </div>
+                            <div class="col-sm-3">
+                                <input type="number" class="form-control" onfocusout="calculatOrderTotal(this)">
+                            </div>
+                        </div>
+                        @*<div id="rework-parts">
+                            </div>*@
+                    </div>
+                </div>
+            </div>
+            @*buttons*@
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-warning btn-lg btn-block" onclick="addNewReport()">@T("Home.Index.Add.New.Report.Btn")</button> @*Добави нов репорт*@
+                </div>
+                <div class="col-md-6">
+                    <button type="button" onclick="show_alert('@T("home.report.submit.confirmation")', '@T("home.report.submit.invalid")')" class="btn btn-success btn-lg btn-block">@T("Home.Index.Submit.Report.Btn")</button> @*Изпрати репорти*@
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!--Model Popup starts-->
+<div class="container">
+    <div class="row">
+        <div class="modal fade" id="ignismyModal" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label=""><span>×</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="thank-you-pop">
+                            <img src="/Content/Images/success.png" alt="">
+                            <h1>@T("Home.Index.Success.Message.Title")</h1>
+                            <p>@T("Home.Index.Success.Message.Body")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Model Popup ends-->

@@ -1,0 +1,2 @@
+DataProvider: sqlserver
+DataConnectionString: Data Source=NTPC-KGEORGIEV\MSSQLSERVER01;Initial Catalog=INVENIODB972019;Integrated Security=True;Persist Security Info=False

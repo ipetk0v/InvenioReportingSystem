@@ -1,0 +1,50 @@
+﻿@model LoginModel
+@using Invenio.Web.Models.User;
+@using Invenio.Core;
+@using Invenio.Core.Infrastructure;
+
+@{
+    Layout = "~/View/Shered/_BaseLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row no-gutter">
+        <div class="d-none d-lg-flex col-md-4 col-lg-6 bg-image">
+        </div>
+        <div class="col-md-12 col-lg-6" style="background-color: white;">
+            <div class="login d-flex align-items-center py-5">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-9 col-lg-8 mx-auto">
+                            <h3 class="login-heading" style="text-align: center;width:30%;">
+                                <img style="padding-left:80%" src="~/Content/Images/avatar.png" alt=""/></h3>
+                            <h3 class="login-heading" style="text-align: center">
+                                <img width="70%" src="~/Content/Images/invenio.jpg" alt=""/></h3>
+
+                            @using (Html.BeginForm())
+                            {
+                                var validationSummary = Html.ValidationSummary(true, T("Account.Login.Unsuccessful").Text);
+                                if (!MvcHtmlString.IsNullOrEmpty(validationSummary))
+                                {
+                                    <div class="message-error">@validationSummary</div>
+                                }
+                                <div class="form-label-group">
+                                    @Html.TextBoxFor(m => m.Username, new { @class = "form-control", autofocus = "autofocus" })
+                                    @Html.LabelFor(m => m.Username, new { }, ":")
+                                </div>
+
+                                <div class="form-label-group">
+                                    @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+                                    @Html.LabelFor(m => m.Password, new { }, ":")
+                                </div>
+
+                                <button class="btn btn-lg btn-primary btn-block btn-login text-uppercase font-weight-bold mb-2" type="submit">@T("Account.Login.LoginButton")</button>
+
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

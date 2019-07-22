@@ -1,0 +1,320 @@
+﻿@model Invenio.Admin.Models.Orders.OrderListModel
+@{
+    var defaultGridPageSize = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+
+    //page title
+    ViewBag.Title = T("Admin.Catalog.Orders").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("Orders");
+}
+@Html.AntiForgeryToken()
+<div class="content-header clearfix">
+    <h1 class="pull-left">
+        @T("Admin.Catalog.Orders")
+    </h1>
+    <div class="pull-right">
+        <a href="@Url.Action("Create")" class="btn bg-blue">
+            <i class="fa fa-plus-square"></i>
+            @T("Admin.Common.AddNew")
+        </a>
+        @*<div class="btn-group">
+                <button type="button" class="btn btn-success">
+                    <i class="fa fa-download"></i>
+                    @T("Admin.Common.Export")
+                </button>
+                <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    <span class="caret"></span>
+                    <span class="sr-only">&nbsp;</span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li>
+                        <a href="@Url.Action("ExportXml")">
+                            <i class="fa fa-file-code-o"></i>
+                            @T("Admin.Common.ExportToXml")
+                        </a>
+                    </li>
+                    <li>
+                        <a href="@Url.Action("ExportXlsx")">
+                            <i class="fa fa-file-excel-o"></i>
+                            @T("Admin.Common.ExportToExcel")
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <button type="button" name="importexcel" class="btn bg-olive" data-toggle="modal" data-target="#importexcel-window">
+                <i class="fa fa-upload"></i>
+                @T("Admin.Common.Import")
+            </button>*@
+    </div>
+</div>
+<div class="content">
+    <div class="form-horizontal">
+        <div class="panel-group">
+            <div class="panel panel-default panel-search">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.SearchOrderNumber)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopEditorFor(model => model.SearchOrderNumber)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.Status)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopDropDownListFor(model => model.Status, Model.AvailableStatus)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.SearchPublishedId)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopDropDownListFor(model => model.SearchPublishedId, Model.AvailablePublished)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-8 col-md-offset-4">
+                                    <button type="button" id="search-orders" class="btn btn-primary btn-search">
+                                        <i class="fa fa-search"></i>
+                                        @T("Admin.Common.Search")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.StartDate)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.EditorFor(model => model.StartDate)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.EndDate)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.EditorFor(model => model.EndDate)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.CreateDate)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.EditorFor(model => model.CreateDate)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="Orders-grid"></div>
+                    <script>
+                        $(document).ready(function() {
+                            $("#Orders-grid").kendoGrid({
+                                dataSource: {
+                                    type: "json",
+                                    transport: {
+                                        read: {
+                                            url: "@Html.Raw(Url.Action("OrderList", "Order"))",
+                                            type: "POST",
+                                            dataType: "json",
+                                            data: additionalData
+                                        }
+                                    },
+                                    schema: {
+                                        data: "Data",
+                                        total: "Total",
+                                        errors: "Errors"
+                                    },
+                                    error: function(e) {
+                                        display_kendoui_grid_error(e);
+                                        // Cancel the changes
+                                        this.cancelChanges();
+                                    },
+                                    pageSize: @(defaultGridPageSize),
+                                    serverPaging: true,
+                                    serverFiltering: true,
+                                    serverSorting: true
+                                },
+                                pageable: {
+                                    refresh: true,
+                                    pageSizes: [@(gridPageSizes)],
+                                    @Html.Partial("_GridPagerMessages")
+                                },
+                                editable: {
+                                    confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                    mode: "inline"
+                                },
+                                scrollable: false,
+                                columns: [
+                                    {
+                                        field: "Number",
+                                        title: "@T("Admin.Catalog.Orders.Fields.Number")",
+                                        width:'200px'
+                                    }, {
+                                        field: "OrderStatus",
+                                        title: "@T("Admin.Catalog.Orders.Fields.OrderStatus")",
+                                        width: '150px',
+                                    template: '<span class="grid-report-item ' +
+                                        '# if(OrderStatusId == 0) {# blue #} #' +
+                                        '# if(OrderStatusId == 5) {# yellow #} #' +
+                                        '# if(OrderStatusId == 10) {# green #} #' +
+                                        '">#=OrderStatus#</span>'
+                                 },{
+                                    field: "PartsPerHour",
+                                    title: "@T("Admin.Catalog.Orders.Fields.PartsPerHour")",
+                                },{
+                                    field: "TotalPartsQuantity",
+                                    title: "@T("Admin.Catalog.Orders.Fields.TotalPartsQuantity")"
+                                },{
+                                    field: "CheckedPartsQuantity",
+                                        title: "@T("Admin.Catalog.Orders.Fields.CheckedPartsQuantity")",
+                                        template: '<span class="grid-report-item ' +
+                                            '# if(CheckedPartsQuantity > TotalPartsQuantity) {# red #} #">#=CheckedPartsQuantity#</span>'
+                                },{
+                                    field: "StartDate",
+                                    title: "@T("Admin.Customers.Order.Fields.StartDate")",
+                                    type: "date",
+                                    format: "{0:d}"
+                                },{
+                                    field: "EndDate",
+                                    title: "@T("Admin.Customers.Order.Fields.EndDate")",
+                                    type: "date",
+                                    format: "{0:d}"
+                                },{
+                                    field: "CreatedOnUtc",
+                                    title: "@T("Admin.Catalog.Orders.Fields.CreatedOn")",
+                                    type: "date",
+                                    format: "{0:d}"
+                                },{
+                                    field: "Published",
+                                    title: "@T("Admin.Catalog.Orders.Fields.Published")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" },
+                                    template: '# if(Published) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
+                                },{
+                                    field: "Id",
+                                    title: "@T("Admin.Common.Edit")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" },
+                                    template: '<a class="btn btn-default" href="Edit/#=Id#"><i class="fa fa-pencil"></i>@T("Admin.Common.Edit")</a>'                                }
+                                ]
+                            });
+                        });
+                    </script>
+                    <script type="text/javascript">
+                        $(document).ready(function () {
+                            //load states when changing a country dropdownlist
+                            @*$("#@Html.FieldIdFor(model => model.CountryId)").change(function() {
+                                var selectedItem = $(this).val();
+                                var ddlStates = $("#@Html.FieldIdFor(model => model.StateProvinceId)");
+                                $.ajax({
+                                    cache: false,
+                                    type: "GET",
+                                    url: "@(Url.Action("GetStatesByCountryId", "Country"))",
+                                    data: { "countryId": selectedItem, "addAsterisk": "true" },
+                                    success: function(data) {
+                                        ddlStates.html('');
+                                        $.each(data, function(id, option) {
+                                            ddlStates.append($('<option></option>').val(option.id).html(option.name));
+                                        });
+                                    },
+                                    error: function(xhr, ajaxOptions, thrownError) {
+                                        alert('Failed to retrieve states.');
+                                    }
+                                });
+                            });*@
+
+                            //search button
+                            $('#search-orders').click(function() {
+                                //search
+                                var grid = $('#Orders-grid').data('kendoGrid');
+                                grid.dataSource.page(1); //new search. Set page size to 1
+                                //grid.dataSource.read(); we already loaded the grid above using "page" function
+                                return false;
+                            });
+
+                            $("#@Html.FieldIdFor(model => model.SearchOrderNumber)").keydown(function(event) {
+                                if (event.keyCode == 13) {
+                                    $("#search-orders").click();
+                                    return false;
+                                }
+                            });
+                        });
+
+                        function additionalData() {
+                            var data = {
+                                SearchOrderNumber: $('#@Html.FieldIdFor(model => model.SearchOrderNumber)').val(),
+                                Status: $('#@Html.FieldIdFor(model => model.Status)').val(),
+                                SearchPublishedId: $('#@Html.FieldIdFor(model => model.SearchPublishedId)').val(),
+                                CreateDate: $('#@Html.FieldIdFor(model => model.CreateDate)').val(),
+                                StartDate: $('#@Html.FieldIdFor(model => model.StartDate)').val(),
+                                EndDate: $('#@Html.FieldIdFor(model => model.EndDate)').val(),
+                            };
+                            addAntiForgeryToken(data);
+                            return data;
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*import Orders form*@
+@*<div id="importexcel-window" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importexcel-window-title">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="importexcel-window-title">@T("Admin.Common.ImportFromExcel")</h4>
+            </div>
+            @using (Html.BeginForm("ImportFromXlsx", "Order", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <div class="form-horizontal">
+                    <div class="modal-body">
+                        @Html.AntiForgeryToken()
+                        <ul class="common-list">
+                            <li>
+                                <em>@T("Admin.Catalog.Orders.List.ImportFromExcelTip")</em>
+                            </li>
+                            <li>
+                                <em>@T("Admin.Common.ImportFromExcel.ManyRecordsWarning")</em>
+                            </li>
+                        </ul>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <div class="label-wrapper">
+                                    <label class="control-label">
+                                        @T("Admin.Common.ExcelFile")
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-10">
+                                <input type="file" id="importexcelfile" name="importexcelfile" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">
+                            @T("Admin.Common.ImportFromExcel")
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>*@

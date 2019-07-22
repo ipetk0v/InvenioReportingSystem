@@ -1,0 +1,33 @@
+﻿@model DashboardModel
+@using Invenio.Services.Security
+@{
+    Html.AppendCssFileParts("~/Administration/Content/ionicons/css/ionicons-2.0.1.min.css");
+
+    //page title
+    ViewBag.Title = T("Admin.Dashboard").Text;
+}
+@Html.AntiForgeryToken()
+<div class="content-header">
+    <h1>
+        @T("Admin.Dashboard")
+    </h1>
+</div>
+<div class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-12">
+                    @Html.Action("CommonStatistics", "Home")
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    @Html.Action("EconomicsNews", "Home")
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>

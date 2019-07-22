@@ -1,0 +1,55 @@
+﻿@using Invenio.Core.Infrastructure
+@using Invenio.Services.Security
+@model Invenio.Web.Models.Home.ReportHistoryModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="controls" style="padding:100px;">
+    @if (Model.ReportHistoryList.Any())
+    {
+
+        <table class="table table-hover" style="color:white;text-align:center;">
+            <thead>
+                <tr>
+                    <th scope="col">@T("home.index.select.work.shift")</th>
+                    <th scope="col">@T("admin.reports.fields.dateofinspection")</th>
+                    <th scope="col">@T("admin.catalog.customers.fields.name")</th>
+                    <th scope="col">@T("admin.reports.fields.ordernumber")</th>
+                    <th scope="col">@T("admin.orders.partnumber.fields.description")</th>
+                    <th scope="col">@T("admin.catalog.order.delivery.number")</th>
+                    <th scope="col">@T("admin.catalog.order.charge.number")</th>
+                    <th scope="col">@T("admin.reports.fields.okpartsquantity")</th>
+                    <th scope="col">@T("admin.reports.fields.nokpartsquantity")</th>
+                    <th scope="col">@T("admin.report.dailyfinalreport.reworkedparts")</th>
+                    <th scope="col">@T("admin.catalog.productreviews.list.searchapproved")</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var report in Model.ReportHistoryList)
+                {
+                <tr>
+                    <td>@report.WorkShift</td>
+                    <td>@report.DateOfInspection</td>
+                    <td>@report.Customer</td>
+                    <td>@report.Order</td>
+                    <td>@report.PartName</td>
+                    <td>@report.DeliveryNumber</td>
+                    <td>@report.ChargeNumber</td>
+                    <td>@report.OkQuantity</td>
+                    <td>@report.NokQuantity</td>
+                    <td>@report.ReworkedQuantity</td>
+                    <td>@(report.IsApproved ? T("common.yes") : T("common.no"))</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="container text-center">
+            <h1 class="mt-5 text-white font-weight-light">@T("Home.Report.History.No.Available.Reports")</h1>
+        </div>
+    }
+</div>

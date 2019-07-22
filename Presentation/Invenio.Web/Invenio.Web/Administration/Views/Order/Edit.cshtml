@@ -1,0 +1,36 @@
+﻿@model Invenio.Admin.Models.Orders.OrderModel
+
+@{
+    //page title
+    ViewBag.Title = T("Admin.Catalog.Orders.EditOrderDetails").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("Orders");
+}
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "order-form" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="content-header clearfix">
+        <h1 class="pull-left">
+            @T("Admin.Catalog.Orders.EditOrderDetails") - @Model.Number
+            <small><i class="fa fa-arrow-circle-left"></i>@Html.ActionLink(T("Admin.Catalog.Orders.BackToList").Text, "List")</small>
+        </h1>
+        <div class="pull-right">
+            <button type="submit" name="save" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                @T("Admin.Common.Save")
+            </button>
+            <button type="submit" name="save-continue" class="btn bg-blue">
+                <i class="fa fa-floppy-o"></i>
+                @T("Admin.Common.SaveContinue")
+            </button>
+            <span id="order-delete" class="btn bg-red">
+                <i class="fa fa-trash-o"></i>
+                @T("Admin.Common.Delete")
+            </span>
+        </div>
+    </div>
+    @Html.Partial("_CreateOrUpdate", Model)
+}
+
+@Html.DeleteConfirmation("order-delete")

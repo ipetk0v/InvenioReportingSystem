@@ -1,0 +1,25 @@
+﻿@model UserAddressModel
+
+@{
+    //page title
+    ViewBag.Title = T("Admin.Users.Users.Addresses.AddNew").Text;
+    //active menu item (system name)
+    Html.SetActiveMenuItemSystemName("Users list");
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    <div class="content-header clearfix">
+        <h1 class="pull-left">
+            @T("Admin.Users.Users.Addresses.AddNew") 
+            <small><i class="fa fa-arrow-circle-left"></i>@Html.ActionLink(T("Admin.Users.Users.Addresses.BackToUser").Text, "Edit", new { id = Model.UserId })</small>
+        </h1>
+        <div class="pull-right">
+            <button type="submit" class="btn bg-blue">
+                @T("Admin.Common.Save")
+            </button>
+        </div>
+    </div>
+    @Html.Partial("_CreateOrUpdateAddress", Model)
+}

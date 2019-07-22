@@ -1,0 +1,876 @@
+﻿@model OrderModel
+@using Invenio.Admin.Models.Orders;
+@Html.ValidationSummary(false)
+@Html.HiddenFor(model => model.Id)
+@{
+    //custom tabs
+    var eventMessage = new AdminTabStripCreated(this.Html, "order-edit");
+    EngineContext.Current.Resolve<IEventPublisher>().Publish(eventMessage);
+    foreach (var eventBlock in eventMessage.BlocksToRender)
+    {
+        @eventBlock
+    }
+}
+<div class="content">
+    <div class="form-horizontal">
+        <div id="User-edit" class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+                @Html.RenderBootstrapTabHeader("tab-info", @T("admin.catalog.order.info"), true)
+                @Html.RenderBootstrapTabHeader("tab-parts", @T("admin.catalog.order.parts"), false)
+                @Html.RenderBootstrapTabHeader("tab-blocked-criteria", @T("admin.catalog.order.blocked.criteria"), false)
+                @Html.RenderBootstrapTabHeader("tab-rework-criteria", @T("admin.catalog.order.rework.criteria"), false)
+                @Html.RenderBootstrapTabHeader("tab-delivery-number", @T("admin.catalog.order.delivery.number"), false)
+                @Html.RenderBootstrapTabHeader("tab-charge-number", @T("admin.catalog.order.charge.number"), false)
+            </ul>
+            <div class="tab-content">
+                @Html.RenderBootstrapTabContent("tab-info", @TabInfo(), true)
+                @Html.RenderBootstrapTabContent("tab-parts", TabParts(), false)
+                @Html.RenderBootstrapTabContent("tab-blocked-criteria", TabBlockedCriteria(), false)
+                @Html.RenderBootstrapTabContent("tab-rework-criteria", TabReworkCriteria(), false)
+                @Html.RenderBootstrapTabContent("tab-delivery-number", TabDeliveryNumber(), false)
+                @Html.RenderBootstrapTabContent("tab-charge-number", TabChargeNumber(), false)
+            </div>
+        </div>
+    </div>
+</div>
+@helper TabInfo()
+{
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                @T("admin.catalog.orders.commoninfo")
+            </div>
+            <div class="panel-body">
+                <div>
+                    @Html.HiddenFor(model => model.CreatedOnUtc)
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.NopLabelFor(model => model.CustomerId)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.NopDropDownListFor(model => model.CustomerId, Model.AvailableCustomers)
+                            @Html.ValidationMessageFor(model => model.CustomerId)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.NopLabelFor(model => model.Number)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.NopEditorFor(model => model.Number, required: true)
+                            @Html.ValidationMessageFor(model => model.Number)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.NopLabelFor(model => model.PartsPerHour)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.NopEditorFor(model => model.PartsPerHour)
+                            @Html.ValidationMessageFor(model => model.PartsPerHour)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.NopLabelFor(model => model.TotalPartsQuantity)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.NopEditorFor(model => model.TotalPartsQuantity)
+                            @Html.ValidationMessageFor(model => model.TotalPartsQuantity)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.NopLabelFor(model => model.StartDate)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.NopEditorFor(model => model.StartDate)
+                            @Html.ValidationMessageFor(model => model.StartDate)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.NopLabelFor(model => model.EndDate)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.NopEditorFor(model => model.EndDate)
+                            @Html.ValidationMessageFor(model => model.EndDate)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.NopLabelFor(model => model.DisplayOrder)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.NopEditorFor(model => model.DisplayOrder)
+                            @Html.ValidationMessageFor(model => model.DisplayOrder)
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.NopLabelFor(model => model.Published)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.NopEditorFor(x => x.Published)
+                            @Html.ValidationMessageFor(model => model.Published)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @*<div class="panel panel-default">
+                <div class="panel-heading">
+                    @T("admin.catalog.orders.partinfo")
+                </div>
+                <div class="panel-body">
+                    <div>
+                        <input name="PartId" value="@Model.PartId" hidden="hidden" />
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.NopLabelFor(model => model.PartName)
+                            </div>
+                            <div class="col-md-9">
+                                @Html.NopEditorFor(model => model.PartName, required: true)
+                                @Html.ValidationMessageFor(model => model.PartName)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.NopLabelFor(model => model.PartSerNumer)
+                            </div>
+                            <div class="col-md-9">
+                                @Html.NopEditorFor(model => model.PartSerNumer, required: true)
+                                @Html.ValidationMessageFor(model => model.PartSerNumer)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+    </div>
+}
+@helper TabParts()
+{
+    if (Model.Id > 0)
+    {
+        <div class="panel-group">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="parts-grid"></div>
+                    <script>
+                $(document).ready(function() {
+                    $("#parts-grid").kendoGrid({
+                        dataSource: {
+                            type: "json",
+                            transport: {
+                                read: {
+                                    url: "@Html.Raw(Url.Action("GetAllOrderParts", "Order", new {orderId = Model.Id}))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                },
+                                destroy: {
+                                    url: "@Html.Raw(Url.Action("DeleteOrderParts", "Order", new {orderId = Model.Id}))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                }
+                            },
+                            schema: {
+                                data: "Data",
+                                total: "Total",
+                                errors: "Errors",
+                                model: {
+                                    id: "Id",
+                                    fields: {
+                                        //do not implicitly specify all fields
+                                        //we do it only for fields which implicitly require it
+                                        //otherwise, they'll be formatted wrong way
+                                        CreatedOn: { type: "date" }
+                                    }
+                                }
+                            },
+                            error: function(e) {
+                                display_kendoui_grid_error(e);
+                                // Cancel the changes
+                                this.cancelChanges();
+                            },
+                            serverPaging: true,
+                            serverFiltering: true,
+                            serverSorting: true
+                        },
+                        pageable: {
+                            refresh: true,
+                            numeric: false,
+                            previousNext: false,
+                            info: false,
+                            @Html.Partial("_GridPagerMessages")
+                        },
+                        editable: {
+                            confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                            mode: "inline"
+                        },
+                        scrollable: false,
+                        columns: [
+                         {
+                         field: "SerNumber",
+                         title: "@T("Admin.Orders.Parts.Fields.SerNumber")",
+                         encoded: false
+                         },
+                        {
+                            command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
+                            title: "@T("Admin.Common.Delete")",
+                            width: 100
+                        }
+                        ]
+                    });
+                });
+                    </script>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    @T("Admin.Orders.Parts.AddPart")
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            @Html.NopLabelFor(model => model.AddOrderPartsSerNumber)
+                        </div>
+                        <div class="col-md-8">
+                            @Html.NopEditorFor(model => model.AddOrderPartsSerNumber)
+                            @Html.ValidationMessageFor(model => model.AddOrderPartsSerNumber)
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" id="add-order-parts" class="btn btn-primary">@T("Admin.Orders.Parts.AddButton")</button>
+                        </div>
+                    </div>
+                    @*<div class="form-group">
+
+                        </div>*@
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+    $(document).ready(function () {
+        $('#add-order-parts').click(function () {
+            var serNumber = $("#@Html.FieldIdFor(model => model.AddOrderPartsSerNumber)").val();
+            $('#add-order-parts').attr('disabled', true);
+
+            var postData = {
+                serNumber: serNumber,
+                orderId: @Model.Id
+                };
+            addAntiForgeryToken(postData);
+
+            $.ajax({
+                cache:false,
+                type: "POST",
+                url: "@(Url.Action("AddOrderParts", "Order"))",
+                data: postData,
+                success: function (data) {
+                    var grid = $("#parts-grid").data('kendoGrid');
+                    grid.dataSource.read();
+                    $('#add-order-parts').attr('disabled', false);
+                    location.reload();
+                },
+                error:function (xhr, ajaxOptions, thrownError){
+                    alert('Failed to add order parts.');
+                    $('#add-order-parts').attr('disabled', false);
+                }
+            });
+        });
+    });
+        </script>
+    }
+    else
+    {
+        <div class="panel panel-default">
+            <div class="panel-body">
+                @T("Admin.Catalog.Order.Parts.SaveBeforeEdit")
+            </div>
+        </div>
+    }
+}
+@helper TabBlockedCriteria()
+{
+    if (Model.Id > 0)
+    {
+        <div class="panel-group">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="blocked-criteria-grid"></div>
+                    <script>
+                $(document).ready(function() {
+                    $("#blocked-criteria-grid").kendoGrid({
+                        dataSource: {
+                            type: "json",
+                            transport: {
+                                read: {
+                                    url: "@Html.Raw(Url.Action("CriteriaBlockedParts", "Criteria", new {orderId = Model.Id}))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                },
+                                destroy: {
+                                    url: "@Html.Raw(Url.Action("CriteriaBlockedPartsDelete", "Criteria", new {orderId = Model.Id}))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                }
+                            },
+                            schema: {
+                                data: "Data",
+                                total: "Total",
+                                errors: "Errors",
+                                model: {
+                                    id: "Id",
+                                    fields: {
+                                        //do not implicitly specify all fields
+                                        //we do it only for fields which implicitly require it
+                                        //otherwise, they'll be formatted wrong way
+                                        CreatedOn: { type: "date" }
+                                    }
+                                }
+                            },
+                            error: function(e) {
+                                display_kendoui_grid_error(e);
+                                // Cancel the changes
+                                this.cancelChanges();
+                            },
+                            serverPaging: true,
+                            serverFiltering: true,
+                            serverSorting: true
+                        },
+                        pageable: {
+                            refresh: true,
+                            numeric: false,
+                            previousNext: false,
+                            info: false,
+                            @Html.Partial("_GridPagerMessages")
+                        },
+                        editable: {
+                            confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                            mode: "inline"
+                        },
+                        scrollable: false,
+                        columns: [
+                         {
+                         field: "Description",
+                         title: "@T("Admin.Orders.Criteria.Fields.Description")",
+                         encoded: false
+                         },
+                        {
+                            command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
+                            title: "@T("Admin.Common.Delete")",
+                            width: 100
+                        }
+                        ]
+                    });
+                });
+                    </script>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    @T("Admin.Orders.Criteria.AddTitle")
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            @Html.NopLabelFor(model => model.AddBlockedCriteriaDescription)
+                        </div>
+                        <div class="col-md-8">
+                            @Html.NopEditorFor(model => model.AddBlockedCriteriaDescription)
+                            @Html.ValidationMessageFor(model => model.AddBlockedCriteriaDescription)
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" id="add-bloked-criteria" class="btn btn-primary">@T("Admin.Orders.Criteria.AddButton")</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+        $(document).ready(function () {
+            $('#add-bloked-criteria').click(function () {
+                var criteriaMessage = $("#@Html.FieldIdFor(model => model.AddBlockedCriteriaDescription)").val();
+                $('#add-bloked-criteria').attr('disabled', true);
+
+                var postData = {
+                    message: criteriaMessage,
+                    orderId: @Model.Id
+                };
+                addAntiForgeryToken(postData);
+
+                $.ajax({
+                    cache:false,
+                    type: "POST",
+                    url: "@(Url.Action("CriteriaBlockedPartsAdd", "Criteria"))",
+                    data: postData,
+                    success: function (data) {
+                        var grid = $("#blocked-criteria-grid").data('kendoGrid');
+                        grid.dataSource.read();
+                        $('#add-bloked-criteria').attr('disabled', false);
+                    },
+                    error:function (xhr, ajaxOptions, thrownError){
+                        alert('Failed to add order criteria.');
+                        $('#add-bloked-criteria').attr('disabled', false);
+                    }
+                });
+            });
+        });
+        </script>
+    }
+    else
+    {
+        <div class="panel panel-default">
+            <div class="panel-body">
+                @T("Admin.Catalog.Order.NokCriteria.SaveBeforeEdit")
+            </div>
+        </div>
+    }
+}
+@helper TabReworkCriteria()
+{
+    if (Model.Id > 0)
+    {
+        <div class="panel-group">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="rework-criteria-grid"></div>
+                    <script>
+                $(document).ready(function() {
+                    $("#rework-criteria-grid").kendoGrid({
+                        dataSource: {
+                            type: "json",
+                            transport: {
+                                read: {
+                                    url: "@Html.Raw(Url.Action("CriteriaReworkParts", "Criteria", new {orderId = Model.Id}))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                },
+                                destroy: {
+                                    url: "@Html.Raw(Url.Action("CriteriaReworkPartsDelete", "Criteria", new {orderId = Model.Id}))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                }
+                            },
+                            schema: {
+                                data: "Data",
+                                total: "Total",
+                                errors: "Errors",
+                                model: {
+                                    id: "Id",
+                                    fields: {
+                                        //do not implicitly specify all fields
+                                        //we do it only for fields which implicitly require it
+                                        //otherwise, they'll be formatted wrong way
+                                        CreatedOn: { type: "date" }
+                                    }
+                                }
+                            },
+                            error: function(e) {
+                                display_kendoui_grid_error(e);
+                                // Cancel the changes
+                                this.cancelChanges();
+                            },
+                            serverPaging: true,
+                            serverFiltering: true,
+                            serverSorting: true
+                        },
+                        pageable: {
+                            refresh: true,
+                            numeric: false,
+                            previousNext: false,
+                            info: false,
+                            @Html.Partial("_GridPagerMessages")
+                        },
+                        editable: {
+                            confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                            mode: "inline"
+                        },
+                        scrollable: false,
+                        columns: [
+                         {
+                         field: "Description",
+                         title: "@T("Admin.Orders.Criteria.Fields.Description")",
+                         encoded: false
+                         },
+                        {
+                            command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
+                            title: "@T("Admin.Common.Delete")",
+                            width: 100
+                        }
+                        ]
+                    });
+                });
+                    </script>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    @T("Admin.Orders.Criteria.AddTitle")
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            @Html.NopLabelFor(model => model.AddReworkedCriteriaDescription)
+                        </div>
+                        <div class="col-md-8">
+                            @Html.NopEditorFor(model => model.AddReworkedCriteriaDescription)
+                            @Html.ValidationMessageFor(model => model.AddReworkedCriteriaDescription)
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" id="add-rework-criteria" class="btn btn-primary">@T("Admin.Orders.Criteria.AddButton")</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+    $(document).ready(function () {
+        $('#add-rework-criteria').click(function () {
+            var criteriaMessage = $("#@Html.FieldIdFor(model => model.AddReworkedCriteriaDescription)").val();
+            $('#add-rework-criteria').attr('disabled', true);
+
+            var postData = {
+                message: criteriaMessage,
+                orderId: @Model.Id
+                };
+            addAntiForgeryToken(postData);
+
+            $.ajax({
+                cache:false,
+                type: "POST",
+                url: "@(Url.Action("CriteriaReworkPartsAdd", "Criteria"))",
+                data: postData,
+                success: function (data) {
+                    var grid = $("#rework-criteria-grid").data('kendoGrid');
+                    grid.dataSource.read();
+                    $('#add-rework-criteria').attr('disabled', false);
+                },
+                error:function (xhr, ajaxOptions, thrownError){
+                    alert('Failed to add order criteria.');
+                    $('#add-rework-criteria').attr('disabled', false);
+                }
+            });
+        });
+    });
+        </script>
+    }
+    else
+    {
+        <div class="panel panel-default">
+            <div class="panel-body">
+                @T("Admin.Catalog.Order.ReworkCriteria.SaveBeforeEdit")
+            </div>
+        </div>
+    }
+}
+@helper TabDeliveryNumber()
+{
+    if (Model.Id > 0)
+    {
+        <div class="panel-group">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="delivery-number-grid"></div>
+                    <script>
+                $(document).ready(function() {
+                    $("#delivery-number-grid").kendoGrid({
+                        dataSource: {
+                            type: "json",
+                            transport: {
+                                read: {
+                                    url: "@Html.Raw(Url.Action("GetAllDeliveryNumbers", "Order", new {orderId = Model.Id}))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                },
+                                destroy: {
+                                    url: "@Html.Raw(Url.Action("DeliveryNumberDelete", "Order", new {orderId = Model.Id}))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                }
+                            },
+                            schema: {
+                                data: "Data",
+                                total: "Total",
+                                errors: "Errors",
+                                model: {
+                                    id: "Id",
+                                    fields: {
+                                        //do not implicitly specify all fields
+                                        //we do it only for fields which implicitly require it
+                                        //otherwise, they'll be formatted wrong way
+                                        CreatedOn: { type: "date" }
+                                    }
+                                }
+                            },
+                            error: function(e) {
+                                display_kendoui_grid_error(e);
+                                // Cancel the changes
+                                this.cancelChanges();
+                            },
+                            serverPaging: true,
+                            serverFiltering: true,
+                            serverSorting: true
+                        },
+                        pageable: {
+                            refresh: true,
+                            numeric: false,
+                            previousNext: false,
+                            info: false,
+                            @Html.Partial("_GridPagerMessages")
+                        },
+                        editable: {
+                            confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                            mode: "inline"
+                        },
+                        scrollable: false,
+                        columns: [
+                            {
+                                field: "PartNumber",
+                                title: "@T("Admin.Orders.PartNumber.Fields.Description")",
+                                encoded: false
+                            },
+                            {
+                                field: "DeliveryNumber",
+                                title: "@T("Admin.Orders.DeliveryNumber.Fields.Description")",
+                                encoded: false
+                            },
+                            {
+                                command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
+                                title: "@T("Admin.Common.Delete")",
+                                width: 100
+                            }
+                        ]
+                    });
+                });
+                    </script>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    @T("Admin.Orders.DeliveryNumber.AddTitle")
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <div class="col-md-5">
+                            @Html.NopDropDownListFor(model => model.PartNumberId, Model.AvailablePartNumbers)
+                            @Html.ValidationMessageFor(model => model.PartNumberId)
+                        </div>
+                        <div class="col-md-5">
+                            @Html.NopEditorFor(model => model.AddOrderDeliveryNumber)
+                            @Html.ValidationMessageFor(model => model.AddOrderDeliveryNumber)
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" id="add-delivery-number" class="btn btn-primary">@T("Admin.Orders.DeliveryNumber.AddButton")</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+    $(document).ready(function () {
+        $('#add-delivery-number').click(function () {
+            var orderMessage = $("#@Html.FieldIdFor(model => model.AddOrderDeliveryNumber)").val();
+            var partNumberId = $("#@Html.FieldIdFor(model => model.PartNumberId)").val();
+            $('#add-delivery-number').attr('disabled', true);
+
+            var postData = {
+                delNumber: orderMessage,
+                partId: partNumberId
+                };
+            addAntiForgeryToken(postData);
+
+            $.ajax({
+                cache:false,
+                type: "POST",
+                url: "@(Url.Action("DeliveryNumberAdd", "Order"))",
+                data: postData,
+                success: function (data) {
+                    var grid = $("#delivery-number-grid").data('kendoGrid');
+                    grid.dataSource.read();
+                    $('#add-delivery-number').attr('disabled', false);
+                    location.reload();
+                },
+                error:function (xhr, ajaxOptions, thrownError){
+                    alert('Failed to add delivery number.');
+                    $('#add-delivery-number').attr('disabled', false);
+                }
+            });
+        });
+    });
+        </script>
+    }
+    else
+    {
+        <div class="panel panel-default">
+            <div class="panel-body">
+                @T("Admin.Catalog.Order.DeliveryNumber.SaveBeforeEdit")
+            </div>
+        </div>
+    }
+}
+
+@helper TabChargeNumber()
+{
+    if (Model.Id > 0)
+    {
+        <div class="panel-group">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div id="charge-number-grid"></div>
+                    <script>
+                $(document).ready(function() {
+                    $("#charge-number-grid").kendoGrid({
+                        dataSource: {
+                            type: "json",
+                            transport: {
+                                read: {
+                                    url: "@Html.Raw(Url.Action("GetAllChargeNumbers", "Order", new {orderId = Model.Id}))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                },
+                                destroy: {
+                                    url: "@Html.Raw(Url.Action("ChargeNumberDelete", "Order", new {orderId = Model.Id}))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                }
+                            },
+                            schema: {
+                                data: "Data",
+                                total: "Total",
+                                errors: "Errors",
+                                model: {
+                                    id: "Id",
+                                    fields: {
+                                        //do not implicitly specify all fields
+                                        //we do it only for fields which implicitly require it
+                                        //otherwise, they'll be formatted wrong way
+                                        CreatedOn: { type: "date" }
+                                    }
+                                }
+                            },
+                            error: function(e) {
+                                display_kendoui_grid_error(e);
+                                // Cancel the changes
+                                this.cancelChanges();
+                            },
+                            serverPaging: true,
+                            serverFiltering: true,
+                            serverSorting: true
+                        },
+                        pageable: {
+                            refresh: true,
+                            numeric: false,
+                            previousNext: false,
+                            info: false,
+                            @Html.Partial("_GridPagerMessages")
+                        },
+                        editable: {
+                            confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                            mode: "inline"
+                        },
+                        scrollable: false,
+                        columns: [
+                            {
+                                field: "DeliverNumber",
+                                title: "@T("Admin.Orders.DeliveryNumber.Fields.Description")",
+                                encoded: false
+                            },
+                         {
+                         field: "ChargeNumber",
+                         title: "@T("Admin.Orders.ChargeNumber.Fields.Description")",
+                         encoded: false
+                         },
+                        {
+                            command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
+                            title: "@T("Admin.Common.Delete")",
+                            width: 100
+                        }
+                        ]
+                    });
+                });
+                    </script>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    @T("Admin.Orders.ChargeNumber.AddTitle")
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <div class="col-md-5">
+                            @Html.NopDropDownListFor(model => model.DeliveryNumberId, Model.AvailableDeliveryNumbers)
+                            @Html.ValidationMessageFor(model => model.DeliveryNumberId)
+                        </div>
+                        <div class="col-md-5">
+                            @Html.NopEditorFor(model => model.AddOrderChargeNumber)
+                            @Html.ValidationMessageFor(model => model.AddOrderChargeNumber)
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" id="add-charge-number" class="btn btn-primary">@T("Admin.Orders.ChargeNumber.AddButton")</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+    $(document).ready(function () {
+        $('#add-charge-number').click(function () {
+            var chargeNumber = $("#@Html.FieldIdFor(model => model.AddOrderChargeNumber)").val();
+            var deliveryNumberId = $("#@Html.FieldIdFor(model => model.DeliveryNumberId)").val();
+            $('#add-charge-number').attr('disabled', true);
+
+            var postData = {
+                charNumber: chargeNumber,
+                deliveryNumberId: deliveryNumberId
+                };
+            addAntiForgeryToken(postData);
+
+            $.ajax({
+                cache:false,
+                type: "POST",
+                url: "@(Url.Action("ChargeNumberAdd", "Order"))",
+                data: postData,
+                success: function (data) {
+                    if (data.Result === true) {
+                        var grid = $("#charge-number-grid").data('kendoGrid');
+                        grid.dataSource.read();
+                    } else {
+                        alert('Failed to add charge number.');
+                    }
+                    $('#add-charge-number').attr('disabled', false);
+                    location.reload();
+                },
+                error:function (xhr, ajaxOptions, thrownError){
+                    alert('Failed to add charge number.');
+                    $('#add-charge-number').attr('disabled', false);
+                }
+            });
+        });
+    });
+        </script>
+    }
+    else
+    {
+        <div class="panel panel-default">
+            <div class="panel-body">
+                @T("Admin.Catalog.Order.ChargeNumber.SaveBeforeEdit")
+            </div>
+        </div>
+
+    }
+}

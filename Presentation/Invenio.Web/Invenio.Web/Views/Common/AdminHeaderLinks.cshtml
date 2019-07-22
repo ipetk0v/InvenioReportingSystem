@@ -1,0 +1,15 @@
+﻿@model AdminHeaderLinksModel
+@using Invenio.Web.Models.Common;
+@if (Model.DisplayAdminLink)
+{
+    <div class="admin-header-links">
+        @if (Model.DisplayAdminLink)
+        {
+            <a href="@Url.Content("~/admin")" class="administration">@T("Account.Administration")</a>
+        }
+        @if (!String.IsNullOrEmpty(Model.EditPageUrl))
+        {
+            <a href="@Model.EditPageUrl" class="manage-page">@T("Common.ManagePage")</a>
+        }
+    </div>
+}
