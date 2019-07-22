@@ -22,6 +22,8 @@
 
         public const string ApplicationXZipCo = "application/x-zip-co";
 
+        public const string ApplicationXlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
         #endregion application/*
 
 

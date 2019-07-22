@@ -20,10 +20,14 @@
         @T("Admin.Report.Title")
     </h1>
     <div class="pull-right">
-        <button type="button" class="btn btn-success">
-            <i class="fa fa-download"></i>
+        <a href="@Url.Action("ExportToExcel", routeValues:new {reportId=Model.OrderId})" target="_blank" class="btn btn-success">
+            <i class="fa fa-download"></i>iis
             @T("Admin.Common.Export.Excel")
-        </button>
+        </a>
+        @*<button type="button" name="download-excel" class="btn btn-success">
+                <i class="fa fa-download"></i>
+                @T("Admin.Common.Export.Excel")
+            </button>*@
         <button type="button" class="btn btn-success">
             <i class="fa fa-download"></i>
             @T("Admin.Common.Export.PDF")

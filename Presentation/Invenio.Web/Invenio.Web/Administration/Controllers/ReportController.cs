@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Invenio.Admin.Models.Report;
 using Invenio.Services.Security;
 using Invenio.Web.Framework.Kendoui;
@@ -24,6 +25,8 @@ using Invenio.Services.ChargeNumber;
 using Invenio.Services.Criteria;
 using Invenio.Services.Parts;
 using Invenio.Services.DeliveryNumber;
+using Invenio.Web.Framework.Controllers;
+using OfficeOpenXml;
 
 namespace Invenio.Admin.Controllers
 {
@@ -450,6 +453,198 @@ namespace Invenio.Admin.Controllers
             };
 
             return View(model);
+        }
+
+        [HttpPost, ActionName("List")]
+        [FormValueRequired("download-pdf")]
+        public virtual ActionResult DownloadReportAsPdf(DataSourceRequest command, DailyReportModelList model)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageReports))
+                return AccessDeniedView();
+
+            return null;
+        }
+
+        [HttpGet, ActionName("ExportToExcel")]
+        public virtual ActionResult DownloadReportAsExcel(int orderId)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageReports))
+                return AccessDeniedView();
+
+            var reports = _reportService.GetAllReports(orderId: orderId, isAprroved: 1);
+
+            var dfrs = reports.GroupBy(c => new
+            {
+                c.DateOfInspection?.Date,
+                Part = _partService.GetPartById(c.PartId ?? 0)?.SerNumber,
+                ChargeNumber = c.ChargeNumberId.HasValue
+                ? _chargeNumberService.GetChargeNumberById(c.ChargeNumberId.Value)
+                : null,
+                DeliveryNumber = c.DeliveryNumberId.HasValue
+                    ? _deliveryNumberService.GetDeliveryNumberById(c.DeliveryNumberId.Value)
+                    : null,
+            })
+            .Select(x => new DailyReportModel
+            {
+                DateOfInspection = x.Key.Date?.Date,
+                ChargeNumber = x.Key.ChargeNumber?.Number,
+                DeliveryNumber = x.Key.DeliveryNumber?.Number,
+                PartNumber = x.Key.Part,
+
+            })
+            .OrderBy(x => x.Id)
+            .ToList();
+
+            foreach (var dfr in dfrs)
+            {
+                var newTest = reports.Where(x => x.DateOfInspection?.Date == dfr.DateOfInspection?.Date
+                                                 && x.ChargeNumber?.Number == dfr.ChargeNumber
+                                                 && x.DeliveryNumber?.Number == dfr.DeliveryNumber
+                                                 && x.Part?.SerNumber == dfr.PartNumber).ToList();
+
+                dfr.NokParts = newTest.Sum(x => x.NokPartsQuantity);
+                dfr.ReworkedParts = newTest.Sum(x => x.ReworkPartsQuantity);
+                dfr.FirstRunOkParts = newTest.Sum(x => x.OkPartsQuantity);
+                dfr.BlockedParts = newTest.Sum(x => x.ReworkPartsQuantity) + newTest.Sum(x => x.NokPartsQuantity);
+                dfr.Quantity = newTest.Sum(x => x.OkPartsQuantity) + newTest.Sum(x => x.NokPartsQuantity) + newTest.Sum(x => x.ReworkPartsQuantity);
+            }
+
+            dfrs.ForEach(x => x.NokPercentage = Math.Round((decimal)x.NokParts / x.Quantity, 5) * 100);
+            dfrs.ForEach(x => x.ReworkedPercentage = Math.Round((decimal)x.ReworkedParts / x.Quantity, 5) * 100);
+
+            //blocked
+            var repDetails = _reportDetailService.GetReportDetailsByOrderId(orderId, true);
+
+            var blokedRepDetails = repDetails
+                .GroupBy(x => new
+                {
+                    DateOfInspection = x.Report.DateOfInspection,
+                    Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
+                    Quantity = x.Quantity,
+                    ChargeNumber = x.Report.ChargeNumber?.Number,
+                    DeliveryNumber = x.Report.DeliveryNumber?.Number
+                })
+                .Select(x => new ReportDetailsModel
+                {
+                    CriteriaId = x.Key.Criteria.Id,
+                    Quantity = x.Key.Quantity,
+                    CriteriaType = x.Key.Criteria.CriteriaType,
+                    DateOfInspection = x.Key.DateOfInspection,
+                    ChargeNumber = x.Key.ChargeNumber,
+                    DeliveryNumber = x.Key.DeliveryNumber
+                })
+                .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.BlockedParts).ToList();
+
+            var criteriaBlocked = _criteriaService.GetAllCriteriaValues(orderId).Where(x => x.CriteriaType == CriteriaType.BlockedParts).OrderBy(x => x.Id).ToList();
+
+            BindingFlags bindingFlags = BindingFlags.Public |
+                                        BindingFlags.NonPublic |
+                                        BindingFlags.Instance |
+                                        BindingFlags.Static;
+
+            var t = 1;
+            foreach (var criteria in criteriaBlocked)
+            {
+                foreach (var dailyReportModel in dfrs)
+                {
+                    var quantity = blokedRepDetails
+                        .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
+                                    && x.CriteriaId == criteria.Id
+                                    && x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                                    && x.ChargeNumber == dailyReportModel.ChargeNumber)
+                        .Sum(x => x.Quantity);
+
+                    if (quantity == 0)
+                        continue;
+
+                    var entity = dfrs
+                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection
+                             && x.PartNumber == dailyReportModel.PartNumber
+                             && x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                             && x.ChargeNumber == dailyReportModel.ChargeNumber);
+
+                    if (entity == null)
+                        continue;
+
+                    var fieldIndex = t;
+                    var field = entity.GetType().GetFields(bindingFlags).FirstOrDefault(x => x.Name.Contains("Dod" + fieldIndex.ToString()));
+                    if (field == null) continue;
+                    field.SetValue(entity, quantity);
+                }
+                t++;
+            }
+
+            var reworkedRepDetails = repDetails
+                .GroupBy(x => new
+                {
+                    DateOfInspection = x.Report.DateOfInspection,
+                    Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
+                    Quantity = x.Quantity,
+                    ChargeNumber = x.Report.ChargeNumber?.Number,
+                    DeliveryNumber = x.Report.DeliveryNumber?.Number
+                })
+                .Select(x => new ReportDetailsModel
+                {
+                    CriteriaId = x.Key.Criteria.Id,
+                    Quantity = x.Key.Quantity,
+                    CriteriaType = x.Key.Criteria.CriteriaType,
+                    DateOfInspection = x.Key.DateOfInspection,
+                    ChargeNumber = x.Key.ChargeNumber,
+                    DeliveryNumber = x.Key.DeliveryNumber
+                })
+                .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.ReworkParts).ToList();
+
+            var criteriaReworked = _criteriaService.GetAllCriteriaValues(orderId).Where(x => x.CriteriaType == CriteriaType.ReworkParts).OrderBy(x => x.Id).ToList();
+
+            var y = 1;
+            foreach (var criteria in criteriaReworked)
+            {
+                foreach (var dailyReportModel in dfrs)
+                {
+                    var quantity = reworkedRepDetails
+                        .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
+                                    && x.CriteriaId == criteria.Id
+                                    && x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                                    && x.ChargeNumber == dailyReportModel.ChargeNumber)
+                        .Sum(x => x.Quantity);
+
+                    if (quantity == 0)
+                        continue;
+
+                    var entity = dfrs
+                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection
+                                             && x.PartNumber == dailyReportModel.PartNumber
+                                             && x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                                             && x.ChargeNumber == dailyReportModel.ChargeNumber);
+
+                    if (entity == null)
+                        continue;
+
+                    var fieldIndex = y;
+                    var field = entity.GetType().GetFields(bindingFlags).FirstOrDefault(x => x.Name.Contains("Dor" + fieldIndex.ToString()));
+                    if (field == null) continue;
+                    field.SetValue(entity, quantity);
+                }
+                y++;
+            }
+
+            var result = dfrs.OrderBy(x => x.DateOfInspection?.Date);
+
+            using (var ms = new MemoryStream())
+            {
+                ExcelPackage pck = new ExcelPackage();
+                var ws = pck.Workbook.Worksheets.Add("ExportPage");
+
+                ws.Cells["A1"].Value = "Sample 1";
+                ws.Cells["A1"].Style.Font.Bold = true;
+
+
+                pck.SaveAs(ms);
+
+                ms.Position = 0;
+
+                return File(ms.ToArray(), MimeTypes.ApplicationXlsx, "report.xlsx");
+            }
         }
 
         [HttpPost]
