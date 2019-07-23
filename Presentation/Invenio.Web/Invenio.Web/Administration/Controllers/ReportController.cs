@@ -629,8 +629,8 @@ namespace Invenio.Admin.Controllers
                 ws.Column(18).Width = 26;
                 ws.Column(25).Width = 14.2;
 
-                ws.Row(14).Height = 30;
                 ws.Row(15).Height = 30;
+                ws.Row(16).Height = 30;
 
                 ws.Cells["A15"].Value = "No";
                 ws.Cells["A16"].Value = "Номер";
