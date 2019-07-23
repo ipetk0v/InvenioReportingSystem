@@ -20,7 +20,7 @@
         @T("Admin.Report.Title")
     </h1>
     <div class="pull-right">
-        <a href="@Url.Action("ExportToExcel", routeValues:new {reportId=Model.OrderId})" target="_blank" class="btn btn-success">
+        <a href="@Url.Action("ExportToExcel", routeValues:new {orderId=Model.OrderId})" target="_blank" class="btn btn-success">
             <i class="fa fa-download"></i>iis
             @T("Admin.Common.Export.Excel")
         </a>

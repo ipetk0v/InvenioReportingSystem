@@ -187,6 +187,8 @@
     <Content Include="Content\images\ajax-loading.gif" />
     <Content Include="Content\images\ajax_loader_small.gif" />
     <Content Include="Content\images\google-maps.gif" />
+    <Content Include="Content\images\invenio.jpg" />
+    <Content Include="Content\images\invenio.png" />
     <Content Include="Content\images\logo-invenio.png" />
     <Content Include="Content\images\logo-mini.png" />
     <Content Include="Content\images\logo.png" />
