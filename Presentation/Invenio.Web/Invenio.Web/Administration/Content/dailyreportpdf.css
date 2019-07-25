@@ -1,0 +1,68 @@
+﻿body, html {
+    margin: 0;
+    padding: 0;
+}
+
+.table {
+    width: 100%;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    empty-cells: show;
+    border-width: 0;
+    outline: 0;
+}
+
+    .table td,
+    .table th {
+        border: 0.5px solid black;
+        font-family: "Arial";
+        font-size: 11px;
+        padding: 3px;
+    }
+
+.maintable {
+    border: 3px solid black;
+}
+
+    .maintable td,
+    .maintable th {
+        text-align: center;
+    }
+
+
+.table-criterias {
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    empty-cells: show;
+    border-width: 0;
+    outline: 0;
+}
+
+    .table-criterias td,
+    .table-criterias th {
+        border-width: 0;
+        font-family: "Arial";
+        font-size: 11px;
+        padding: 3px;
+    }
+
+.table-totals {
+    margin: 0;
+    padding: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    empty-cells: show;
+    border-width: 0;
+    outline: 0;
+}
+
+    .table-totals td,
+    .table-totals th {
+        text-align: center;
+        border-width: 0;
+        font-family: "Arial";
+        font-size: 11px;
+        padding: 3px;
+    }

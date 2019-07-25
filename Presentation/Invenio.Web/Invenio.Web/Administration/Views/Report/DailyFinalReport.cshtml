@@ -28,10 +28,10 @@
                 <i class="fa fa-download"></i>
                 @T("Admin.Common.Export.Excel")
             </button>*@
-        <button type="button" class="btn btn-success">
+        <a href="@Url.Action("ExportToPdf", routeValues:new {orderId=Model.OrderId})" target="_blank" class="btn btn-success">
             <i class="fa fa-download"></i>
             @T("Admin.Common.Export.PDF")
-        </button>
+        </a>
     </div>
 </div>
 

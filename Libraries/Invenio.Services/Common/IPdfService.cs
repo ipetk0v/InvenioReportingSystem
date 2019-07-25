@@ -37,12 +37,14 @@ namespace Invenio.Services.Common
         /// <param name="languageId">Language identifier; 0 to use a language used when placing an order</param>
         //void PrintPackagingSlipsToPdf(Stream stream, IList<Shipment> shipments, int languageId = 0);
 
-        
+
         /// <summary>
         /// Print products to PDF
         /// </summary>
         /// <param name="stream">Stream</param>
         /// <param name="products">Products</param>
         //void PrintProductsToPdf(Stream stream, IList<Product> products);
+
+        byte[] PrintDailyReportToPdf(string html, string css);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using Invenio.Admin.Models.Report;
 using Invenio.Services.Security;
@@ -24,6 +23,7 @@ using Invenio.Services.Users;
 using Invenio.Web.Framework.Mvc;
 using Invenio.Core.Domain.Orders;
 using Invenio.Services.ChargeNumber;
+using Invenio.Services.Common;
 using Invenio.Services.Criteria;
 using Invenio.Services.Parts;
 using Invenio.Services.DeliveryNumber;
@@ -31,6 +31,7 @@ using Invenio.Web.Framework.Controllers;
 using OfficeOpenXml;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 using OfficeOpenXml.Style;
+using Image = System.Drawing.Image;
 
 namespace Invenio.Admin.Controllers
 {
@@ -51,6 +52,7 @@ namespace Invenio.Admin.Controllers
         private readonly IChargeNumberService _chargeNumberService;
         private readonly IDeliveryNumberService _deliveryNumberService;
         private readonly ICriteriaService _criteriaService;
+        private readonly IPdfService _pdfService;
 
         public ReportController(
             IPermissionService permissionService,
@@ -67,8 +69,7 @@ namespace Invenio.Admin.Controllers
             IReportDetailService reportDetailService,
             IChargeNumberService chargeNumberService,
             IDeliveryNumberService deliveryNumberService,
-            ICriteriaService criteriaService
-            )
+            ICriteriaService criteriaService, IPdfService pdfService)
         {
             _dateTimeHelper = dateTimeHelper;
             _permissionService = permissionService;
@@ -85,6 +86,7 @@ namespace Invenio.Admin.Controllers
             _chargeNumberService = chargeNumberService;
             _deliveryNumberService = deliveryNumberService;
             _criteriaService = criteriaService;
+            _pdfService = pdfService;
         }
 
         public virtual ActionResult Index()
@@ -459,14 +461,23 @@ namespace Invenio.Admin.Controllers
             return View(model);
         }
 
-        [HttpPost, ActionName("List")]
-        [FormValueRequired("download-pdf")]
-        public virtual ActionResult DownloadReportAsPdf(DataSourceRequest command, DailyReportModelList model)
+        [HttpGet, ActionName("ExportToPdf")]
+        public virtual ActionResult DownloadReportAsPdf(int orderId)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageReports))
                 return AccessDeniedView();
 
-            return null;
+            var model = PrepareExportData(orderId);
+
+            var html = RenderPartialViewToString("_PdfExportView", model);
+
+            var css = "";
+            using (var sr = new StreamReader(Server.MapPath("~/Administration/Content/dailyreportpdf.css")))
+                css = sr.ReadToEnd();
+
+            var bytes = _pdfService.PrintDailyReportToPdf(html, css);
+
+            return File(bytes, MimeTypes.ApplicationPdf, "DailyReport.pdf");
         }
 
         [HttpGet, ActionName("ExportToExcel")]
@@ -475,15 +486,9 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageReports))
                 return AccessDeniedView();
 
+            var model = PrepareExportData(orderId);
 
-            var dfrs = GetDailyReportData(orderId).ToList();
-
-            var result = dfrs.OrderBy(x => x.DateOfInspection?.Date);
-
-            var rowDailyCount = result.Count();
-            var order = _orderService.GetOrderById(orderId);
-            var criteriaBlocked = _criteriaService.GetAllCriteriaValues(orderId).Where(x => x.CriteriaType == CriteriaType.BlockedParts).OrderBy(x => x.Id).ToList();
-            var criteriaReworked = _criteriaService.GetAllCriteriaValues(orderId).Where(x => x.CriteriaType == CriteriaType.ReworkParts).OrderBy(x => x.Id).ToList();
+            var rowDailyCount = model.Items.Count();
 
             using (var ms = new MemoryStream())
             {
@@ -707,7 +712,7 @@ namespace Invenio.Admin.Controllers
 
 
                 var num = 17;
-                foreach (var item in result)
+                foreach (var item in model.Items)
                 {
                     ws.Cells["A" + num].Value = num;
                     ws.Cells["B" + num].Value = item.DateOfInspection.HasValue ? item.DateOfInspection.Value.Date : (object)null;
@@ -804,7 +809,7 @@ namespace Invenio.Admin.Controllers
                     ws.Cells[cn].Merge = true;
                     using (ExcelRange rng = ws.Cells[cn])
                     {
-                        rng.Value = criteriaBlocked.Count > i ? criteriaBlocked[i].Description : "";
+                        rng.Value = model.BlockedCriterias.Count > i ? model.BlockedCriterias[i].Description : "";
                     }
                 }
                 for (int i = 0; i < 4; i++)
@@ -815,7 +820,7 @@ namespace Invenio.Admin.Controllers
                     ws.Cells[cn].Merge = true;
                     using (ExcelRange rng = ws.Cells[cn])
                     {
-                        rng.Value = criteriaReworked.Count > i ? criteriaReworked[i].Description : "";
+                        rng.Value = model.ReworkedCriterias.Count > i ? model.ReworkedCriterias[i].Description : "";
                     }
                 }
 
@@ -868,12 +873,12 @@ namespace Invenio.Admin.Controllers
                 ws.Cells["H6:Q6"].Merge = true;
                 using (ExcelRange rng = ws.Cells["H6:Q6"])
                 {
-                    rng.Value = order.Customer.Name;
+                    rng.Value = model.CustomerName;
                 }
                 ws.Cells["H7:Q7"].Merge = true;
                 using (ExcelRange rng = ws.Cells["H7:Q7"])
                 {
-                    rng.Value = string.Join(", ", dfrs.Select(s => s.PartNumber).ToList());
+                    rng.Value = model.PartNumber;
                 }
                 ws.Cells["H8:Q8"].Merge = true;
                 using (ExcelRange rng = ws.Cells["H8:Q8"])
@@ -883,12 +888,12 @@ namespace Invenio.Admin.Controllers
                 ws.Cells["H9:Q9"].Merge = true;
                 using (ExcelRange rng = ws.Cells["H9:Q9"])
                 {
-                    rng.Value = order.Number;
+                    rng.Value = model.OrderNo;
                 }
                 ws.Cells["H10:Q10"].Merge = true;
                 using (ExcelRange rng = ws.Cells["H10:Q10"])
                 {
-                    rng.Value = order.CheckedPartsQuantity;
+                    rng.Value = model.QuantityToCheck;
                 }
                 ws.Cells["H11:Q11"].Merge = true;
                 using (ExcelRange rng = ws.Cells["H11:Q11"])
@@ -1173,6 +1178,16 @@ namespace Invenio.Admin.Controllers
             }
 
             return dfrs;
+        }
+
+        private DailyReportExportModel PrepareExportData(int orderId)
+        {
+            var dfrs = GetDailyReportData(orderId).ToList();
+            var result = dfrs.OrderBy(x => x.DateOfInspection?.Date);
+            var allCreterias = _criteriaService.GetAllCriteriaValues(orderId);
+            var order = _orderService.GetOrderById(orderId);
+
+            return new DailyReportExportModel(allCreterias, result, order);
         }
         #endregion
     }

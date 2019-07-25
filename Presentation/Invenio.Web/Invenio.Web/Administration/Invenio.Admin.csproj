@@ -58,6 +58,9 @@
     <Reference Include="FluentValidation, Version=6.4.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\FluentValidation.6.4.0\lib\Net45\FluentValidation.dll</HintPath>
     </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.0, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\iTextSharp.5.5.13\lib\itextsharp.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -177,6 +180,7 @@
     <Content Include="Content\bootstrap\css\bootstrap.min.css" />
     <Content Include="Content\bootstrap\css\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap\fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="Content\dailyreportpdf.css" />
     <Content Include="Content\farbtastic\farbtastic.css" />
     <Content Include="Content\farbtastic\marker.png" />
     <Content Include="Content\farbtastic\mask.png" />
@@ -1297,6 +1301,7 @@
     <Compile Include="Models\Orders\OrderModel.cs" />
     <Compile Include="Models\Orders\OrderPartsModel.cs" />
     <Compile Include="Models\Orders\OrderStatus.cs" />
+    <Compile Include="Models\Report\DailyReportExportModel.cs" />
     <Compile Include="Models\Report\DailyReportModel.cs" />
     <Compile Include="Models\Report\DailyReportModelList.cs" />
     <Compile Include="Models\Report\FinalReportListModel.cs" />
@@ -1557,6 +1562,7 @@
     <Content Include="Views\Report\DailyFinalReport.cshtml" />
     <Content Include="Views\Log\List.cshtml" />
     <Content Include="Views\Log\View.cshtml" />
+    <Content Include="Views\Report\_PdfExportView.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
