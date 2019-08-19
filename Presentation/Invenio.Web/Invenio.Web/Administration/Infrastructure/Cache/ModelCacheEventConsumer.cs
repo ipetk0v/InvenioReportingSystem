@@ -22,10 +22,10 @@ namespace Invenio.Admin.Infrastructure.Cache
         //IConsumer<EntityInserted<Category>>,
         //IConsumer<EntityUpdated<Category>>,
         //IConsumer<EntityDeleted<Category>>,
-        ////manufacturers
-        //IConsumer<EntityInserted<Manufacturer>>,
-        //IConsumer<EntityUpdated<Manufacturer>>,
-        //IConsumer<EntityDeleted<Manufacturer>>,
+        ////Customers
+        //IConsumer<EntityInserted<Customer>>,
+        //IConsumer<EntityUpdated<Customer>>,
+        //IConsumer<EntityDeleted<Customer>>,
         //vendors
         //IConsumer<EntityInserted<Vendor>>,
         //IConsumer<EntityUpdated<Vendor>>,
@@ -53,13 +53,13 @@ namespace Invenio.Admin.Infrastructure.Cache
         public const string CATEGORIES_LIST_PATTERN_KEY = "Nop.pres.admin.categories.list";
 
         /// <summary>
-        /// Key for manufacturers caching
+        /// Key for Customers caching
         /// </summary>
         /// <remarks>
         /// {0} : show hidden records?
         /// </remarks>
-        public const string MANUFACTURERS_LIST_KEY = "Nop.pres.admin.manufacturers.list-{0}";
-        public const string MANUFACTURERS_LIST_PATTERN_KEY = "Nop.pres.admin.manufacturers.list";
+        public const string CustomerS_LIST_KEY = "Nop.pres.admin.Customers.list-{0}";
+        public const string CustomerS_LIST_PATTERN_KEY = "Nop.pres.admin.Customers.list";
 
         /// <summary>
         /// Key for vendors caching
@@ -113,18 +113,18 @@ namespace Invenio.Admin.Infrastructure.Cache
         //    _cacheManager.RemoveByPattern(CATEGORIES_LIST_PATTERN_KEY);
         //}
 
-        //manufacturers
-        //public void HandleEvent(EntityInserted<Manufacturer> eventMessage)
+        //Customers
+        //public void HandleEvent(EntityInserted<Customer> eventMessage)
         //{
-        //    _cacheManager.RemoveByPattern(MANUFACTURERS_LIST_PATTERN_KEY);
+        //    _cacheManager.RemoveByPattern(CustomerS_LIST_PATTERN_KEY);
         //}
-        //public void HandleEvent(EntityUpdated<Manufacturer> eventMessage)
+        //public void HandleEvent(EntityUpdated<Customer> eventMessage)
         //{
-        //    _cacheManager.RemoveByPattern(MANUFACTURERS_LIST_PATTERN_KEY);
+        //    _cacheManager.RemoveByPattern(CustomerS_LIST_PATTERN_KEY);
         //}
-        //public void HandleEvent(EntityDeleted<Manufacturer> eventMessage)
+        //public void HandleEvent(EntityDeleted<Customer> eventMessage)
         //{
-        //    _cacheManager.RemoveByPattern(MANUFACTURERS_LIST_PATTERN_KEY);
+        //    _cacheManager.RemoveByPattern(CustomerS_LIST_PATTERN_KEY);
         //}
 
         ////vendors

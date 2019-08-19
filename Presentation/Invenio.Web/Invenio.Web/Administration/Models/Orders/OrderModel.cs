@@ -14,50 +14,54 @@ namespace Invenio.Admin.Models.Orders
     {
         public OrderModel()
         {
-            AvailableCustomers = new List<SelectListItem>();
+            AvailableSuppliers = new List<SelectListItem>();
             AvailableDeliveryNumbers = new List<SelectListItem>();
             AvailablePartNumbers = new List<SelectListItem>();
         }
 
         //public int Id { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.Published")]
+        public string TabReload { get; set; }
+
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.Published")]
         public bool Published { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.CreatedOnUtc")]
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.CreatedOnUtc")]
         public DateTime? CreatedOnUtc { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.Number")]
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.Number")]
         public string Number { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.PartsPerHour")]
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.PartsPerHour")]
         public int PartsPerHour { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.TotalPartsQuantity")]
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.TotalPartsQuantity")]
         public int TotalPartsQuantity { get; set; }
+
+        public bool IsChargeNumberQuantityAvailable { get; set; }
 
         [NopResourceDisplayName("Admin.Catalog.Orders.Fields.CheckedPartsQuantity")]
         public long CheckedPartsQuantity { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.DisplayOrder")]
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.DisplayOrder")]
         public int DisplayOrder { get; set; }
 
         [UIHint("DateNullable")]
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.StartDate")]
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.StartDate")]
         public DateTime? StartDate { get; set; }
 
         [UIHint("DateNullable")]
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.EndDate")]
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.EndDate")]
         public DateTime? EndDate { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.AvailableCustomers")]
-        public int CustomerId { get; set; }
-        public IList<SelectListItem> AvailableCustomers { get; set; }
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.AvailableSuppliers")]
+        public int supplierId { get; set; }
+        public IList<SelectListItem> AvailableSuppliers { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.PartName")]
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.PartName")]
         public string PartName { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.PartSerNumer")]
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.PartSerNumer")]
         public string PartSerNumer { get; set; }
 
         [NopResourceDisplayName("Admin.Catalog.Orders.Fields.OrderStatus")]
@@ -80,7 +84,7 @@ namespace Invenio.Admin.Models.Orders
         [AllowHtml]
         public string AddOrderDeliveryNumber { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.AvailablePartNumber")]
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.AvailablePartNumber")]
         public int PartNumberId { get; set; }
         public IList<SelectListItem> AvailablePartNumbers { get; set; }
 
@@ -88,7 +92,10 @@ namespace Invenio.Admin.Models.Orders
         [AllowHtml]
         public string AddOrderChargeNumber { get; set; }
 
-        [NopResourceDisplayName("Admin.Customers.Order.Fields.AvailableDeliveryNumber")]
+        [NopResourceDisplayName("Admin.Orders.Parts.Fields.ChargeNumberQuantity")]
+        public int AddOrderChargeNumberQuantity { get; set; }
+
+        [NopResourceDisplayName("Admin.Suppliers.Order.Fields.AvailableDeliveryNumber")]
         public int DeliveryNumberId { get; set; }
         public IList<SelectListItem> AvailableDeliveryNumbers { get; set; }
 

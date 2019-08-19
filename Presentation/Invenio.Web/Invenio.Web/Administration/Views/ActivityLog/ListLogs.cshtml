@@ -14,12 +14,6 @@
     <h1 class="pull-left">
         @T("Admin.Configuration.ActivityLog.ActivityLog")
     </h1>
-    @*<div class="pull-right">
-        <a href="@Url.Action("ClearAll")" class="btn bg-red">
-            <i class="fa fa-trash-o"></i>
-            @T("Admin.Common.Clear")
-        </a>
-    </div>*@
 </div>
 
 <div class="content">
@@ -90,12 +84,12 @@
                                             dataType: "json",
                                             data: additionalData
                                         },
-                                        destroy: {
+                                        @*destroy: {
                                             url: "@Html.Raw(Url.Action("AcivityLogDelete", "ActivityLog"))",
                                             type: "POST",
                                             dataType: "json",
                                             data: addAntiForgeryToken
-                                        }
+                                        }*@
                                     },
                                     schema: {
                                         data: "Data",
@@ -154,11 +148,11 @@
                                     width: 200,
                                     type: "date",
                                     format: "{0:G}"
-                                }, {
+                                }, @*{
                                     command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
                                     title: "@T("Admin.Common.Delete")",
                                         width: 100
-                                    }
+                                    }*@
                                 ]
                             });
                         });

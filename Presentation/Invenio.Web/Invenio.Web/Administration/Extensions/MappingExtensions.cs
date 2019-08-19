@@ -1,64 +1,32 @@
-﻿using Invenio.Admin.Models.Manufacturer;
-//using Invenio.Admin.Models.Blogs;
-//using Invenio.Admin.Models.Catalog;
-//using Invenio.Admin.Models.Cms;
+﻿using Invenio.Admin.Models.Customer;
 using Invenio.Admin.Models.Common;
 using Invenio.Admin.Models.Directory;
-//using Invenio.Admin.Models.Discounts;
-//using Invenio.Admin.Models.ExternalAuthentication;
-//using Invenio.Admin.Models.Forums;
 using Invenio.Admin.Models.Localization;
 using Invenio.Admin.Models.Logging;
 using Invenio.Admin.Models.Messages;
-//using Invenio.Admin.Models.News;
-//using Invenio.Admin.Models.Orders;
-//using Invenio.Admin.Models.Payments;
-//using Invenio.Admin.Models.Plugins;
-//using Invenio.Admin.Models.Polls;
 using Invenio.Admin.Models.Settings;
-//using Invenio.Admin.Models.Shipping;
 using Invenio.Admin.Models.Stores;
 using Invenio.Admin.Models.Users;
-//using Invenio.Admin.Models.Tax;
-//using Invenio.Admin.Models.Templates;
-//using Invenio.Admin.Models.Topics;
-//using Invenio.Admin.Models.Vendors;
-//using Invenio.Core.Domain.Blogs;
 using Invenio.Core.Domain.Catalog;
 using Invenio.Core.Domain.Common;
 using Invenio.Core.Domain.Directory;
-//using Invenio.Core.Domain.Discounts;
-//using Invenio.Core.Domain.Forums;
 using Invenio.Core.Domain.Localization;
 using Invenio.Core.Domain.Logging;
-using Invenio.Core.Domain.Manufacturers;
+using Invenio.Core.Domain.Customers;
 using Invenio.Core.Domain.Messages;
-//using Invenio.Core.Domain.News;
-//using Invenio.Core.Domain.Orders;
-//using Invenio.Core.Domain.Polls;
-//using Invenio.Core.Domain.Shipping;
 using Invenio.Core.Domain.Stores;
 using Invenio.Core.Domain.Users;
-//using Invenio.Core.Domain.Tax;
-//using Invenio.Core.Domain.Topics;
-//using Invenio.Core.Domain.Vendors;
 using Invenio.Core.Infrastructure.Mapper;
-//using Invenio.Core.Plugins;
-//using Invenio.Services.Cms;
 using Invenio.Services.Common;
-//using Invenio.Services.Payments;
-//using Invenio.Services.Shipping;
-//using Invenio.Services.Shipping.Pickup;
-//using Invenio.Services.Tax;
 using Invenio.Web.Framework.Security.Captcha;
 using System;
 using System.Linq;
-using Invenio.Admin.Models.Customers;
-using Invenio.Core.Domain.Customers;
+using Invenio.Admin.Models.Supplier;
 using Invenio.Admin.Models.Orders;
 using Invenio.Admin.Models.Report;
 using Invenio.Core.Domain.Orders;
 using Invenio.Core.Domain.Reports;
+using Invenio.Core.Domain.Suppliers;
 
 namespace Invenio.Admin.Extensions
 {
@@ -93,6 +61,26 @@ namespace Invenio.Admin.Extensions
 
         //#endregion
 
+        #region Supplier
+
+        public static SupplierModel ToModel(this Supplier entity)
+        {
+            return entity.MapTo<Supplier, SupplierModel>();
+        }
+
+        public static Supplier ToEntity(this SupplierModel model)
+        {
+            return model.MapTo<SupplierModel, Supplier>();
+        }
+
+        public static Supplier ToEntity(this SupplierModel model, Supplier destination)
+        {
+            return model.MapTo(destination);
+        }
+
+
+        #endregion
+
         #region Customer
 
         public static CustomerModel ToModel(this Customer entity)
@@ -106,26 +94,6 @@ namespace Invenio.Admin.Extensions
         }
 
         public static Customer ToEntity(this CustomerModel model, Customer destination)
-        {
-            return model.MapTo(destination);
-        }
-
-
-        #endregion
-
-        #region Manufacturer
-
-        public static ManufacturerModel ToModel(this Manufacturer entity)
-        {
-            return entity.MapTo<Manufacturer, ManufacturerModel>();
-        }
-
-        public static Manufacturer ToEntity(this ManufacturerModel model)
-        {
-            return model.MapTo<ManufacturerModel, Manufacturer>();
-        }
-
-        public static Manufacturer ToEntity(this ManufacturerModel model, Manufacturer destination)
         {
             return model.MapTo(destination);
         }
@@ -1073,19 +1041,19 @@ namespace Invenio.Admin.Extensions
         //}
 
         //User/user settings
-        public static CustomerUserSettingsModel.UserSettingsModel ToModel(this UserSettings entity)
+        public static SupplierUserSettingsModel.UserSettingsModel ToModel(this UserSettings entity)
         {
-            return entity.MapTo<UserSettings, CustomerUserSettingsModel.UserSettingsModel>();
+            return entity.MapTo<UserSettings, SupplierUserSettingsModel.UserSettingsModel>();
         }
-        public static UserSettings ToEntity(this CustomerUserSettingsModel.UserSettingsModel model, UserSettings destination)
+        public static UserSettings ToEntity(this SupplierUserSettingsModel.UserSettingsModel model, UserSettings destination)
         {
             return model.MapTo(destination);
         }
-        public static CustomerUserSettingsModel.AddressSettingsModel ToModel(this AddressSettings entity)
+        public static SupplierUserSettingsModel.AddressSettingsModel ToModel(this AddressSettings entity)
         {
-            return entity.MapTo<AddressSettings, CustomerUserSettingsModel.AddressSettingsModel>();
+            return entity.MapTo<AddressSettings, SupplierUserSettingsModel.AddressSettingsModel>();
         }
-        public static AddressSettings ToEntity(this CustomerUserSettingsModel.AddressSettingsModel model, AddressSettings destination)
+        public static AddressSettings ToEntity(this SupplierUserSettingsModel.AddressSettingsModel model, AddressSettings destination)
         {
             return model.MapTo(destination);
         }
@@ -1161,17 +1129,17 @@ namespace Invenio.Admin.Extensions
         //}
 
 
-        //public static ManufacturerTemplateModel ToModel(this ManufacturerTemplate entity)
+        //public static CustomerTemplateModel ToModel(this CustomerTemplate entity)
         //{
-        //    return entity.MapTo<ManufacturerTemplate, ManufacturerTemplateModel>();
+        //    return entity.MapTo<CustomerTemplate, CustomerTemplateModel>();
         //}
 
-        //public static ManufacturerTemplate ToEntity(this ManufacturerTemplateModel model)
+        //public static CustomerTemplate ToEntity(this CustomerTemplateModel model)
         //{
-        //    return model.MapTo<ManufacturerTemplateModel, ManufacturerTemplate>();
+        //    return model.MapTo<CustomerTemplateModel, CustomerTemplate>();
         //}
 
-        //public static ManufacturerTemplate ToEntity(this ManufacturerTemplateModel model, ManufacturerTemplate destination)
+        //public static CustomerTemplate ToEntity(this CustomerTemplateModel model, CustomerTemplate destination)
         //{
         //    return model.MapTo(destination);
         //}

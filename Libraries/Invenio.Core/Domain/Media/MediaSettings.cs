@@ -30,9 +30,9 @@ namespace Invenio.Core.Domain.Media
         /// </summary>
         public int CategoryThumbPictureSize { get; set; }
         /// <summary>
-        /// Picture size of manufacturer pictures
+        /// Picture size of Customer pictures
         /// </summary>
-        public int ManufacturerThumbPictureSize { get; set; }
+        public int CustomerThumbPictureSize { get; set; }
         /// <summary>
         /// Picture size of vendor pictures
         /// </summary>

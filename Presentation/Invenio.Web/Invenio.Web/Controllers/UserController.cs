@@ -1,21 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using Invenio.Core;
+﻿using Invenio.Core;
 using Invenio.Core.Domain;
 using Invenio.Core.Domain.Catalog;
 using Invenio.Core.Domain.Common;
-using Invenio.Core.Domain.Users;
-//using Invenio.Core.Domain.Forums;
 using Invenio.Core.Domain.Localization;
 using Invenio.Core.Domain.Media;
 using Invenio.Core.Domain.Messages;
-//using Invenio.Core.Domain.Tax;
+using Invenio.Core.Domain.Users;
 using Invenio.Services.Authentication;
 using Invenio.Services.Authentication.External;
 using Invenio.Services.Common;
-using Invenio.Services.Users;
 using Invenio.Services.Directory;
 using Invenio.Services.Events;
 using Invenio.Services.Helpers;
@@ -23,9 +16,8 @@ using Invenio.Services.Localization;
 using Invenio.Services.Logging;
 using Invenio.Services.Media;
 using Invenio.Services.Messages;
-//using Invenio.Services.Orders;
 using Invenio.Services.Stores;
-//using Invenio.Services.Tax;
+using Invenio.Services.Users;
 using Invenio.Web.Extensions;
 using Invenio.Web.Factories;
 using Invenio.Web.Framework;
@@ -34,6 +26,10 @@ using Invenio.Web.Framework.Security;
 using Invenio.Web.Framework.Security.Captcha;
 using Invenio.Web.Framework.Security.Honeypot;
 using Invenio.Web.Models.User;
+using System;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
 
 namespace Invenio.Web.Controllers
 {

@@ -41,7 +41,7 @@ namespace Invenio.Services.ExportImport
         #region Fields
 
         //private readonly ICategoryService _categoryService;
-        //private readonly IManufacturerService _manufacturerService;
+        //private readonly ICustomerService _CustomerService;
         private readonly IUserService _UserService;
         //private readonly IProductAttributeService _productAttributeService;
         private readonly IPictureService _pictureService;
@@ -65,7 +65,7 @@ namespace Invenio.Services.ExportImport
 
         public ExportManager(
             //ICategoryService categoryService,
-            //IManufacturerService manufacturerService,
+            //ICustomerService CustomerService,
             IUserService UserService,
             //IProductAttributeService productAttributeService,
             IPictureService pictureService,
@@ -85,7 +85,7 @@ namespace Invenio.Services.ExportImport
             )
         {
             //this._categoryService = categoryService;
-            //this._manufacturerService = manufacturerService;
+            //this._CustomerService = CustomerService;
             this._UserService = UserService;
             //this._productAttributeService = productAttributeService;
             this._pictureService = pictureService;
@@ -201,19 +201,19 @@ namespace Invenio.Services.ExportImport
         //}
 
         /// <summary>
-        /// Returns the list of manufacturer for a product separated by a ";"
+        /// Returns the list of Customer for a product separated by a ";"
         /// </summary>
         /// <param name="product">Product</param>
-        /// <returns>List of manufacturer</returns>
-        //protected virtual string GetManufacturers(Product product)
+        /// <returns>List of Customer</returns>
+        //protected virtual string GetCustomers(Product product)
         //{
-        //    string manufacturerNames = null;
-        //    foreach (var pm in _manufacturerService.GetProductManufacturersByProductId(product.Id, true))
+        //    string CustomerNames = null;
+        //    foreach (var pm in _CustomerService.GetProductCustomersByProductId(product.Id, true))
         //    {
-        //        manufacturerNames += pm.Manufacturer.Name;
-        //        manufacturerNames += ";";
+        //        CustomerNames += pm.Customer.Name;
+        //        CustomerNames += ";";
         //    }
-        //    return manufacturerNames;
+        //    return CustomerNames;
         //}
 
         /// <summary>
@@ -275,9 +275,9 @@ namespace Invenio.Services.ExportImport
         //    return !_workContext.CurrentUser.GetAttribute<bool>("category-advanced-mode");
         //}
 
-        //private bool IgnoreExportManufacturerProperty()
+        //private bool IgnoreExportCustomerProperty()
         //{
-        //    return !_workContext.CurrentUser.GetAttribute<bool>("manufacturer-advanced-mode");
+        //    return !_workContext.CurrentUser.GetAttribute<bool>("Customer-advanced-mode");
         //}
 
         /// <summary>
@@ -519,57 +519,57 @@ namespace Invenio.Services.ExportImport
         #region Methods
 
         /// <summary>
-        /// Export manufacturer list to xml
+        /// Export Customer list to xml
         /// </summary>
-        /// <param name="manufacturers">Manufacturers</param>
+        /// <param name="Customers">Customers</param>
         /// <returns>Result in XML format</returns>
-        //public virtual string ExportManufacturersToXml(IList<Manufacturer> manufacturers)
+        //public virtual string ExportCustomersToXml(IList<Customer> Customers)
         //{
         //    var sb = new StringBuilder();
         //    var stringWriter = new StringWriter(sb);
         //    var xmlWriter = new XmlTextWriter(stringWriter);
         //    xmlWriter.WriteStartDocument();
-        //    xmlWriter.WriteStartElement("Manufacturers");
+        //    xmlWriter.WriteStartElement("Customers");
         //    xmlWriter.WriteAttributeString("Version", InvenioVersion.CurrentVersion);
 
-        //    foreach (var manufacturer in manufacturers)
+        //    foreach (var Customer in Customers)
         //    {
-        //        xmlWriter.WriteStartElement("Manufacturer");
+        //        xmlWriter.WriteStartElement("Customer");
 
-        //        xmlWriter.WriteString("ManufacturerId", manufacturer.Id);
-        //        xmlWriter.WriteString("Name", manufacturer.Name);
-        //        xmlWriter.WriteString("Description", manufacturer.Description);
-        //        xmlWriter.WriteString("ManufacturerTemplateId", manufacturer.ManufacturerTemplateId);
-        //        xmlWriter.WriteString("MetaKeywords", manufacturer.MetaKeywords, IgnoreExportManufacturerProperty());
-        //        xmlWriter.WriteString("MetaDescription", manufacturer.MetaDescription, IgnoreExportManufacturerProperty());
-        //        xmlWriter.WriteString("MetaTitle", manufacturer.MetaTitle, IgnoreExportManufacturerProperty());
-        //        xmlWriter.WriteString("SEName", manufacturer.GetSeName(0), IgnoreExportManufacturerProperty());
-        //        xmlWriter.WriteString("PictureId", manufacturer.PictureId);
-        //        xmlWriter.WriteString("PageSize", manufacturer.PageSize, IgnoreExportManufacturerProperty());
-        //        xmlWriter.WriteString("AllowUsersToSelectPageSize", manufacturer.AllowUsersToSelectPageSize, IgnoreExportManufacturerProperty());
-        //        xmlWriter.WriteString("PageSizeOptions", manufacturer.PageSizeOptions, IgnoreExportManufacturerProperty());
-        //        xmlWriter.WriteString("PriceRanges", manufacturer.PriceRanges, IgnoreExportManufacturerProperty());
-        //        xmlWriter.WriteString("Published", manufacturer.Published, IgnoreExportManufacturerProperty());
-        //        xmlWriter.WriteString("Deleted", manufacturer.Deleted, true);
-        //        xmlWriter.WriteString("DisplayOrder", manufacturer.DisplayOrder);
-        //        xmlWriter.WriteString("CreatedOnUtc", manufacturer.CreatedOnUtc, IgnoreExportManufacturerProperty());
-        //        xmlWriter.WriteString("UpdatedOnUtc", manufacturer.UpdatedOnUtc, IgnoreExportManufacturerProperty());
+        //        xmlWriter.WriteString("CustomerId", Customer.Id);
+        //        xmlWriter.WriteString("Name", Customer.Name);
+        //        xmlWriter.WriteString("Description", Customer.Description);
+        //        xmlWriter.WriteString("CustomerTemplateId", Customer.CustomerTemplateId);
+        //        xmlWriter.WriteString("MetaKeywords", Customer.MetaKeywords, IgnoreExportCustomerProperty());
+        //        xmlWriter.WriteString("MetaDescription", Customer.MetaDescription, IgnoreExportCustomerProperty());
+        //        xmlWriter.WriteString("MetaTitle", Customer.MetaTitle, IgnoreExportCustomerProperty());
+        //        xmlWriter.WriteString("SEName", Customer.GetSeName(0), IgnoreExportCustomerProperty());
+        //        xmlWriter.WriteString("PictureId", Customer.PictureId);
+        //        xmlWriter.WriteString("PageSize", Customer.PageSize, IgnoreExportCustomerProperty());
+        //        xmlWriter.WriteString("AllowUsersToSelectPageSize", Customer.AllowUsersToSelectPageSize, IgnoreExportCustomerProperty());
+        //        xmlWriter.WriteString("PageSizeOptions", Customer.PageSizeOptions, IgnoreExportCustomerProperty());
+        //        xmlWriter.WriteString("PriceRanges", Customer.PriceRanges, IgnoreExportCustomerProperty());
+        //        xmlWriter.WriteString("Published", Customer.Published, IgnoreExportCustomerProperty());
+        //        xmlWriter.WriteString("Deleted", Customer.Deleted, true);
+        //        xmlWriter.WriteString("DisplayOrder", Customer.DisplayOrder);
+        //        xmlWriter.WriteString("CreatedOnUtc", Customer.CreatedOnUtc, IgnoreExportCustomerProperty());
+        //        xmlWriter.WriteString("UpdatedOnUtc", Customer.UpdatedOnUtc, IgnoreExportCustomerProperty());
 
         //        xmlWriter.WriteStartElement("Products");
-        //        var productManufacturers = _manufacturerService.GetProductManufacturersByManufacturerId(manufacturer.Id, showHidden: true);
-        //        if (productManufacturers != null)
+        //        var productCustomers = _CustomerService.GetProductCustomersByCustomerId(Customer.Id, showHidden: true);
+        //        if (productCustomers != null)
         //        {
-        //            foreach (var productManufacturer in productManufacturers)
+        //            foreach (var productCustomer in productCustomers)
         //            {
-        //                var product = productManufacturer.Product;
+        //                var product = productCustomer.Product;
         //                if (product != null && !product.Deleted)
         //                {
-        //                    xmlWriter.WriteStartElement("ProductManufacturer");
-        //                    xmlWriter.WriteString("ProductManufacturerId", productManufacturer.Id);
-        //                    xmlWriter.WriteString("ProductId", productManufacturer.ProductId);
+        //                    xmlWriter.WriteStartElement("ProductCustomer");
+        //                    xmlWriter.WriteString("ProductCustomerId", productCustomer.Id);
+        //                    xmlWriter.WriteString("ProductId", productCustomer.ProductId);
         //                    xmlWriter.WriteString("ProductName", product.Name);
-        //                    xmlWriter.WriteString("IsFeaturedProduct", productManufacturer.IsFeaturedProduct);
-        //                    xmlWriter.WriteString("DisplayOrder", productManufacturer.DisplayOrder);
+        //                    xmlWriter.WriteString("IsFeaturedProduct", productCustomer.IsFeaturedProduct);
+        //                    xmlWriter.WriteString("DisplayOrder", productCustomer.DisplayOrder);
         //                    xmlWriter.WriteEndElement();
         //                }
         //            }
@@ -586,32 +586,32 @@ namespace Invenio.Services.ExportImport
         //}
 
         ///// <summary>
-        ///// Export manufacturers to XLSX
+        ///// Export Customers to XLSX
         ///// </summary>
-        ///// <param name="manufacturers">Manufactures</param>
-        //public virtual byte[] ExportManufacturersToXlsx(IEnumerable<Manufacturer> manufacturers)
+        ///// <param name="Customers">Manufactures</param>
+        //public virtual byte[] ExportCustomersToXlsx(IEnumerable<Customer> Customers)
         //{
         //    //property array
         //    var properties = new[]
         //    {
-        //        new PropertyByName<Manufacturer>("Id", p => p.Id),
-        //        new PropertyByName<Manufacturer>("Name", p => p.Name),
-        //        new PropertyByName<Manufacturer>("Description", p => p.Description),
-        //        new PropertyByName<Manufacturer>("ManufacturerTemplateId", p => p.ManufacturerTemplateId),
-        //        new PropertyByName<Manufacturer>("MetaKeywords", p => p.MetaKeywords, IgnoreExportManufacturerProperty()),
-        //        new PropertyByName<Manufacturer>("MetaDescription", p => p.MetaDescription, IgnoreExportManufacturerProperty()),
-        //        new PropertyByName<Manufacturer>("MetaTitle", p => p.MetaTitle, IgnoreExportManufacturerProperty()),
-        //        new PropertyByName<Manufacturer>("SeName", p => p.GetSeName(0), IgnoreExportManufacturerProperty()),
-        //        new PropertyByName<Manufacturer>("Picture", p => GetPictures(p.PictureId)),
-        //        new PropertyByName<Manufacturer>("PageSize", p => p.PageSize, IgnoreExportManufacturerProperty()),
-        //        new PropertyByName<Manufacturer>("AllowUsersToSelectPageSize", p => p.AllowUsersToSelectPageSize, IgnoreExportManufacturerProperty()),
-        //        new PropertyByName<Manufacturer>("PageSizeOptions", p => p.PageSizeOptions, IgnoreExportManufacturerProperty()),
-        //        new PropertyByName<Manufacturer>("PriceRanges", p => p.PriceRanges, IgnoreExportManufacturerProperty()),
-        //        new PropertyByName<Manufacturer>("Published", p => p.Published, IgnoreExportManufacturerProperty()),
-        //        new PropertyByName<Manufacturer>("DisplayOrder", p => p.DisplayOrder)
+        //        new PropertyByName<Customer>("Id", p => p.Id),
+        //        new PropertyByName<Customer>("Name", p => p.Name),
+        //        new PropertyByName<Customer>("Description", p => p.Description),
+        //        new PropertyByName<Customer>("CustomerTemplateId", p => p.CustomerTemplateId),
+        //        new PropertyByName<Customer>("MetaKeywords", p => p.MetaKeywords, IgnoreExportCustomerProperty()),
+        //        new PropertyByName<Customer>("MetaDescription", p => p.MetaDescription, IgnoreExportCustomerProperty()),
+        //        new PropertyByName<Customer>("MetaTitle", p => p.MetaTitle, IgnoreExportCustomerProperty()),
+        //        new PropertyByName<Customer>("SeName", p => p.GetSeName(0), IgnoreExportCustomerProperty()),
+        //        new PropertyByName<Customer>("Picture", p => GetPictures(p.PictureId)),
+        //        new PropertyByName<Customer>("PageSize", p => p.PageSize, IgnoreExportCustomerProperty()),
+        //        new PropertyByName<Customer>("AllowUsersToSelectPageSize", p => p.AllowUsersToSelectPageSize, IgnoreExportCustomerProperty()),
+        //        new PropertyByName<Customer>("PageSizeOptions", p => p.PageSizeOptions, IgnoreExportCustomerProperty()),
+        //        new PropertyByName<Customer>("PriceRanges", p => p.PriceRanges, IgnoreExportCustomerProperty()),
+        //        new PropertyByName<Customer>("Published", p => p.Published, IgnoreExportCustomerProperty()),
+        //        new PropertyByName<Customer>("DisplayOrder", p => p.DisplayOrder)
         //    };
 
-        //    return ExportToXlsx(properties, manufacturers);
+        //    return ExportToXlsx(properties, Customers);
         //}
 
         /// <summary>
@@ -700,7 +700,7 @@ namespace Invenio.Services.ExportImport
         //        xmlWriter.WriteString("SEName", product.GetSeName(0), IgnoreExportPoductProperty(p => p.Seo));
         //        xmlWriter.WriteString("AllowUserReviews", product.AllowUserReviews, IgnoreExportPoductProperty(p => p.AllowUserReviews));
         //        xmlWriter.WriteString("SKU", product.Sku);
-        //        xmlWriter.WriteString("ManufacturerPartNumber", product.ManufacturerPartNumber, IgnoreExportPoductProperty(p => p.ManufacturerPartNumber));
+        //        xmlWriter.WriteString("CustomerPartNumber", product.CustomerPartNumber, IgnoreExportPoductProperty(p => p.CustomerPartNumber));
         //        xmlWriter.WriteString("Gtin", product.Gtin, IgnoreExportPoductProperty(p => p.GTIN));
         //        xmlWriter.WriteString("IsGiftCard", product.IsGiftCard, IgnoreExportPoductProperty(p => p.IsGiftCard));
         //        xmlWriter.WriteString("GiftCardType", product.GiftCardType, IgnoreExportPoductProperty(p => p.IsGiftCard));
@@ -909,19 +909,19 @@ namespace Invenio.Services.ExportImport
         //        }
         //        xmlWriter.WriteEndElement();
 
-        //        if (!IgnoreExportPoductProperty(p => p.Manufacturers))
+        //        if (!IgnoreExportPoductProperty(p => p.Customers))
         //        {
-        //            xmlWriter.WriteStartElement("ProductManufacturers");
-        //            var productManufacturers = _manufacturerService.GetProductManufacturersByProductId(product.Id);
-        //            if (productManufacturers != null)
+        //            xmlWriter.WriteStartElement("ProductCustomers");
+        //            var productCustomers = _CustomerService.GetProductCustomersByProductId(product.Id);
+        //            if (productCustomers != null)
         //            {
-        //                foreach (var productManufacturer in productManufacturers)
+        //                foreach (var productCustomer in productCustomers)
         //                {
-        //                    xmlWriter.WriteStartElement("ProductManufacturer");
-        //                    xmlWriter.WriteString("ProductManufacturerId", productManufacturer.Id);
-        //                    xmlWriter.WriteString("ManufacturerId", productManufacturer.ManufacturerId);
-        //                    xmlWriter.WriteString("IsFeaturedProduct", productManufacturer.IsFeaturedProduct);
-        //                    xmlWriter.WriteString("DisplayOrder", productManufacturer.DisplayOrder);
+        //                    xmlWriter.WriteStartElement("ProductCustomer");
+        //                    xmlWriter.WriteString("ProductCustomerId", productCustomer.Id);
+        //                    xmlWriter.WriteString("CustomerId", productCustomer.CustomerId);
+        //                    xmlWriter.WriteString("IsFeaturedProduct", productCustomer.IsFeaturedProduct);
+        //                    xmlWriter.WriteString("DisplayOrder", productCustomer.DisplayOrder);
         //                    xmlWriter.WriteEndElement();
         //                }
         //            }
@@ -1005,7 +1005,7 @@ namespace Invenio.Services.ExportImport
         //        new PropertyByName<Product>("AllowUserReviews", p => p.AllowUserReviews, IgnoreExportPoductProperty(p => p.AllowUserReviews)),
         //        new PropertyByName<Product>("Published", p => p.Published, IgnoreExportPoductProperty(p => p.Published)),
         //        new PropertyByName<Product>("SKU", p => p.Sku),
-        //        new PropertyByName<Product>("ManufacturerPartNumber", p => p.ManufacturerPartNumber, IgnoreExportPoductProperty(p => p.ManufacturerPartNumber)),
+        //        new PropertyByName<Product>("CustomerPartNumber", p => p.CustomerPartNumber, IgnoreExportPoductProperty(p => p.CustomerPartNumber)),
         //        new PropertyByName<Product>("Gtin", p => p.Gtin, IgnoreExportPoductProperty(p => p.GTIN)),
         //        new PropertyByName<Product>("IsGiftCard", p => p.IsGiftCard, IgnoreExportPoductProperty(p => p.IsGiftCard)),
         //        new PropertyByName<Product>("GiftCardType", p => p.GiftCardTypeId, IgnoreExportPoductProperty(p => p.IsGiftCard))
@@ -1121,7 +1121,7 @@ namespace Invenio.Services.ExportImport
         //        new PropertyByName<Product>("Width", p => p.Width, IgnoreExportPoductProperty(p => p.Dimensions)),
         //        new PropertyByName<Product>("Height", p => p.Height, IgnoreExportPoductProperty(p => p.Dimensions)),
         //        new PropertyByName<Product>("Categories", GetCategories),
-        //        new PropertyByName<Product>("Manufacturers", GetManufacturers, IgnoreExportPoductProperty(p => p.Manufacturers)),
+        //        new PropertyByName<Product>("Customers", GetCustomers, IgnoreExportPoductProperty(p => p.Customers)),
         //        new PropertyByName<Product>("ProductTags", GetProductTags, IgnoreExportPoductProperty(p => p.ProductTags)),
         //        new PropertyByName<Product>("Picture1", p => GetPictures(p)[0]),
         //        new PropertyByName<Product>("Picture2", p => GetPictures(p)[1]),

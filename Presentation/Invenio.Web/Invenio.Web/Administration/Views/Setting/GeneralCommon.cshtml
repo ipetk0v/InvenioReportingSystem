@@ -33,10 +33,10 @@
 
         function toggleSitemapSettings() {
             if ($('#@Html.FieldIdFor(model => model.StoreInformationSettings.SitemapEnabled)').is(':checked')) {
-                $("#pnlSitemapIncludeCategories, #pnlSitemapIncludeManufacturers, #pnlSitemapIncludeProducts").show();
+                $("#pnlSitemapIncludeCategories, #pnlSitemapIncludeCustomers, #pnlSitemapIncludeProducts").show();
             }
             else {
-                $("#pnlSitemapIncludeCategories, #pnlSitemapIncludeManufacturers, #pnlSitemapIncludeProducts").hide();
+                $("#pnlSitemapIncludeCategories, #pnlSitemapIncludeCustomers, #pnlSitemapIncludeProducts").hide();
             }
         }
 
@@ -300,14 +300,14 @@
                                 @Html.ValidationMessageFor(model => model.StoreInformationSettings.SitemapIncludeCategories)
                             </div>
                         </div>
-                        <div class="form-group advanced-setting" id="pnlSitemapIncludeManufacturers">
+                        <div class="form-group advanced-setting" id="pnlSitemapIncludeCustomers">
                             <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.StoreInformationSettings.SitemapIncludeManufacturers_OverrideForStore, model => model.StoreInformationSettings.SitemapIncludeManufacturers, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.StoreInformationSettings.SitemapIncludeManufacturers)
+                                @Html.OverrideStoreCheckboxFor(model => model.StoreInformationSettings.SitemapIncludeCustomers_OverrideForStore, model => model.StoreInformationSettings.SitemapIncludeCustomers, Model.ActiveStoreScopeConfiguration)
+                                @Html.NopLabelFor(model => model.StoreInformationSettings.SitemapIncludeCustomers)
                             </div>
                             <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.StoreInformationSettings.SitemapIncludeManufacturers)
-                                @Html.ValidationMessageFor(model => model.StoreInformationSettings.SitemapIncludeManufacturers)
+                                @Html.NopEditorFor(model => model.StoreInformationSettings.SitemapIncludeCustomers)
+                                @Html.ValidationMessageFor(model => model.StoreInformationSettings.SitemapIncludeCustomers)
                             </div>
                         </div>
                         <div class="form-group advanced-setting" id="pnlSitemapIncludeProducts">

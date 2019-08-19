@@ -1,48 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Web.Mvc;
-using Invenio.Admin.Extensions;
-using Invenio.Admin.Helpers;
+﻿using Invenio.Admin.Extensions;
 using Invenio.Admin.Models.Common;
 using Invenio.Admin.Models.Users;
-//using Invenio.Admin.Models.ShoppingCart;
 using Invenio.Core;
 using Invenio.Core.Caching;
 using Invenio.Core.Domain.Catalog;
 using Invenio.Core.Domain.Common;
-using Invenio.Core.Domain.Users;
 using Invenio.Core.Domain.Directory;
-//using Invenio.Core.Domain.Forums;
 using Invenio.Core.Domain.Messages;
-//using Invenio.Core.Domain.Orders;
-//using Invenio.Core.Domain.Payments;
-//using Invenio.Core.Domain.Shipping;
-//using Invenio.Core.Domain.Tax;
-using Invenio.Services;
-//using Invenio.Services.Affiliates;
+using Invenio.Core.Domain.Users;
 using Invenio.Services.Authentication.External;
-using Invenio.Services.Catalog;
 using Invenio.Services.Common;
-using Invenio.Services.Users;
+using Invenio.Services.Customers;
 using Invenio.Services.Directory;
 using Invenio.Services.ExportImport;
-//using Invenio.Services.Forums;
 using Invenio.Services.Helpers;
 using Invenio.Services.Localization;
 using Invenio.Services.Logging;
 using Invenio.Services.Messages;
-//using Invenio.Services.Orders;
 using Invenio.Services.Security;
 using Invenio.Services.Stores;
-//using Invenio.Services.Tax;
-//using Invenio.Services.Vendors;
-using Invenio.Web.Framework;
+using Invenio.Services.Users;
 using Invenio.Web.Framework.Controllers;
 using Invenio.Web.Framework.Kendoui;
 using Invenio.Web.Framework.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Web.Mvc;
+using Invenio.Core.Domain.Orders;
 
 namespace Invenio.Admin.Controllers
 {
@@ -50,144 +36,102 @@ namespace Invenio.Admin.Controllers
     {
         #region Fields
 
-        private readonly IUserService _UserService;
-        //private readonly INewsLetterSubscriptionService _newsLetterSubscriptionService;
+        private readonly IUserService _userService;
         private readonly IGenericAttributeService _genericAttributeService;
-        private readonly IUserRegistrationService _UserRegistrationService;
-        private readonly IUserReportService _UserReportService;
+        private readonly IUserRegistrationService _userRegistrationService;
+        private readonly IUserReportService _userReportService;
         private readonly IDateTimeHelper _dateTimeHelper;
         private readonly ILocalizationService _localizationService;
         private readonly DateTimeSettings _dateTimeSettings;
-        //private readonly TaxSettings _taxSettings;
-        //private readonly RewardPointsSettings _rewardPointsSettings;
         private readonly ICountryService _countryService;
         private readonly IStateProvinceService _stateProvinceService;
         private readonly IAddressService _addressService;
-        private readonly UserSettings _UserSettings;
-        //private readonly ITaxService _taxService;
+        private readonly UserSettings _userSettings;
         private readonly IWorkContext _workContext;
-        //private readonly IVendorService _vendorService;
         private readonly IStoreContext _storeContext;
-        //private readonly IPriceFormatter _priceFormatter;
-        //private readonly IOrderService _orderService;
         private readonly IExportManager _exportManager;
-        private readonly IUserActivityService _UserActivityService;
-        //private readonly IBackInStockSubscriptionService _backInStockSubscriptionService;
-        //private readonly IPriceCalculationService _priceCalculationService;
-        //private readonly IProductAttributeFormatter _productAttributeFormatter;
+        private readonly IUserActivityService _userActivityService;
         private readonly IPermissionService _permissionService;
         private readonly IQueuedEmailService _queuedEmailService;
         private readonly EmailAccountSettings _emailAccountSettings;
         private readonly IEmailAccountService _emailAccountService;
-        //private readonly ForumSettings _forumSettings;
-        //private readonly IForumService _forumService;
         private readonly IOpenAuthenticationService _openAuthenticationService;
         private readonly AddressSettings _addressSettings;
         private readonly IStoreService _storeService;
-        private readonly IUserAttributeParser _UserAttributeParser;
-        private readonly IUserAttributeService _UserAttributeService;
+        private readonly IUserAttributeParser _userAttributeParser;
+        private readonly IUserAttributeService _userAttributeService;
         private readonly IAddressAttributeParser _addressAttributeParser;
         private readonly IAddressAttributeService _addressAttributeService;
         private readonly IAddressAttributeFormatter _addressAttributeFormatter;
-        //private readonly IAffiliateService _affiliateService;
         private readonly IWorkflowMessageService _workflowMessageService;
-        //private readonly IRewardPointService _rewardPointService;
         private readonly ICacheManager _cacheManager;
-        private readonly IManufacturerService _manufacturerService;
+        private readonly ICustomerService _customerService;
 
         #endregion
 
         #region Constructors
 
-        public UserController(IUserService UserService,
-            //INewsLetterSubscriptionService newsLetterSubscriptionService,
+        public UserController(IUserService userService,
             IGenericAttributeService genericAttributeService,
-            IUserRegistrationService UserRegistrationService,
-            IUserReportService UserReportService,
+            IUserRegistrationService userRegistrationService,
+            IUserReportService userReportService,
             IDateTimeHelper dateTimeHelper,
             ILocalizationService localizationService,
             DateTimeSettings dateTimeSettings,
-            //TaxSettings taxSettings, 
-            //RewardPointsSettings rewardPointsSettings,
             ICountryService countryService,
             IStateProvinceService stateProvinceService,
             IAddressService addressService,
-            UserSettings UserSettings,
-            //ITaxService taxService, 
+            UserSettings userSettings,
             IWorkContext workContext,
-            //IVendorService vendorService,
             IStoreContext storeContext,
-            //IPriceFormatter priceFormatter,
-            //IOrderService orderService, 
             IExportManager exportManager,
-            IUserActivityService UserActivityService,
-            //IBackInStockSubscriptionService backInStockSubscriptionService,
-            //IPriceCalculationService priceCalculationService,
-            //IProductAttributeFormatter productAttributeFormatter,
+            IUserActivityService userActivityService,
             IPermissionService permissionService,
             IQueuedEmailService queuedEmailService,
             EmailAccountSettings emailAccountSettings,
             IEmailAccountService emailAccountService,
-            //ForumSettings forumSettings,
-            //IForumService forumService, 
             IOpenAuthenticationService openAuthenticationService,
             AddressSettings addressSettings,
             IStoreService storeService,
-            IUserAttributeParser UserAttributeParser,
-            IUserAttributeService UserAttributeService,
+            IUserAttributeParser userAttributeParser,
+            IUserAttributeService userAttributeService,
             IAddressAttributeParser addressAttributeParser,
             IAddressAttributeService addressAttributeService,
             IAddressAttributeFormatter addressAttributeFormatter,
-            //IAffiliateService affiliateService,
             IWorkflowMessageService workflowMessageService,
-            //IRewardPointService rewardPointService,
             ICacheManager cacheManager,
-            IManufacturerService manufacturerService)
+            ICustomerService customerService)
         {
-            this._UserService = UserService;
-            //this._newsLetterSubscriptionService = newsLetterSubscriptionService;
+            this._userService = userService;
             this._genericAttributeService = genericAttributeService;
-            this._UserRegistrationService = UserRegistrationService;
-            this._UserReportService = UserReportService;
+            this._userRegistrationService = userRegistrationService;
+            this._userReportService = userReportService;
             this._dateTimeHelper = dateTimeHelper;
             this._localizationService = localizationService;
             this._dateTimeSettings = dateTimeSettings;
-            //this._taxSettings = taxSettings;
-            //this._rewardPointsSettings = rewardPointsSettings;
             this._countryService = countryService;
             this._stateProvinceService = stateProvinceService;
             this._addressService = addressService;
-            this._UserSettings = UserSettings;
-            //this._taxService = taxService;
+            this._userSettings = userSettings;
             this._workContext = workContext;
-            //this._vendorService = vendorService;
             this._storeContext = storeContext;
-            //this._priceFormatter = priceFormatter;
-            //this._orderService = orderService;
             this._exportManager = exportManager;
-            this._UserActivityService = UserActivityService;
-            //this._backInStockSubscriptionService = backInStockSubscriptionService;
-            //this._priceCalculationService = priceCalculationService;
-            //this._productAttributeFormatter = productAttributeFormatter;
+            this._userActivityService = userActivityService;
             this._permissionService = permissionService;
             this._queuedEmailService = queuedEmailService;
             this._emailAccountSettings = emailAccountSettings;
             this._emailAccountService = emailAccountService;
-            //this._forumSettings = forumSettings;
-            //this._forumService = forumService;
             this._openAuthenticationService = openAuthenticationService;
             this._addressSettings = addressSettings;
             this._storeService = storeService;
-            this._UserAttributeParser = UserAttributeParser;
-            this._UserAttributeService = UserAttributeService;
+            this._userAttributeParser = userAttributeParser;
+            this._userAttributeService = userAttributeService;
             this._addressAttributeParser = addressAttributeParser;
             this._addressAttributeService = addressAttributeService;
             this._addressAttributeFormatter = addressAttributeFormatter;
-            //this._affiliateService = affiliateService;
             this._workflowMessageService = workflowMessageService;
-            //this._rewardPointService = rewardPointService;
             this._cacheManager = cacheManager;
-            this._manufacturerService = manufacturerService;
+            this._customerService = customerService;
         }
 
         #endregion
@@ -195,17 +139,15 @@ namespace Invenio.Admin.Controllers
         #region Utilities
 
         [NonAction]
-        protected virtual string GetUserRolesNames(IList<UserRole> UserRoles, string separator = ",")
+        protected virtual string GetUserRolesNames(IList<UserRole> userRoles, string separator = ",")
         {
             var sb = new StringBuilder();
-            for (int i = 0; i < UserRoles.Count; i++)
+            for (var i = 0; i < userRoles.Count; i++)
             {
-                sb.Append(UserRoles[i].Name);
-                if (i != UserRoles.Count - 1)
-                {
-                    sb.Append(separator);
-                    sb.Append(" ");
-                }
+                sb.Append(userRoles[i].Name);
+                if (i == userRoles.Count - 1) continue;
+                sb.Append(separator);
+                sb.Append(" ");
             }
             return sb.ToString();
         }
@@ -213,40 +155,45 @@ namespace Invenio.Admin.Controllers
         [NonAction]
         protected virtual IList<RegisteredUserReportLineModel> GetReportRegisteredUsersModel()
         {
-            var report = new List<RegisteredUserReportLineModel>();
-            report.Add(new RegisteredUserReportLineModel
+            var report = new List<RegisteredUserReportLineModel>
             {
-                Period = _localizationService.GetResource("Admin.Users.Reports.RegisteredUsers.Fields.Period.7days"),
-                Users = _UserReportService.GetRegisteredUsersReport(7)
-            });
+                new RegisteredUserReportLineModel
+                {
+                    Period =
+                        _localizationService.GetResource("Admin.Users.Reports.RegisteredUsers.Fields.Period.7days"),
+                    Users = _userReportService.GetRegisteredUsersReport(7)
+                },
+                new RegisteredUserReportLineModel
+                {
+                    Period = _localizationService.GetResource(
+                        "Admin.Users.Reports.RegisteredUsers.Fields.Period.14days"),
+                    Users = _userReportService.GetRegisteredUsersReport(14)
+                },
+                new RegisteredUserReportLineModel
+                {
+                    Period =
+                        _localizationService.GetResource("Admin.Users.Reports.RegisteredUsers.Fields.Period.month"),
+                    Users = _userReportService.GetRegisteredUsersReport(30)
+                },
+                new RegisteredUserReportLineModel
+                {
+                    Period = _localizationService.GetResource("Admin.Users.Reports.RegisteredUsers.Fields.Period.year"),
+                    Users = _userReportService.GetRegisteredUsersReport(365)
+                }
+            };
 
-            report.Add(new RegisteredUserReportLineModel
-            {
-                Period = _localizationService.GetResource("Admin.Users.Reports.RegisteredUsers.Fields.Period.14days"),
-                Users = _UserReportService.GetRegisteredUsersReport(14)
-            });
-            report.Add(new RegisteredUserReportLineModel
-            {
-                Period = _localizationService.GetResource("Admin.Users.Reports.RegisteredUsers.Fields.Period.month"),
-                Users = _UserReportService.GetRegisteredUsersReport(30)
-            });
-            report.Add(new RegisteredUserReportLineModel
-            {
-                Period = _localizationService.GetResource("Admin.Users.Reports.RegisteredUsers.Fields.Period.year"),
-                Users = _UserReportService.GetRegisteredUsersReport(365)
-            });
 
             return report;
         }
 
         [NonAction]
-        protected virtual IList<UserModel.AssociatedExternalAuthModel> GetAssociatedExternalAuthRecords(User User)
+        protected virtual IList<UserModel.AssociatedExternalAuthModel> GetAssociatedExternalAuthRecords(User user)
         {
-            if (User == null)
-                throw new ArgumentNullException("User");
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
 
             var result = new List<UserModel.AssociatedExternalAuthModel>();
-            foreach (var record in _openAuthenticationService.GetExternalIdentifiersFor(User))
+            foreach (var record in _openAuthenticationService.GetExternalIdentifiersFor(user))
             {
                 var method = _openAuthenticationService.LoadExternalAuthenticationMethodBySystemName(record.ProviderSystemName);
                 if (method == null)
@@ -265,34 +212,34 @@ namespace Invenio.Admin.Controllers
         }
 
         [NonAction]
-        protected virtual UserModel PrepareUserModelForList(User User)
+        protected virtual UserModel PrepareUserModelForList(User user)
         {
             return new UserModel
             {
-                Id = User.Id,
-                Email = User.IsRegistered() ? User.Email : _localizationService.GetResource("Admin.Users.Guest"),
-                Username = User.Username,
-                FullName = User.GetFullName(),
-                Company = User.GetAttribute<string>(SystemUserAttributeNames.Company),
-                Phone = User.GetAttribute<string>(SystemUserAttributeNames.Phone),
-                ZipPostalCode = User.GetAttribute<string>(SystemUserAttributeNames.ZipPostalCode),
-                UserRoleNames = GetUserRolesNames(User.UserRoles.ToList()),
-                Active = User.Active,
-                CreatedOn = _dateTimeHelper.ConvertToUserTime(User.CreatedOnUtc, DateTimeKind.Utc),
-                LastActivityDate = _dateTimeHelper.ConvertToUserTime(User.LastActivityDateUtc, DateTimeKind.Utc),
+                Id = user.Id,
+                Email = user.IsRegistered() ? user.Email : _localizationService.GetResource("Admin.Users.Guest"),
+                Username = user.Username,
+                FullName = user.GetFullName(),
+                Company = user.GetAttribute<string>(SystemUserAttributeNames.Company),
+                Phone = user.GetAttribute<string>(SystemUserAttributeNames.Phone),
+                ZipPostalCode = user.GetAttribute<string>(SystemUserAttributeNames.ZipPostalCode),
+                UserRoleNames = GetUserRolesNames(user.UserRoles.ToList()),
+                Active = user.Active,
+                CreatedOn = _dateTimeHelper.ConvertToUserTime(user.CreatedOnUtc, DateTimeKind.Utc),
+                LastActivityDate = _dateTimeHelper.ConvertToUserTime(user.LastActivityDateUtc, DateTimeKind.Utc),
             };
         }
 
         [NonAction]
-        protected virtual string ValidateUserRoles(IList<UserRole> UserRoles)
+        protected virtual string ValidateUserRoles(IList<UserRole> userRoles)
         {
-            if (UserRoles == null)
-                throw new ArgumentNullException("UserRoles");
+            if (userRoles == null)
+                throw new ArgumentNullException(nameof(userRoles));
 
             //ensure a User is not added to both 'Guests' and 'Registered' User roles
             //ensure that a User is in at least one required role ('Guests' and 'Registered')
-            bool isInGuestsRole = UserRoles.FirstOrDefault(cr => cr.SystemName == SystemUserRoleNames.Guests) != null;
-            bool isInRegisteredRole = UserRoles.FirstOrDefault(cr => cr.SystemName == SystemUserRoleNames.Registered) != null;
+            var isInGuestsRole = userRoles.FirstOrDefault(cr => cr.SystemName == SystemUserRoleNames.Guests) != null;
+            var isInRegisteredRole = userRoles.FirstOrDefault(cr => cr.SystemName == SystemUserRoleNames.Registered) != null;
             if (isInGuestsRole && isInRegisteredRole)
                 return _localizationService.GetResource("Admin.Users.Users.GuestsAndRegisteredRolesError");
             if (!isInGuestsRole && !isInRegisteredRole)
@@ -302,27 +249,11 @@ namespace Invenio.Admin.Controllers
             return "";
         }
 
-        //[NonAction]
-        //protected virtual void PrepareVendorsModel(UserModel model)
-        //{
-        //    if (model == null)
-        //        throw new ArgumentNullException("model");
-
-        //    model.AvailableVendors.Add(new SelectListItem
-        //    {
-        //        Text = _localizationService.GetResource("Admin.Users.Users.Fields.Vendor.None"),
-        //        Value = "0"
-        //    });
-        //    var vendors = SelectListHelper.GetVendorList(_vendorService, _cacheManager, true);
-        //    foreach (var v in vendors)
-        //        model.AvailableVendors.Add(v);
-        //}
-
         [NonAction]
-        protected virtual void PrepareUserAttributeModel(UserModel model, User User)
+        protected virtual void PrepareUserAttributeModel(UserModel model, User user)
         {
-            var UserAttributes = _UserAttributeService.GetAllUserAttributes();
-            foreach (var attribute in UserAttributes)
+            var userAttributes = _userAttributeService.GetAllUserAttributes();
+            foreach (var attribute in userAttributes)
             {
                 var attributeModel = new UserModel.UserAttributeModel
                 {
@@ -335,7 +266,7 @@ namespace Invenio.Admin.Controllers
                 if (attribute.ShouldHaveValues())
                 {
                     //values
-                    var attributeValues = _UserAttributeService.GetUserAttributeValues(attribute.Id);
+                    var attributeValues = _userAttributeService.GetUserAttributeValues(attribute.Id);
                     foreach (var attributeValue in attributeValues)
                     {
                         var attributeValueModel = new UserModel.UserAttributeValueModel
@@ -350,9 +281,9 @@ namespace Invenio.Admin.Controllers
 
 
                 //set already selected attributes
-                if (User != null)
+                if (user != null)
                 {
-                    var selectedUserAttributes = User.GetAttribute<string>(SystemUserAttributeNames.CustomUserAttributes, _genericAttributeService);
+                    var selectedUserAttributes = user.GetAttribute<string>(SystemUserAttributeNames.CustomUserAttributes, _genericAttributeService);
                     switch (attribute.AttributeControlType)
                     {
                         case AttributeControlType.DropdownList:
@@ -366,7 +297,7 @@ namespace Invenio.Admin.Controllers
                                         item.IsPreSelected = false;
 
                                     //select new values
-                                    var selectedValues = _UserAttributeParser.ParseUserAttributeValues(selectedUserAttributes);
+                                    var selectedValues = _userAttributeParser.ParseUserAttributeValues(selectedUserAttributes);
                                     foreach (var attributeValue in selectedValues)
                                         foreach (var item in attributeModel.Values)
                                             if (attributeValue.Id == item.Id)
@@ -385,7 +316,7 @@ namespace Invenio.Admin.Controllers
                             {
                                 if (!String.IsNullOrEmpty(selectedUserAttributes))
                                 {
-                                    var enteredText = _UserAttributeParser.ParseValues(selectedUserAttributes, attribute.Id);
+                                    var enteredText = _userAttributeParser.ParseValues(selectedUserAttributes, attribute.Id);
                                     if (enteredText.Any())
                                         attributeModel.DefaultValue = enteredText[0];
                                 }
@@ -409,24 +340,24 @@ namespace Invenio.Admin.Controllers
         protected virtual string ParseCustomUserAttributes(FormCollection form)
         {
             if (form == null)
-                throw new ArgumentNullException("form");
+                throw new ArgumentNullException(nameof(form));
 
             string attributesXml = "";
-            var UserAttributes = _UserAttributeService.GetAllUserAttributes();
-            foreach (var attribute in UserAttributes)
+            var userAttributes = _userAttributeService.GetAllUserAttributes();
+            foreach (var attribute in userAttributes)
             {
-                string controlId = string.Format("User_attribute_{0}", attribute.Id);
+                string controlId = $"User_attribute_{attribute.Id}";
                 switch (attribute.AttributeControlType)
                 {
                     case AttributeControlType.DropdownList:
                     case AttributeControlType.RadioList:
                         {
                             var ctrlAttributes = form[controlId];
-                            if (!String.IsNullOrEmpty(ctrlAttributes))
+                            if (!string.IsNullOrEmpty(ctrlAttributes))
                             {
-                                int selectedAttributeId = int.Parse(ctrlAttributes);
+                                var selectedAttributeId = int.Parse(ctrlAttributes);
                                 if (selectedAttributeId > 0)
-                                    attributesXml = _UserAttributeParser.AddUserAttribute(attributesXml,
+                                    attributesXml = _userAttributeParser.AddUserAttribute(attributesXml,
                                         attribute, selectedAttributeId.ToString());
                             }
                         }
@@ -434,13 +365,13 @@ namespace Invenio.Admin.Controllers
                     case AttributeControlType.Checkboxes:
                         {
                             var cblAttributes = form[controlId];
-                            if (!String.IsNullOrEmpty(cblAttributes))
+                            if (!string.IsNullOrEmpty(cblAttributes))
                             {
                                 foreach (var item in cblAttributes.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                                 {
-                                    int selectedAttributeId = int.Parse(item);
+                                    var selectedAttributeId = int.Parse(item);
                                     if (selectedAttributeId > 0)
-                                        attributesXml = _UserAttributeParser.AddUserAttribute(attributesXml,
+                                        attributesXml = _userAttributeParser.AddUserAttribute(attributesXml,
                                             attribute, selectedAttributeId.ToString());
                                 }
                             }
@@ -449,13 +380,13 @@ namespace Invenio.Admin.Controllers
                     case AttributeControlType.ReadonlyCheckboxes:
                         {
                             //load read-only (already server-side selected) values
-                            var attributeValues = _UserAttributeService.GetUserAttributeValues(attribute.Id);
+                            var attributeValues = _userAttributeService.GetUserAttributeValues(attribute.Id);
                             foreach (var selectedAttributeId in attributeValues
                                 .Where(v => v.IsPreSelected)
                                 .Select(v => v.Id)
                                 .ToList())
                             {
-                                attributesXml = _UserAttributeParser.AddUserAttribute(attributesXml,
+                                attributesXml = _userAttributeParser.AddUserAttribute(attributesXml,
                                             attribute, selectedAttributeId.ToString());
                             }
                         }
@@ -464,10 +395,10 @@ namespace Invenio.Admin.Controllers
                     case AttributeControlType.MultilineTextbox:
                         {
                             var ctrlAttributes = form[controlId];
-                            if (!String.IsNullOrEmpty(ctrlAttributes))
+                            if (!string.IsNullOrEmpty(ctrlAttributes))
                             {
-                                string enteredText = ctrlAttributes.Trim();
-                                attributesXml = _UserAttributeParser.AddUserAttribute(attributesXml,
+                                var enteredText = ctrlAttributes.Trim();
+                                attributesXml = _userAttributeParser.AddUserAttribute(attributesXml,
                                     attribute, enteredText);
                             }
                         }
@@ -489,6 +420,7 @@ namespace Invenio.Admin.Controllers
         protected virtual void PrepareUserModel(UserModel model, User User, bool excludeProperties)
         {
             var allStores = _storeService.GetAllStores();
+            var newsletterSubscriptionStoreIds = new List<int>();
             if (User != null)
             {
                 model.Id = User.Id;
@@ -506,17 +438,8 @@ namespace Invenio.Admin.Controllers
                     else
                         model.RegisteredInStore = allStores.First(s => s.Id == User.RegisteredInStoreId).Name;
 
-                    //var affiliate = _affiliateService.GetAffiliateById(User.AffiliateId);
-                    //if (affiliate != null)
-                    //{
-                    //    model.AffiliateId = affiliate.Id;
-                    //    model.AffiliateName = affiliate.GetFullName();
-                    //}
-
                     model.TimeZoneId = User.GetAttribute<string>(SystemUserAttributeNames.TimeZoneId);
                     model.VatNumber = User.GetAttribute<string>(SystemUserAttributeNames.VatNumber);
-                    //model.VatNumberStatusNote = ((VatNumberStatus)User.GetAttribute<int>(SystemUserAttributeNames.VatNumberStatusId))
-                    //    .GetLocalizedEnum(_localizationService, _workContext);
                     model.CreatedOn = _dateTimeHelper.ConvertToUserTime(User.CreatedOnUtc, DateTimeKind.Utc);
                     model.LastActivityDate = _dateTimeHelper.ConvertToUserTime(User.LastActivityDateUtc, DateTimeKind.Utc);
                     model.LastIpAddress = User.LastIpAddress;
@@ -524,20 +447,15 @@ namespace Invenio.Admin.Controllers
 
                     model.SelectedUserRoleIds = User.UserRoles.Select(cr => cr.Id).ToList();
 
-                    model.SelectedManufacturerIds = User.Manufacturers.Select(x => x.Id).ToList();
+                    model.SelectedCustomerIds = User.Customers.Select(x => x.Id).ToList();
 
-                    model.SelectedManufacturerRegionIds = User.ManufacturerRegions.Select(x => x.Id).ToList();
+                    model.SelectedCustomerRegionIds = User.CustomerRegions.Select(x => x.Id).ToList();
 
                     //newsletter subscriptions
-                    if (!String.IsNullOrEmpty(User.Email))
+                    if (!string.IsNullOrEmpty(User.Email))
                     {
-                        var newsletterSubscriptionStoreIds = new List<int>();
                         foreach (var store in allStores)
                         {
-                            //var newsletterSubscription = _newsLetterSubscriptionService
-                            //    .GetNewsLetterSubscriptionByEmailAndStoreId(User.Email, store.Id);
-                            //if (newsletterSubscription != null)
-                            //    newsletterSubscriptionStoreIds.Add(store.Id);
                             model.SelectedNewsletterSubscriptionStoreIds = newsletterSubscriptionStoreIds.ToArray();
                         }
                     }
@@ -559,7 +477,7 @@ namespace Invenio.Admin.Controllers
                 }
             }
 
-            model.UsernamesEnabled = _UserSettings.UsernamesEnabled;
+            model.UsernamesEnabled = _userSettings.UsernamesEnabled;
             model.AllowUsersToSetTimeZone = _dateTimeSettings.AllowUsersToSetTimeZone;
             foreach (var tzi in _dateTimeHelper.GetSystemTimeZones())
                 model.AvailableTimeZones.Add(new SelectListItem { Text = tzi.DisplayName, Value = tzi.Id, Selected = (tzi.Id == model.TimeZoneId) });
@@ -577,20 +495,20 @@ namespace Invenio.Admin.Controllers
             //User attributes
             PrepareUserAttributeModel(model, User);
 
-            model.GenderEnabled = _UserSettings.GenderEnabled;
-            model.DateOfBirthEnabled = _UserSettings.DateOfBirthEnabled;
-            model.CompanyEnabled = _UserSettings.CompanyEnabled;
-            model.StreetAddressEnabled = _UserSettings.StreetAddressEnabled;
-            model.StreetAddress2Enabled = _UserSettings.StreetAddress2Enabled;
-            model.ZipPostalCodeEnabled = _UserSettings.ZipPostalCodeEnabled;
-            model.CityEnabled = _UserSettings.CityEnabled;
-            model.CountryEnabled = _UserSettings.CountryEnabled;
-            model.StateProvinceEnabled = _UserSettings.StateProvinceEnabled;
-            model.PhoneEnabled = _UserSettings.PhoneEnabled;
-            model.FaxEnabled = _UserSettings.FaxEnabled;
+            model.GenderEnabled = _userSettings.GenderEnabled;
+            model.DateOfBirthEnabled = _userSettings.DateOfBirthEnabled;
+            model.CompanyEnabled = _userSettings.CompanyEnabled;
+            model.StreetAddressEnabled = _userSettings.StreetAddressEnabled;
+            model.StreetAddress2Enabled = _userSettings.StreetAddress2Enabled;
+            model.ZipPostalCodeEnabled = _userSettings.ZipPostalCodeEnabled;
+            model.CityEnabled = _userSettings.CityEnabled;
+            model.CountryEnabled = _userSettings.CountryEnabled;
+            model.StateProvinceEnabled = _userSettings.StateProvinceEnabled;
+            model.PhoneEnabled = _userSettings.PhoneEnabled;
+            model.FaxEnabled = _userSettings.FaxEnabled;
 
             //countries and states
-            if (_UserSettings.CountryEnabled)
+            if (_userSettings.CountryEnabled)
             {
                 model.AvailableCountries.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Address.SelectCountry"), Value = "0" });
                 foreach (var c in _countryService.GetAllCountries(showHidden: true))
@@ -603,7 +521,7 @@ namespace Invenio.Admin.Controllers
                     });
                 }
 
-                if (_UserSettings.StateProvinceEnabled)
+                if (_userSettings.StateProvinceEnabled)
                 {
                     //states
                     var states = _stateProvinceService.GetStateProvincesByCountryId(model.CountryId).ToList();
@@ -635,48 +553,122 @@ namespace Invenio.Admin.Controllers
                 .ToList();
 
             //User roles
-            var allRoles = _UserService.GetAllUserRoles(true);
+            var allRoles = _userService.GetAllUserRoles(true);
             var adminRole = allRoles.FirstOrDefault(c => c.SystemName == SystemUserRoleNames.Registered);
             //precheck Registered Role as a default role while creating a new User through admin
             if (User == null && adminRole != null)
             {
                 model.SelectedUserRoleIds.Add(adminRole.Id);
             }
-            foreach (var role in allRoles)
-            {
-                model.AvailableUserRoles.Add(new SelectListItem
-                {
-                    Text = role.Name,
-                    Value = role.Id.ToString(),
-                    Selected = model.SelectedUserRoleIds.Contains(role.Id)
-                });
-            }
 
-            //manufacturer - trqbva da ima filtyr sprqmo rolqta
-            foreach (var man in _manufacturerService.GetAllManufacturers())
+            if (_workContext.CurrentUser.IsAdmin())
             {
-                model.AvailableManufacturers.Add(new SelectListItem
+                foreach (var role in allRoles)
                 {
-                    Text = man.Name,
-                    Value = man.Id.ToString(),
-                    Selected = model.SelectedManufacturerIds.Contains(model.Id)
-                });
-            }
-
-            //manufacturer region
-            var stateProvinces = _manufacturerService.GetAllManufacturers().Select(x => x.Country.StateProvinces).Distinct();
-            foreach (var stateProvince in stateProvinces)
-            {
-                foreach (var region in stateProvince)
-                {
-                    model.AvailableManufacturerRegions.Add(new SelectListItem
+                    model.AvailableUserRoles.Add(new SelectListItem
                     {
-                        Text = region.Name,
-                        Value = region.Id.ToString(),
-                        Selected = model.SelectedManufacturerRegionIds.Contains(model.Id)
+                        Text = role.Name,
+                        Value = role.Id.ToString(),
+                        Selected = model.SelectedUserRoleIds.Contains(role.Id)
                     });
                 }
             }
+            else
+            {
+                var topRoleId = _workContext.CurrentUser.GetUserRoleIds().Max();
+                foreach (var role in allRoles.Where(x => x.Id < topRoleId))
+                {
+                    model.AvailableUserRoles.Add(new SelectListItem
+                    {
+                        Text = role.Name,
+                        Value = role.Id.ToString(),
+                        Selected = model.SelectedUserRoleIds.Contains(role.Id)
+                    });
+                }
+            }
+
+            if (_workContext.CurrentUser.IsAdmin())
+            {
+                var customers = _customerService.GetAllCustomers();
+                foreach (var customer in customers)
+                {
+                    model.AvailableCustomers.Add(new SelectListItem
+                    {
+                        Text = customer.Name,
+                        Value = customer.Id.ToString(),
+                        Selected = model.SelectedCustomerIds.Contains(model.Id)
+                    });
+                }
+
+                var stateProvinces = _customerService
+                                       .GetAllCustomers()
+                                       .Select(x => x.Country.StateProvinces)
+                                       .Distinct();
+
+                foreach (var stateProvince in stateProvinces)
+                {
+                    foreach (var region in stateProvince)
+                    {
+                        model.AvailableCustomerRegions.Add(new SelectListItem
+                        {
+                            Text = region.Name,
+                            Value = region.Id.ToString(),
+                            Selected = model.SelectedCustomerRegionIds.Contains(model.Id)
+                        });
+                    }
+                }
+            }
+            else
+            {
+                //Customer
+                foreach (var customer in _workContext.CurrentUser.Customers)
+                {
+                    foreach (var man in _customerService.GetAllCustomers().Where(x => x.Id == customer.Id))
+                    {
+                        model.AvailableCustomers.Add(new SelectListItem
+                        {
+                            Text = man.Name,
+                            Value = man.Id.ToString(),
+                            Selected = model.SelectedCustomerIds.Contains(model.Id)
+                        });
+                    }
+                }
+
+                //Customer region
+                foreach (var cr in _workContext.CurrentUser.CustomerRegions)
+                {
+                    var stateProvinces = _customerService
+                        .GetAllCustomers(countryId: cr.CountryId, stateId: cr.Id)
+                        .Select(x => x.StateProvince)
+                        //.Where(x => x.StateProvinceId == cr.Id)
+                        //.Select(x => x.Country.StateProvinces.Where(a => a.Id == cr.Id).Distinct())
+                        .Distinct();
+
+                    //foreach (var stateProvince in stateProvinces)
+                    //{
+                    foreach (var region in stateProvinces)
+                    {
+                        model.AvailableCustomerRegions.Add(new SelectListItem
+                        {
+                            Text = region.Name,
+                            Value = region.Id.ToString(),
+                            Selected = model.SelectedCustomerRegionIds.Contains(model.Id)
+                        });
+                    }
+                    //}
+
+                    foreach (var man in _customerService.GetAllCustomers(countryId: cr.CountryId, stateId: cr.Id))
+                    {
+                        model.AvailableCustomers.Add(new SelectListItem
+                        {
+                            Text = man.Name,
+                            Value = man.Id.ToString(),
+                            Selected = model.SelectedCustomerIds.Contains(model.Id)
+                        });
+                    }
+                }
+            }
+
 
             //reward points history
             if (User != null)
@@ -709,7 +701,7 @@ namespace Invenio.Admin.Controllers
             //1. "admin approval" registration method
             //2. already created User
             //3. registered
-            model.AllowSendingOfWelcomeMessage = _UserSettings.UserRegistrationType == UserRegistrationType.AdminApproval &&
+            model.AllowSendingOfWelcomeMessage = _userSettings.UserRegistrationType == UserRegistrationType.AdminApproval &&
                 User != null &&
                 User.IsRegistered();
             //sending of the activation message
@@ -717,19 +709,19 @@ namespace Invenio.Admin.Controllers
             //2. already created User
             //3. registered
             //4. not active
-            model.AllowReSendingOfActivationMessage = _UserSettings.UserRegistrationType == UserRegistrationType.EmailValidation &&
+            model.AllowReSendingOfActivationMessage = _userSettings.UserRegistrationType == UserRegistrationType.EmailValidation &&
                 User != null &&
                 User.IsRegistered() &&
                 !User.Active;
         }
 
         [NonAction]
-        protected virtual void PrepareAddressModel(UserAddressModel model, Address address, User User, bool excludeProperties)
+        protected virtual void PrepareAddressModel(UserAddressModel model, Address address, User user, bool excludeProperties)
         {
-            if (User == null)
-                throw new ArgumentNullException("User");
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
 
-            model.UserId = User.Id;
+            model.UserId = user.Id;
             if (address != null)
             {
                 if (!excludeProperties)
@@ -782,11 +774,11 @@ namespace Invenio.Admin.Controllers
         }
 
         [NonAction]
-        private bool SecondAdminAccountExists(User User)
+        private bool SecondAdminAccountExists(User user)
         {
-            var Users = _UserService.GetAllUsers(UserRoleIds: new[] { _UserService.GetUserRoleBySystemName(SystemUserRoleNames.Administrators).Id });
+            var users = _userService.GetAllUsers(UserRoleIds: new[] { _userService.GetUserRoleBySystemName(SystemUserRoleNames.Administrators).Id });
 
-            return Users.Any(c => c.Active && c.Id != User.Id);
+            return users.Any(c => c.Active && c.Id != user.Id);
         }
         #endregion
 
@@ -803,25 +795,41 @@ namespace Invenio.Admin.Controllers
                 return AccessDeniedView();
 
             //load registered Users by default
-            var defaultRoleIds = new List<int> { _UserService.GetUserRoleBySystemName(SystemUserRoleNames.Registered).Id };
+            var defaultRoleIds = new List<int> { _userService.GetUserRoleBySystemName(SystemUserRoleNames.Registered).Id };
             var model = new UserListModel
             {
-                UsernamesEnabled = _UserSettings.UsernamesEnabled,
-                DateOfBirthEnabled = _UserSettings.DateOfBirthEnabled,
-                CompanyEnabled = _UserSettings.CompanyEnabled,
-                PhoneEnabled = _UserSettings.PhoneEnabled,
-                ZipPostalCodeEnabled = _UserSettings.ZipPostalCodeEnabled,
+                UsernamesEnabled = _userSettings.UsernamesEnabled,
+                DateOfBirthEnabled = _userSettings.DateOfBirthEnabled,
+                CompanyEnabled = _userSettings.CompanyEnabled,
+                PhoneEnabled = _userSettings.PhoneEnabled,
+                ZipPostalCodeEnabled = _userSettings.ZipPostalCodeEnabled,
                 SearchUserRoleIds = defaultRoleIds,
             };
-            var allRoles = _UserService.GetAllUserRoles(true);
-            foreach (var role in allRoles)
+            var allRoles = _userService.GetAllUserRoles(true);
+            if (_workContext.CurrentUser.IsAdmin())
             {
-                model.AvailableUserRoles.Add(new SelectListItem
+                foreach (var role in allRoles)
                 {
-                    Text = role.Name,
-                    Value = role.Id.ToString(),
-                    Selected = defaultRoleIds.Any(x => x == role.Id)
-                });
+                    model.AvailableUserRoles.Add(new SelectListItem
+                    {
+                        Text = role.Name,
+                        Value = role.Id.ToString(),
+                        Selected = defaultRoleIds.Any(x => x == role.Id)
+                    });
+                }
+            }
+            else
+            {
+                var topRoleId = _workContext.CurrentUser.GetUserRoleIds().Max();
+                foreach (var role in allRoles.Where(x => x.Id < topRoleId))
+                {
+                    model.AvailableUserRoles.Add(new SelectListItem
+                    {
+                        Text = role.Name,
+                        Value = role.Id.ToString(),
+                        Selected = defaultRoleIds.Any(x => x == role.Id)
+                    });
+                }
             }
 
             return View(model);
@@ -842,7 +850,34 @@ namespace Invenio.Admin.Controllers
             if (!String.IsNullOrWhiteSpace(model.SearchMonthOfBirth))
                 searchMonthOfBirth = Convert.ToInt32(model.SearchMonthOfBirth);
 
-            var Users = _UserService.GetAllUsers(
+            if (_workContext.CurrentUser.IsAdmin())
+            {
+                var users2 = _userService.GetAllUsers(
+                    UserRoleIds: searchUserRoleIds,
+                    email: model.SearchEmail,
+                    username: model.SearchUsername,
+                    firstName: model.SearchFirstName,
+                    lastName: model.SearchLastName,
+                    dayOfBirth: searchDayOfBirth,
+                    monthOfBirth: searchMonthOfBirth,
+                    company: model.SearchCompany,
+                    phone: model.SearchPhone,
+                    zipPostalCode: model.SearchZipPostalCode,
+                    ipAddress: model.SearchIpAddress,
+                    loadOnlyWithShoppingCart: false,
+                    pageIndex: command.Page - 1,
+                    pageSize: command.PageSize);
+
+                var gridModel2 = new DataSourceResult
+                {
+                    Data = users2.Select(PrepareUserModelForList),
+                    Total = users2.TotalCount
+                };
+
+                return Json(gridModel2);
+            }
+
+            var users = _userService.GetAllUsers(
                 UserRoleIds: searchUserRoleIds,
                 email: model.SearchEmail,
                 username: model.SearchUsername,
@@ -854,13 +889,40 @@ namespace Invenio.Admin.Controllers
                 phone: model.SearchPhone,
                 zipPostalCode: model.SearchZipPostalCode,
                 ipAddress: model.SearchIpAddress,
-                loadOnlyWithShoppingCart: false,
-                pageIndex: command.Page - 1,
-                pageSize: command.PageSize);
+                loadOnlyWithShoppingCart: false);
+
+            var filtretUsers = new List<User>();
+            if (_workContext.CurrentUser.CustomerRegions.Any())
+            {
+                foreach (var region in _workContext.CurrentUser.CustomerRegions)
+                {
+                    filtretUsers.AddRange(users.Where(x => x.CustomerRegions.Contains(region)));
+
+                    foreach (var user in users)
+                    {
+                        foreach (var customer in user.Customers)
+                        {
+                            if (customer.StateProvinceId == region.Id)
+                            {
+                                filtretUsers.Add(user);
+                            }
+                        }
+                    }
+                }
+            }
+            //filtretUsers.AddRange(from user in users from cr in _workContext.CurrentUser.CustomerRegions where user.CustomerRegions.Contains(cr) select user);
+
+            if (_workContext.CurrentUser.Customers.Any())
+                filtretUsers.AddRange(from user in users from c in _workContext.CurrentUser.Customers where user.Customers.Contains(c) select user);
+
+            var topRoleId = _workContext.CurrentUser.GetUserRoleIds().Max();
+            var result = filtretUsers.Distinct().Where(x => x.UserRoles.Select(ur => ur.Id).Max() < topRoleId).ToList();
+
+            var pagedList = new PagedList<User>(result, command.Page - 1, command.PageSize);
             var gridModel = new DataSourceResult
             {
-                Data = Users.Select(PrepareUserModelForList),
-                Total = Users.TotalCount
+                Data = pagedList.Select(PrepareUserModelForList),
+                Total = pagedList.TotalCount
             };
 
             return Json(gridModel);
@@ -888,19 +950,19 @@ namespace Invenio.Admin.Controllers
 
             if (!String.IsNullOrWhiteSpace(model.Email))
             {
-                var cust2 = _UserService.GetUserByEmail(model.Email);
+                var cust2 = _userService.GetUserByEmail(model.Email);
                 if (cust2 != null)
                     ModelState.AddModelError("", "Email is already registered");
             }
-            if (!String.IsNullOrWhiteSpace(model.Username) & _UserSettings.UsernamesEnabled)
+            if (!String.IsNullOrWhiteSpace(model.Username) & _userSettings.UsernamesEnabled)
             {
-                var cust2 = _UserService.GetUserByUsername(model.Username);
+                var cust2 = _userService.GetUserByUsername(model.Username);
                 if (cust2 != null)
                     ModelState.AddModelError("", "Username is already registered");
             }
 
             //validate User roles
-            var allUserRoles = _UserService.GetAllUserRoles(true);
+            var allUserRoles = _userService.GetAllUserRoles(true);
             var newUserRoles = new List<UserRole>();
             foreach (var UserRole in allUserRoles)
                 if (model.SelectedUserRoleIds.Contains(UserRole.Id))
@@ -920,11 +982,11 @@ namespace Invenio.Admin.Controllers
             }
 
             //custom User attributes
-            var UserAttributesXml = ParseCustomUserAttributes(form);
+            var userAttributesXml = ParseCustomUserAttributes(form);
             if (newUserRoles.Any() && newUserRoles.FirstOrDefault(c => c.SystemName == SystemUserRoleNames.Registered) != null)
             {
-                var UserAttributeWarnings = _UserAttributeParser.GetAttributeWarnings(UserAttributesXml);
-                foreach (var error in UserAttributeWarnings)
+                var userAttributeWarnings = _userAttributeParser.GetAttributeWarnings(userAttributesXml);
+                foreach (var error in userAttributeWarnings)
                 {
                     ModelState.AddModelError("", error);
                 }
@@ -937,7 +999,7 @@ namespace Invenio.Admin.Controllers
 
             if (ModelState.IsValid && !string.IsNullOrEmpty(model.Password))
             {
-                var User = new User
+                var user = new User
                 {
                     UserGuid = Guid.NewGuid(),
                     Email = model.Email,
@@ -950,80 +1012,44 @@ namespace Invenio.Admin.Controllers
                     LastActivityDateUtc = DateTime.UtcNow,
                     RegisteredInStoreId = _storeContext.CurrentStore.Id
                 };
-                _UserService.InsertUser(User);
+                _userService.InsertUser(user);
 
                 //form fields
                 if (_dateTimeSettings.AllowUsersToSetTimeZone)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.TimeZoneId, model.TimeZoneId);
-                if (_UserSettings.GenderEnabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.Gender, model.Gender);
-                _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.FirstName, model.FirstName);
-                _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.LastName, model.LastName);
-                if (_UserSettings.DateOfBirthEnabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.DateOfBirth, model.DateOfBirth);
-                if (_UserSettings.CompanyEnabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.Company, model.Company);
-                if (_UserSettings.StreetAddressEnabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.StreetAddress, model.StreetAddress);
-                if (_UserSettings.StreetAddress2Enabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.StreetAddress2, model.StreetAddress2);
-                if (_UserSettings.ZipPostalCodeEnabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.ZipPostalCode, model.ZipPostalCode);
-                if (_UserSettings.CityEnabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.City, model.City);
-                if (_UserSettings.CountryEnabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.CountryId, model.CountryId);
-                if (_UserSettings.CountryEnabled && _UserSettings.StateProvinceEnabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.StateProvinceId, model.StateProvinceId);
-                if (_UserSettings.PhoneEnabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.Phone, model.Phone);
-                if (_UserSettings.FaxEnabled)
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.Fax, model.Fax);
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.TimeZoneId, model.TimeZoneId);
+                if (_userSettings.GenderEnabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.Gender, model.Gender);
+                _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.FirstName, model.FirstName);
+                _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.LastName, model.LastName);
+                if (_userSettings.DateOfBirthEnabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.DateOfBirth, model.DateOfBirth);
+                if (_userSettings.CompanyEnabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.Company, model.Company);
+                if (_userSettings.StreetAddressEnabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.StreetAddress, model.StreetAddress);
+                if (_userSettings.StreetAddress2Enabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.StreetAddress2, model.StreetAddress2);
+                if (_userSettings.ZipPostalCodeEnabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.ZipPostalCode, model.ZipPostalCode);
+                if (_userSettings.CityEnabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.City, model.City);
+                if (_userSettings.CountryEnabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.CountryId, model.CountryId);
+                if (_userSettings.CountryEnabled && _userSettings.StateProvinceEnabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.StateProvinceId, model.StateProvinceId);
+                if (_userSettings.PhoneEnabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.Phone, model.Phone);
+                if (_userSettings.FaxEnabled)
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.Fax, model.Fax);
 
                 //custom User attributes
-                _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.CustomUserAttributes, UserAttributesXml);
-
-
-                //newsletter subscriptions
-                //if (!String.IsNullOrEmpty(User.Email))
-                //{
-                //    var allStores = _storeService.GetAllStores();
-                //    foreach (var store in allStores)
-                //    {
-                //        //var newsletterSubscription = _newsLetterSubscriptionService
-                //        //    .GetNewsLetterSubscriptionByEmailAndStoreId(User.Email, store.Id);
-                //        if (model.SelectedNewsletterSubscriptionStoreIds != null &&
-                //            model.SelectedNewsletterSubscriptionStoreIds.Contains(store.Id))
-                //        {
-                //            //subscribed
-                //            //if (newsletterSubscription == null)
-                //            //{
-                //            //    _newsLetterSubscriptionService.InsertNewsLetterSubscription(new NewsLetterSubscription
-                //            //    {
-                //            //        NewsLetterSubscriptionGuid = Guid.NewGuid(),
-                //            //        Email = User.Email,
-                //            //        Active = true,
-                //            //        StoreId = store.Id,
-                //            //        CreatedOnUtc = DateTime.UtcNow
-                //            //    });
-                //            //}
-                //        }
-                //        else
-                //        {
-                //            //not subscribed
-                //            if (newsletterSubscription != null)
-                //            {
-                //                _newsLetterSubscriptionService.DeleteNewsLetterSubscription(newsletterSubscription);
-                //            }
-                //        }
-                //    }
-                //}
+                _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.CustomUserAttributes, userAttributesXml);
 
                 //password
                 if (!string.IsNullOrWhiteSpace(model.Password))
                 {
-                    var changePassRequest = new ChangePasswordRequest(model.Email, false, _UserSettings.DefaultPasswordFormat, model.Password);
-                    var changePassResult = _UserRegistrationService.ChangePassword(changePassRequest);
+                    var changePassRequest = new ChangePasswordRequest(model.Email, false, _userSettings.DefaultPasswordFormat, model.Password);
+                    var changePassResult = _userRegistrationService.ChangePassword(changePassRequest);
                     if (!changePassResult.Success)
                     {
                         foreach (var changePassError in changePassResult.Errors)
@@ -1039,55 +1065,43 @@ namespace Invenio.Admin.Controllers
                         !_workContext.CurrentUser.IsAdmin())
                         continue;
 
-                    User.UserRoles.Add(userRole);
+                    user.UserRoles.Add(userRole);
                 }
-                _UserService.UpdateUser(User);
+                _userService.UpdateUser(user);
 
-                foreach (var manufacturerId in model.SelectedManufacturerIds)
+                foreach (var customerId in model.SelectedCustomerIds)
                 {
-                    var manufacturer = _manufacturerService.GetManufacturerById(manufacturerId);
+                    var Customer = _customerService.GetCustomerById(customerId);
 
-                    if (manufacturer != null)
+                    if (Customer != null)
                     {
-                        User.Manufacturers.Add(manufacturer);
+                        user.Customers.Add(Customer);
                     }
                 }
-                _UserService.UpdateUser(User);
+                _userService.UpdateUser(user);
 
-                foreach (var stateProvinceId in model.SelectedManufacturerRegionIds)
+                foreach (var stateProvinceId in model.SelectedCustomerRegionIds)
                 {
                     var region = _stateProvinceService.GetStateProvinceById(stateProvinceId);
 
                     if (region != null)
                     {
-                        User.ManufacturerRegions.Add(region);
+                        user.CustomerRegions.Add(region);
                     }
                 }
-                _UserService.UpdateUser(User);
+                _userService.UpdateUser(user);
 
                 //ensure that a User with a vendor associated is not in "Administrators" role
                 //otherwise, he won't have access to other functionality in admin area
-                if (User.IsAdmin() && User.VendorId > 0)
+                if (user.IsAdmin() && user.VendorId > 0)
                 {
-                    User.VendorId = 0;
-                    _UserService.UpdateUser(User);
+                    user.VendorId = 0;
+                    _userService.UpdateUser(user);
                     ErrorNotification(_localizationService.GetResource("Admin.Users.Users.AdminCouldNotbeVendor"));
                 }
 
-                //ensure that a User in the Vendors role has a vendor account associated.
-                //otherwise, he will have access to ALL products
-                //if (User.IsVendor() && User.VendorId == 0)
-                //{
-                //    var vendorRole = User
-                //        .UserRoles
-                //        .FirstOrDefault(x => x.SystemName == SystemUserRoleNames.Vendors);
-                //    User.UserRoles.Remove(vendorRole);
-                //    _UserService.UpdateUser(User);
-                //    ErrorNotification(_localizationService.GetResource("Admin.Users.Users.CannotBeInVendoRoleWithoutVendorAssociated"));
-                //}
-
                 //activity log
-                _UserActivityService.InsertActivity("AddNewUser", _localizationService.GetResource("ActivityLog.AddNewUser"), User.Id);
+                _userActivityService.InsertActivity("AddNewUser", _localizationService.GetResource("ActivityLog.AddNewUser"), user.Id);
 
                 SuccessNotification(_localizationService.GetResource("Admin.Users.Users.Added"));
 
@@ -1096,7 +1110,7 @@ namespace Invenio.Admin.Controllers
                     //selected tab
                     SaveSelectedTabName();
 
-                    return RedirectToAction("Edit", new { id = User.Id });
+                    return RedirectToAction("Edit", new { id = user.Id });
                 }
                 return RedirectToAction("List");
             }
@@ -1111,13 +1125,13 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(id);
-            if (User == null || User.Deleted)
+            var user = _userService.GetUserById(id);
+            if (user == null || user.Deleted)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
             var model = new UserModel();
-            PrepareUserModel(model, User, false);
+            PrepareUserModel(model, user, false);
             return View(model);
         }
 
@@ -1129,22 +1143,22 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(model.Id);
-            if (User == null || User.Deleted)
+            var user = _userService.GetUserById(model.Id);
+            if (user == null || user.Deleted)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
             //validate User roles
-            var allUserRoles = _UserService.GetAllUserRoles(true);
+            var allUserRoles = _userService.GetAllUserRoles(true);
             var newUserRoles = new List<UserRole>();
-            foreach (var UserRole in allUserRoles)
-                if (model.SelectedUserRoleIds.Contains(UserRole.Id))
-                    newUserRoles.Add(UserRole);
-            var UserRolesError = ValidateUserRoles(newUserRoles);
-            if (!String.IsNullOrEmpty(UserRolesError))
+            foreach (var userRole in allUserRoles)
+                if (model.SelectedUserRoleIds.Contains(userRole.Id))
+                    newUserRoles.Add(userRole);
+            var userRolesError = ValidateUserRoles(newUserRoles);
+            if (!string.IsNullOrEmpty(userRolesError))
             {
-                ModelState.AddModelError("", UserRolesError);
-                ErrorNotification(UserRolesError, false);
+                ModelState.AddModelError("", userRolesError);
+                ErrorNotification(userRolesError, false);
             }
 
             // Ensure that valid email address is entered if Registered role is checked to avoid registered Users with empty email address
@@ -1155,11 +1169,11 @@ namespace Invenio.Admin.Controllers
             }
 
             //custom User attributes
-            var UserAttributesXml = ParseCustomUserAttributes(form);
+            var userAttributesXml = ParseCustomUserAttributes(form);
             if (newUserRoles.Any() && newUserRoles.FirstOrDefault(c => c.SystemName == SystemUserRoleNames.Registered) != null)
             {
-                var UserAttributeWarnings = _UserAttributeParser.GetAttributeWarnings(UserAttributesXml);
-                foreach (var error in UserAttributeWarnings)
+                var userAttributeWarnings = _userAttributeParser.GetAttributeWarnings(userAttributesXml);
+                foreach (var error in userAttributeWarnings)
                 {
                     ModelState.AddModelError("", error);
                 }
@@ -1169,227 +1183,152 @@ namespace Invenio.Admin.Controllers
             {
                 try
                 {
-                    User.AdminComment = model.AdminComment;
-                    User.IsTaxExempt = model.IsTaxExempt;
+                    user.AdminComment = model.AdminComment;
+                    user.IsTaxExempt = model.IsTaxExempt;
 
                     //prevent deactivation of the last active administrator
-                    if (!User.IsAdmin() || model.Active || SecondAdminAccountExists(User))
-                        User.Active = model.Active;
+                    if (!user.IsAdmin() || model.Active || SecondAdminAccountExists(user))
+                        user.Active = model.Active;
                     else
                         ErrorNotification(_localizationService.GetResource("Admin.Users.Users.AdminAccountShouldExists.Deactivate"));
 
                     //email
-                    if (!String.IsNullOrWhiteSpace(model.Email))
+                    if (!string.IsNullOrWhiteSpace(model.Email))
                     {
-                        _UserRegistrationService.SetEmail(User, model.Email, false);
+                        _userRegistrationService.SetEmail(user, model.Email, false);
                     }
                     else
                     {
-                        User.Email = model.Email;
+                        user.Email = model.Email;
                     }
 
                     //username
-                    if (_UserSettings.UsernamesEnabled)
+                    if (_userSettings.UsernamesEnabled)
                     {
-                        if (!String.IsNullOrWhiteSpace(model.Username))
+                        if (!string.IsNullOrWhiteSpace(model.Username))
                         {
-                            _UserRegistrationService.SetUsername(User, model.Username);
+                            _userRegistrationService.SetUsername(user, model.Username);
                         }
                         else
                         {
-                            User.Username = model.Username;
+                            user.Username = model.Username;
                         }
                     }
-
-                    //VAT number
-                    //if (_taxSettings.EuVatEnabled)
-                    //{
-                    //    var prevVatNumber = User.GetAttribute<string>(SystemUserAttributeNames.VatNumber);
-
-                    //    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.VatNumber, model.VatNumber);
-                    //    //set VAT number status
-                    //    if (!String.IsNullOrEmpty(model.VatNumber))
-                    //    {
-                    //        if (!model.VatNumber.Equals(prevVatNumber, StringComparison.InvariantCultureIgnoreCase))
-                    //        {
-                    //            _genericAttributeService.SaveAttribute(User, 
-                    //                SystemUserAttributeNames.VatNumberStatusId, 
-                    //                (int)_taxService.GetVatNumberStatus(model.VatNumber));
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        _genericAttributeService.SaveAttribute(User,
-                    //            SystemUserAttributeNames.VatNumberStatusId, 
-                    //            (int)VatNumberStatus.Empty);
-                    //    }
-                    //}
-
-                    //vendor
-                    //User.VendorId = model.VendorId;
 
                     //form fields
                     if (_dateTimeSettings.AllowUsersToSetTimeZone)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.TimeZoneId, model.TimeZoneId);
-                    if (_UserSettings.GenderEnabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.Gender, model.Gender);
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.FirstName, model.FirstName);
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.LastName, model.LastName);
-                    if (_UserSettings.DateOfBirthEnabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.DateOfBirth, model.DateOfBirth);
-                    if (_UserSettings.CompanyEnabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.Company, model.Company);
-                    if (_UserSettings.StreetAddressEnabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.StreetAddress, model.StreetAddress);
-                    if (_UserSettings.StreetAddress2Enabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.StreetAddress2, model.StreetAddress2);
-                    if (_UserSettings.ZipPostalCodeEnabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.ZipPostalCode, model.ZipPostalCode);
-                    if (_UserSettings.CityEnabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.City, model.City);
-                    if (_UserSettings.CountryEnabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.CountryId, model.CountryId);
-                    if (_UserSettings.CountryEnabled && _UserSettings.StateProvinceEnabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.StateProvinceId, model.StateProvinceId);
-                    if (_UserSettings.PhoneEnabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.Phone, model.Phone);
-                    if (_UserSettings.FaxEnabled)
-                        _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.Fax, model.Fax);
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.TimeZoneId, model.TimeZoneId);
+                    if (_userSettings.GenderEnabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.Gender, model.Gender);
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.FirstName, model.FirstName);
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.LastName, model.LastName);
+                    if (_userSettings.DateOfBirthEnabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.DateOfBirth, model.DateOfBirth);
+                    if (_userSettings.CompanyEnabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.Company, model.Company);
+                    if (_userSettings.StreetAddressEnabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.StreetAddress, model.StreetAddress);
+                    if (_userSettings.StreetAddress2Enabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.StreetAddress2, model.StreetAddress2);
+                    if (_userSettings.ZipPostalCodeEnabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.ZipPostalCode, model.ZipPostalCode);
+                    if (_userSettings.CityEnabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.City, model.City);
+                    if (_userSettings.CountryEnabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.CountryId, model.CountryId);
+                    if (_userSettings.CountryEnabled && _userSettings.StateProvinceEnabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.StateProvinceId, model.StateProvinceId);
+                    if (_userSettings.PhoneEnabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.Phone, model.Phone);
+                    if (_userSettings.FaxEnabled)
+                        _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.Fax, model.Fax);
 
                     //custom User attributes
-                    _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.CustomUserAttributes, UserAttributesXml);
+                    _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.CustomUserAttributes, userAttributesXml);
 
-                    //newsletter subscriptions
-                    //if (!String.IsNullOrEmpty(User.Email))
-                    //{
-                    //    var allStores = _storeService.GetAllStores();
-                    //    foreach (var store in allStores)
-                    //    {
-                    //        var newsletterSubscription = _newsLetterSubscriptionService
-                    //            .GetNewsLetterSubscriptionByEmailAndStoreId(User.Email, store.Id);
-                    //        if (model.SelectedNewsletterSubscriptionStoreIds != null &&
-                    //            model.SelectedNewsletterSubscriptionStoreIds.Contains(store.Id))
-                    //        {
-                    //            //subscribed
-                    //            if (newsletterSubscription == null)
-                    //            {
-                    //                _newsLetterSubscriptionService.InsertNewsLetterSubscription(new NewsLetterSubscription
-                    //                {
-                    //                    NewsLetterSubscriptionGuid = Guid.NewGuid(),
-                    //                    Email = User.Email,
-                    //                    Active = true,
-                    //                    StoreId = store.Id,
-                    //                    CreatedOnUtc = DateTime.UtcNow
-                    //                });
-                    //            }
-                    //        }
-                    //        else
-                    //        {
-                    //            //not subscribed
-                    //            if (newsletterSubscription != null)
-                    //            {
-                    //                _newsLetterSubscriptionService.DeleteNewsLetterSubscription(newsletterSubscription);
-                    //            }
-                    //        }
-                    //    }
-                    //}
-
-                    if (model.SelectedManufacturerIds.Any())
+                    if (model.SelectedCustomerIds.Any())
                     {
-                        User.Manufacturers.Clear();
-                        foreach (var manufacturerId in model.SelectedManufacturerIds)
+                        user.Customers.Clear();
+                        foreach (var customerId in model.SelectedCustomerIds)
                         {
-                            var manufacturer = _manufacturerService.GetManufacturerById(manufacturerId);
+                            var customer = _customerService.GetCustomerById(customerId);
 
-                            if (manufacturer != null)
+                            if (customer != null)
                             {
-                                User.Manufacturers.Add(manufacturer);
+                                user.Customers.Add(customer);
                             }
                         }
-                        _UserService.UpdateUser(User);
+                        _userService.UpdateUser(user);
                     }
                     else
                     {
-                        User.Manufacturers.Clear();
-                        _UserService.UpdateUser(User);
+                        user.Customers.Clear();
+                        _userService.UpdateUser(user);
                     }
 
-                    if (model.SelectedManufacturerRegionIds.Any())
+                    if (model.SelectedCustomerRegionIds.Any())
                     {
-                        User.ManufacturerRegions.Clear();
-                        foreach (var regionId in model.SelectedManufacturerRegionIds)
+                        user.CustomerRegions.Clear();
+                        foreach (var regionId in model.SelectedCustomerRegionIds)
                         {
                             var region = _stateProvinceService.GetStateProvinceById(regionId);
 
                             if (region != null)
                             {
-                                User.ManufacturerRegions.Add(region);
+                                user.CustomerRegions.Add(region);
                             }
                         }
-                        _UserService.UpdateUser(User);
+                        _userService.UpdateUser(user);
                     }
                     else
                     {
-                        User.ManufacturerRegions.Clear();
-                        _UserService.UpdateUser(User);
+                        user.CustomerRegions.Clear();
+                        _userService.UpdateUser(user);
                     }
 
                     //User roles
-                    foreach (var UserRole in allUserRoles)
+                    foreach (var userRole in allUserRoles)
                     {
                         //ensure that the current User cannot add/remove to/from "Administrators" system role
                         //if he's not an admin himself
-                        if (UserRole.SystemName == SystemUserRoleNames.Administrators &&
+                        if (userRole.SystemName == SystemUserRoleNames.Administrators &&
                             !_workContext.CurrentUser.IsAdmin())
                             continue;
 
-                        if (model.SelectedUserRoleIds.Contains(UserRole.Id))
+                        if (model.SelectedUserRoleIds.Contains(userRole.Id))
                         {
                             //new role
-                            if (User.UserRoles.Count(cr => cr.Id == UserRole.Id) == 0)
-                                User.UserRoles.Add(UserRole);
+                            if (user.UserRoles.Count(cr => cr.Id == userRole.Id) == 0)
+                                user.UserRoles.Add(userRole);
                         }
                         else
                         {
                             //prevent attempts to delete the administrator role from the user, if the user is the last active administrator
-                            if (UserRole.SystemName == SystemUserRoleNames.Administrators && !SecondAdminAccountExists(User))
+                            if (userRole.SystemName == SystemUserRoleNames.Administrators && !SecondAdminAccountExists(user))
                             {
                                 ErrorNotification(_localizationService.GetResource("Admin.Users.Users.AdminAccountShouldExists.DeleteRole"));
                                 continue;
                             }
 
                             //remove role
-                            if (User.UserRoles.Count(cr => cr.Id == UserRole.Id) > 0)
-                                User.UserRoles.Remove(UserRole);
+                            if (user.UserRoles.Count(cr => cr.Id == userRole.Id) > 0)
+                                user.UserRoles.Remove(userRole);
                         }
                     }
-                    _UserService.UpdateUser(User);
+                    _userService.UpdateUser(user);
 
 
                     //ensure that a User with a vendor associated is not in "Administrators" role
                     //otherwise, he won't have access to the other functionality in admin area
-                    if (User.IsAdmin() && User.VendorId > 0)
+                    if (user.IsAdmin() && user.VendorId > 0)
                     {
-                        User.VendorId = 0;
-                        _UserService.UpdateUser(User);
+                        user.VendorId = 0;
+                        _userService.UpdateUser(user);
                         ErrorNotification(_localizationService.GetResource("Admin.Users.Users.AdminCouldNotbeVendor"));
                     }
 
-                    //ensure that a User in the Vendors role has a vendor account associated.
-                    //otherwise, he will have access to ALL products
-                    //if (User.IsVendor() && User.VendorId == 0)
-                    //{
-                    //    var vendorRole = User
-                    //        .UserRoles
-                    //        .FirstOrDefault(x => x.SystemName == SystemUserRoleNames.Vendors);
-                    //    User.UserRoles.Remove(vendorRole);
-                    //    _UserService.UpdateUser(User);
-                    //    ErrorNotification(_localizationService.GetResource("Admin.Users.Users.CannotBeInVendoRoleWithoutVendorAssociated"));
-                    //}
-
-
                     //activity log
-                    _UserActivityService.InsertActivity("EditUser", _localizationService.GetResource("ActivityLog.EditUser"), User.Id);
+                    _userActivityService.InsertActivity("EditUser", _localizationService.GetResource("ActivityLog.EditUser"), user.Id);
 
                     SuccessNotification(_localizationService.GetResource("Admin.Users.Users.Updated"));
                     if (continueEditing)
@@ -1397,7 +1336,7 @@ namespace Invenio.Admin.Controllers
                         //selected tab
                         SaveSelectedTabName();
 
-                        return RedirectToAction("Edit", new { id = User.Id });
+                        return RedirectToAction("Edit", new { id = user.Id });
                     }
                     return RedirectToAction("List");
                 }
@@ -1409,7 +1348,7 @@ namespace Invenio.Admin.Controllers
 
 
             //If we got this far, something failed, redisplay form
-            PrepareUserModel(model, User, true);
+            PrepareUserModel(model, user, true);
             return View(model);
         }
 
@@ -1420,23 +1359,23 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(model.Id);
-            if (User == null)
+            var user = _userService.GetUserById(model.Id);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
             //ensure that the current User cannot change passwords of "Administrators" if he's not an admin himself
-            if (User.IsAdmin() && !_workContext.CurrentUser.IsAdmin())
+            if (user.IsAdmin() && !_workContext.CurrentUser.IsAdmin())
             {
                 ErrorNotification(_localizationService.GetResource("Admin.Users.Users.OnlyAdminCanChangePassword"));
-                return RedirectToAction("Edit", new { id = User.Id });
+                return RedirectToAction("Edit", new { id = user.Id });
             }
 
             if (ModelState.IsValid)
             {
                 var changePassRequest = new ChangePasswordRequest(model.Email,
-                    false, _UserSettings.DefaultPasswordFormat, model.Password);
-                var changePassResult = _UserRegistrationService.ChangePassword(changePassRequest);
+                    false, _userSettings.DefaultPasswordFormat, model.Password);
+                var changePassResult = _userRegistrationService.ChangePassword(changePassRequest);
                 if (changePassResult.Success)
                     SuccessNotification(_localizationService.GetResource("Admin.Users.Users.PasswordChanged"));
                 else
@@ -1444,7 +1383,7 @@ namespace Invenio.Admin.Controllers
                         ErrorNotification(error);
             }
 
-            return RedirectToAction("Edit", new { id = User.Id });
+            return RedirectToAction("Edit", new { id = user.Id });
         }
 
         [HttpPost, ActionName("Edit")]
@@ -1454,8 +1393,8 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(model.Id);
-            if (User == null)
+            var user = _userService.GetUserById(model.Id);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
@@ -1463,7 +1402,7 @@ namespace Invenio.Admin.Controllers
             //    SystemUserAttributeNames.VatNumberStatusId,
             //    (int)VatNumberStatus.Valid);
 
-            return RedirectToAction("Edit", new { id = User.Id });
+            return RedirectToAction("Edit", new { id = user.Id });
         }
 
         [HttpPost, ActionName("Edit")]
@@ -1473,8 +1412,8 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(model.Id);
-            if (User == null)
+            var user = _userService.GetUserById(model.Id);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
@@ -1482,7 +1421,7 @@ namespace Invenio.Admin.Controllers
             //    SystemUserAttributeNames.VatNumberStatusId,
             //    (int)VatNumberStatus.Invalid);
 
-            return RedirectToAction("Edit", new { id = User.Id });
+            return RedirectToAction("Edit", new { id = user.Id });
         }
 
         [HttpPost, ActionName("Edit")]
@@ -1492,15 +1431,15 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(model.Id);
-            if (User == null)
+            var user = _userService.GetUserById(model.Id);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
-            User.AffiliateId = 0;
-            _UserService.UpdateUser(User);
+            user.AffiliateId = 0;
+            _userService.UpdateUser(user);
 
-            return RedirectToAction("Edit", new { id = User.Id });
+            return RedirectToAction("Edit", new { id = user.Id });
         }
 
         [HttpPost]
@@ -1509,29 +1448,29 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(id);
-            if (User == null)
+            var user = _userService.GetUserById(id);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
             try
             {
                 //prevent attempts to delete the user, if it is the last active administrator
-                if (User.IsAdmin() && !SecondAdminAccountExists(User))
+                if (user.IsAdmin() && !SecondAdminAccountExists(user))
                 {
                     ErrorNotification(_localizationService.GetResource("Admin.Users.Users.AdminAccountShouldExists.DeleteAdministrator"));
-                    return RedirectToAction("Edit", new { id = User.Id });
+                    return RedirectToAction("Edit", new { id = user.Id });
                 }
 
                 //ensure that the current User cannot delete "Administrators" if he's not an admin himself
-                if (User.IsAdmin() && !_workContext.CurrentUser.IsAdmin())
+                if (user.IsAdmin() && !_workContext.CurrentUser.IsAdmin())
                 {
                     ErrorNotification(_localizationService.GetResource("Admin.Users.Users.OnlyAdminCanDeleteAdmin"));
-                    return RedirectToAction("Edit", new { id = User.Id });
+                    return RedirectToAction("Edit", new { id = user.Id });
                 }
 
                 //delete
-                _UserService.DeleteUser(User);
+                _userService.DeleteUser(user);
 
                 //remove newsletter subscription (if exists)
                 //foreach (var store in _storeService.GetAllStores())
@@ -1542,7 +1481,7 @@ namespace Invenio.Admin.Controllers
                 //}
 
                 //activity log
-                _UserActivityService.InsertActivity("DeleteUser", _localizationService.GetResource("ActivityLog.DeleteUser"), User.Id);
+                _userActivityService.InsertActivity("DeleteUser", _localizationService.GetResource("ActivityLog.DeleteUser"), user.Id);
 
                 SuccessNotification(_localizationService.GetResource("Admin.Users.Users.Deleted"));
                 return RedirectToAction("List");
@@ -1550,7 +1489,7 @@ namespace Invenio.Admin.Controllers
             catch (Exception exc)
             {
                 ErrorNotification(exc.Message);
-                return RedirectToAction("Edit", new { id = User.Id });
+                return RedirectToAction("Edit", new { id = user.Id });
             }
         }
 
@@ -1561,27 +1500,27 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.AllowUserImpersonation))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(id);
-            if (User == null)
+            var user = _userService.GetUserById(id);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
             //ensure that a non-admin user cannot impersonate as an administrator
             //otherwise, that user can simply impersonate as an administrator and gain additional administrative privileges
-            if (!_workContext.CurrentUser.IsAdmin() && User.IsAdmin())
+            if (!_workContext.CurrentUser.IsAdmin() && user.IsAdmin())
             {
                 ErrorNotification(_localizationService.GetResource("Admin.Users.Users.NonAdminNotImpersonateAsAdminError"));
-                return RedirectToAction("Edit", User.Id);
+                return RedirectToAction("Edit", user.Id);
             }
 
             //activity log
-            _UserActivityService.InsertActivity("Impersonation.Started", _localizationService.GetResource("ActivityLog.Impersonation.Started.StoreOwner"), User.Email, User.Id);
-            _UserActivityService.InsertActivity(User, "Impersonation.Started", _localizationService.GetResource("ActivityLog.Impersonation.Started.User"), _workContext.CurrentUser.Email, _workContext.CurrentUser.Id);
+            _userActivityService.InsertActivity("Impersonation.Started", _localizationService.GetResource("ActivityLog.Impersonation.Started.StoreOwner"), user.Email, user.Id);
+            _userActivityService.InsertActivity(user, "Impersonation.Started", _localizationService.GetResource("ActivityLog.Impersonation.Started.User"), _workContext.CurrentUser.Email, _workContext.CurrentUser.Id);
 
             //ensure login is not required
-            User.RequireReLogin = false;
-            _UserService.UpdateUser(User);
-            _genericAttributeService.SaveAttribute<int?>(_workContext.CurrentUser, SystemUserAttributeNames.ImpersonatedUserId, User.Id);
+            user.RequireReLogin = false;
+            _userService.UpdateUser(user);
+            _genericAttributeService.SaveAttribute<int?>(_workContext.CurrentUser, SystemUserAttributeNames.ImpersonatedUserId, user.Id);
 
             return RedirectToAction("Index", "Home", new { area = "" });
         }
@@ -1593,16 +1532,16 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(model.Id);
-            if (User == null)
+            var user = _userService.GetUserById(model.Id);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
-            _workflowMessageService.SendUserWelcomeMessage(User, _workContext.WorkingLanguage.Id);
+            _workflowMessageService.SendUserWelcomeMessage(user, _workContext.WorkingLanguage.Id);
 
             SuccessNotification(_localizationService.GetResource("Admin.Users.Users.SendWelcomeMessage.Success"));
 
-            return RedirectToAction("Edit", new { id = User.Id });
+            return RedirectToAction("Edit", new { id = user.Id });
         }
 
         [HttpPost, ActionName("Edit")]
@@ -1612,18 +1551,18 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(model.Id);
-            if (User == null)
+            var user = _userService.GetUserById(model.Id);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
             //email validation message
-            _genericAttributeService.SaveAttribute(User, SystemUserAttributeNames.AccountActivationToken, Guid.NewGuid().ToString());
-            _workflowMessageService.SendUserEmailValidationMessage(User, _workContext.WorkingLanguage.Id);
+            _genericAttributeService.SaveAttribute(user, SystemUserAttributeNames.AccountActivationToken, Guid.NewGuid().ToString());
+            _workflowMessageService.SendUserEmailValidationMessage(user, _workContext.WorkingLanguage.Id);
 
             SuccessNotification(_localizationService.GetResource("Admin.Users.Users.ReSendActivationMessage.Success"));
 
-            return RedirectToAction("Edit", new { id = User.Id });
+            return RedirectToAction("Edit", new { id = user.Id });
         }
 
         public virtual ActionResult SendEmail(UserModel model)
@@ -1631,20 +1570,20 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(model.Id);
-            if (User == null)
+            var user = _userService.GetUserById(model.Id);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
             try
             {
-                if (String.IsNullOrWhiteSpace(User.Email))
+                if (string.IsNullOrWhiteSpace(user.Email))
                     throw new InvenioException("User email is empty");
-                if (!CommonHelper.IsValidEmail(User.Email))
+                if (!CommonHelper.IsValidEmail(user.Email))
                     throw new InvenioException("User email is not valid");
-                if (String.IsNullOrWhiteSpace(model.SendEmail.Subject))
+                if (string.IsNullOrWhiteSpace(model.SendEmail.Subject))
                     throw new InvenioException("Email subject is empty");
-                if (String.IsNullOrWhiteSpace(model.SendEmail.Body))
+                if (string.IsNullOrWhiteSpace(model.SendEmail.Body))
                     throw new InvenioException("Email body is empty");
 
                 var emailAccount = _emailAccountService.GetEmailAccountById(_emailAccountSettings.DefaultEmailAccountId);
@@ -1658,8 +1597,8 @@ namespace Invenio.Admin.Controllers
                     EmailAccountId = emailAccount.Id,
                     FromName = emailAccount.DisplayName,
                     From = emailAccount.Email,
-                    ToName = User.GetFullName(),
-                    To = User.Email,
+                    ToName = user.GetFullName(),
+                    To = user.Email,
                     Subject = model.SendEmail.Subject,
                     Body = model.SendEmail.Body,
                     CreatedOnUtc = DateTime.UtcNow,
@@ -1674,124 +1613,23 @@ namespace Invenio.Admin.Controllers
                 ErrorNotification(exc.Message);
             }
 
-            return RedirectToAction("Edit", new { id = User.Id });
+            return RedirectToAction("Edit", new { id = user.Id });
         }
-
-        //public virtual ActionResult SendPm(UserModel model)
-        //{
-        //    if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //        return AccessDeniedView();
-
-        //    var User = _UserService.GetUserById(model.Id);
-        //    if (User == null)
-        //        //No User found with the specified id
-        //        return RedirectToAction("List");
-
-        //    try
-        //    {
-        //        if (!_forumSettings.AllowPrivateMessages)
-        //            throw new InvenioException("Private messages are disabled");
-        //        if (User.IsGuest())
-        //            throw new InvenioException("User should be registered");
-        //        if (String.IsNullOrWhiteSpace(model.SendPm.Subject))
-        //            throw new InvenioException("PM subject is empty");
-        //        if (String.IsNullOrWhiteSpace(model.SendPm.Message))
-        //            throw new InvenioException("PM message is empty");
-
-
-        //        var privateMessage = new PrivateMessage
-        //        {
-        //            StoreId = _storeContext.CurrentStore.Id,
-        //            ToUserId = User.Id,
-        //            FromUserId = _workContext.CurrentUser.Id,
-        //            Subject = model.SendPm.Subject,
-        //            Text = model.SendPm.Message,
-        //            IsDeletedByAuthor = false,
-        //            IsDeletedByRecipient = false,
-        //            IsRead = false,
-        //            CreatedOnUtc = DateTime.UtcNow
-        //        };
-
-        //        _forumService.InsertPrivateMessage(privateMessage);
-        //        SuccessNotification(_localizationService.GetResource("Admin.Users.Users.SendPM.Sent"));
-        //    }
-        //    catch (Exception exc)
-        //    {
-        //        ErrorNotification(exc.Message);
-        //    }
-
-        //    return RedirectToAction("Edit", new { id = User.Id });
-        //}
-
         #endregion
-
-        //#region Reward points history
-
-        //[HttpPost]
-        //public virtual ActionResult RewardPointsHistorySelect(DataSourceRequest command, int UserId)
-        //{
-        //    if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //        return AccessDeniedKendoGridJson();
-
-        //    var User = _UserService.GetUserById(UserId);
-        //    if (User == null)
-        //        throw new ArgumentException("No User found with the specified id");
-
-        //    var rewardPoints = _rewardPointService.GetRewardPointsHistory(User.Id, true, true, command.Page - 1, command.PageSize);
-        //    var gridModel = new DataSourceResult
-        //    {
-        //        Data = rewardPoints.Select(rph =>
-        //        {
-        //            var store = _storeService.GetStoreById(rph.StoreId);
-        //            var activatingDate = _dateTimeHelper.ConvertToUserTime(rph.CreatedOnUtc, DateTimeKind.Utc);
-
-        //            return new UserModel.RewardPointsHistoryModel
-        //            {
-        //                StoreName = store != null ? store.Name : "Unknown",
-        //                Points = rph.Points,
-        //                PointsBalance = rph.PointsBalance.HasValue ? rph.PointsBalance.ToString()
-        //                    : string.Format(_localizationService.GetResource("Admin.Users.Users.RewardPoints.ActivatedLater"), activatingDate),
-        //                Message = rph.Message,
-        //                CreatedOn = activatingDate
-        //            };
-        //        }),
-        //        Total = rewardPoints.TotalCount
-        //    };
-
-        //    return Json(gridModel);
-        //}
-
-        //[ValidateInput(false)]
-        //public virtual ActionResult RewardPointsHistoryAdd(int UserId, int storeId, int addRewardPointsValue, string addRewardPointsMessage)
-        //{
-        //    if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //        return AccessDeniedView();
-
-        //    var User = _UserService.GetUserById(UserId);
-        //    if (User == null)
-        //        return Json(new { Result = false }, JsonRequestBehavior.AllowGet);
-
-        //    _rewardPointService.AddRewardPointsHistoryEntry(User,
-        //        addRewardPointsValue, storeId, addRewardPointsMessage);
-
-        //    return Json(new { Result = true }, JsonRequestBehavior.AllowGet);
-        //}
-
-        //#endregion
 
         #region Addresses
 
         [HttpPost]
-        public virtual ActionResult AddressesSelect(int UserId, DataSourceRequest command)
+        public virtual ActionResult AddressesSelect(int userId, DataSourceRequest command)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedKendoGridJson();
 
-            var User = _UserService.GetUserById(UserId);
-            if (User == null)
-                throw new ArgumentException("No User found with the specified id", "UserId");
+            var user = _userService.GetUserById(userId);
+            if (user == null)
+                throw new ArgumentException("No User found with the specified id", "userId");
 
-            var addresses = User.Addresses.OrderByDescending(a => a.CreatedOnUtc).ThenByDescending(a => a.Id).ToList();
+            var addresses = user.Addresses.OrderByDescending(a => a.CreatedOnUtc).ThenByDescending(a => a.Id).ToList();
             var gridModel = new DataSourceResult
             {
                 Data = addresses.Select(x =>
@@ -1829,39 +1667,39 @@ namespace Invenio.Admin.Controllers
         }
 
         [HttpPost]
-        public virtual ActionResult AddressDelete(int id, int UserId)
+        public virtual ActionResult AddressDelete(int id, int userId)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(UserId);
-            if (User == null)
-                throw new ArgumentException("No User found with the specified id", "UserId");
+            var user = _userService.GetUserById(userId);
+            if (user == null)
+                throw new ArgumentException("No User found with the specified id", "userId");
 
-            var address = User.Addresses.FirstOrDefault(a => a.Id == id);
+            var address = user.Addresses.FirstOrDefault(a => a.Id == id);
             if (address == null)
                 //No User found with the specified id
                 return Content("No User found with the specified id");
-            User.RemoveAddress(address);
-            _UserService.UpdateUser(User);
+            user.RemoveAddress(address);
+            _userService.UpdateUser(user);
             //now delete the address record
             _addressService.DeleteAddress(address);
 
             return new NullJsonResult();
         }
 
-        public virtual ActionResult AddressCreate(int UserId)
+        public virtual ActionResult AddressCreate(int userId)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(UserId);
-            if (User == null)
+            var user = _userService.GetUserById(userId);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
             var model = new UserAddressModel();
-            PrepareAddressModel(model, null, User, false);
+            PrepareAddressModel(model, null, user, false);
 
             return View(model);
         }
@@ -1873,8 +1711,8 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(model.UserId);
-            if (User == null)
+            var user = _userService.GetUserById(model.UserId);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
@@ -1896,35 +1734,35 @@ namespace Invenio.Admin.Controllers
                     address.CountryId = null;
                 if (address.StateProvinceId == 0)
                     address.StateProvinceId = null;
-                User.Addresses.Add(address);
-                _UserService.UpdateUser(User);
+                user.Addresses.Add(address);
+                _userService.UpdateUser(user);
 
                 SuccessNotification(_localizationService.GetResource("Admin.Users.Users.Addresses.Added"));
                 return RedirectToAction("AddressEdit", new { addressId = address.Id, UserId = model.UserId });
             }
 
             //If we got this far, something failed, redisplay form
-            PrepareAddressModel(model, null, User, true);
+            PrepareAddressModel(model, null, user, true);
             return View(model);
         }
 
-        public virtual ActionResult AddressEdit(int addressId, int UserId)
+        public virtual ActionResult AddressEdit(int addressId, int userId)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(UserId);
-            if (User == null)
+            var user = _userService.GetUserById(userId);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
             var address = _addressService.GetAddressById(addressId);
             if (address == null)
                 //No address found with the specified id
-                return RedirectToAction("Edit", new { id = User.Id });
+                return RedirectToAction("Edit", new { id = user.Id });
 
             var model = new UserAddressModel();
-            PrepareAddressModel(model, address, User, false);
+            PrepareAddressModel(model, address, user, false);
             return View(model);
         }
 
@@ -1935,15 +1773,15 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var User = _UserService.GetUserById(model.UserId);
-            if (User == null)
+            var user = _userService.GetUserById(model.UserId);
+            if (user == null)
                 //No User found with the specified id
                 return RedirectToAction("List");
 
             var address = _addressService.GetAddressById(model.Address.Id);
             if (address == null)
                 //No address found with the specified id
-                return RedirectToAction("Edit", new { id = User.Id });
+                return RedirectToAction("Edit", new { id = user.Id });
 
             //custom address attributes
             var customAttributes = form.ParseCustomAddressAttributes(_addressAttributeParser, _addressAttributeService);
@@ -1964,345 +1802,22 @@ namespace Invenio.Admin.Controllers
             }
 
             //If we got this far, something failed, redisplay form
-            PrepareAddressModel(model, address, User, true);
+            PrepareAddressModel(model, address, user, true);
 
             return View(model);
         }
 
         #endregion
 
-        //#region Orders
-
-        //[HttpPost]
-        //public virtual ActionResult OrderList(int UserId, DataSourceRequest command)
-        //{
-        //    if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //        return AccessDeniedKendoGridJson();
-
-        //    var orders = _orderService.SearchOrders(UserId: UserId);
-
-        //    var gridModel = new DataSourceResult
-        //    {
-        //        Data = orders.PagedForCommand(command)
-        //            .Select(order =>
-        //            {
-        //                var store = _storeService.GetStoreById(order.StoreId);
-        //                var orderModel = new UserModel.OrderModel
-        //                {
-        //                    Id = order.Id, 
-        //                    OrderStatus = order.OrderStatus.GetLocalizedEnum(_localizationService, _workContext),
-        //                    OrderStatusId = order.OrderStatusId,
-        //                    PaymentStatus = order.PaymentStatus.GetLocalizedEnum(_localizationService, _workContext),
-        //                    ShippingStatus = order.ShippingStatus.GetLocalizedEnum(_localizationService, _workContext),
-        //                    OrderTotal = _priceFormatter.FormatPrice(order.OrderTotal, true, false),
-        //                    StoreName = store != null ? store.Name : "Unknown",
-        //                    CreatedOn = _dateTimeHelper.ConvertToUserTime(order.CreatedOnUtc, DateTimeKind.Utc),
-        //                    CustomOrderNumber = order.CustomOrderNumber
-        //                };
-        //                return orderModel;
-        //            }),
-        //        Total = orders.Count
-        //    };
-
-
-        //    return Json(gridModel);
-        //}
-
-        //#endregion
-
-        //   #region Reports
-
-        //   public virtual ActionResult Reports()
-        //   {
-        //       if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //           return AccessDeniedView();
-
-        //       var model = new UserReportsModel();
-        //       //Users by number of orders
-        //       model.BestUsersByNumberOfOrders = new BestUsersReportModel();
-        //       model.BestUsersByNumberOfOrders.AvailableOrderStatuses = OrderStatus.Pending.ToSelectList(false).ToList();
-        //       model.BestUsersByNumberOfOrders.AvailableOrderStatuses.Insert(0, new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = "0" });
-        //       model.BestUsersByNumberOfOrders.AvailablePaymentStatuses = PaymentStatus.Pending.ToSelectList(false).ToList();
-        //       model.BestUsersByNumberOfOrders.AvailablePaymentStatuses.Insert(0, new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = "0" });
-        //       model.BestUsersByNumberOfOrders.AvailableShippingStatuses = ShippingStatus.NotYetShipped.ToSelectList(false).ToList();
-        //       model.BestUsersByNumberOfOrders.AvailableShippingStatuses.Insert(0, new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = "0" });
-
-        //       //Users by order total
-        //       model.BestUsersByOrderTotal = new BestUsersReportModel();
-        //       model.BestUsersByOrderTotal.AvailableOrderStatuses = OrderStatus.Pending.ToSelectList(false).ToList();
-        //       model.BestUsersByOrderTotal.AvailableOrderStatuses.Insert(0, new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = "0" });
-        //       model.BestUsersByOrderTotal.AvailablePaymentStatuses = PaymentStatus.Pending.ToSelectList(false).ToList();
-        //       model.BestUsersByOrderTotal.AvailablePaymentStatuses.Insert(0, new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = "0" });
-        //       model.BestUsersByOrderTotal.AvailableShippingStatuses = ShippingStatus.NotYetShipped.ToSelectList(false).ToList();
-        //       model.BestUsersByOrderTotal.AvailableShippingStatuses.Insert(0, new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = "0" });
-
-        //       return View(model);
-        //   }
-
-        //   [HttpPost]
-        //   public virtual ActionResult ReportBestUsersByOrderTotalList(DataSourceRequest command, BestUsersReportModel model)
-        //   {
-        //       if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //           return AccessDeniedKendoGridJson();
-
-        //       DateTime? startDateValue = (model.StartDate == null) ? null
-        //                       : (DateTime?)_dateTimeHelper.ConvertToUtcTime(model.StartDate.Value, _dateTimeHelper.CurrentTimeZone);
-
-        //       DateTime? endDateValue = (model.EndDate == null) ? null
-        //                       : (DateTime?)_dateTimeHelper.ConvertToUtcTime(model.EndDate.Value, _dateTimeHelper.CurrentTimeZone).AddDays(1);
-
-        //       OrderStatus? orderStatus = model.OrderStatusId > 0 ? (OrderStatus?)(model.OrderStatusId) : null;
-        //       PaymentStatus? paymentStatus = model.PaymentStatusId > 0 ? (PaymentStatus?)(model.PaymentStatusId) : null;
-        //       ShippingStatus? shippingStatus = model.ShippingStatusId > 0 ? (ShippingStatus?)(model.ShippingStatusId) : null;
-
-
-        //       var items = _UserReportService.GetBestUsersReport(startDateValue, endDateValue,
-        //           orderStatus, paymentStatus, shippingStatus, 1, command.Page - 1, command.PageSize);
-        //       var gridModel = new DataSourceResult
-        //       {
-        //           Data = items.Select(x =>
-        //           {
-        //               var m = new BestUserReportLineModel
-        //               {
-        //                   UserId = x.UserId,
-        //                   OrderTotal = _priceFormatter.FormatPrice(x.OrderTotal, true, false),
-        //                   OrderCount = x.OrderCount,
-        //               };
-        //               var User = _UserService.GetUserById(x.UserId);
-        //               if (User != null)
-        //               {
-        //                   m.UserName = User.IsRegistered() ? User.Email : _localizationService.GetResource("Admin.Users.Guest");
-        //               }
-        //               return m;
-        //           }),
-        //           Total = items.TotalCount
-        //       };
-
-        //       return Json(gridModel);
-        //   }
-        //   [HttpPost]
-        //   public virtual ActionResult ReportBestUsersByNumberOfOrdersList(DataSourceRequest command, BestUsersReportModel model)
-        //   {
-        //       if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //           return AccessDeniedKendoGridJson();
-
-        //       DateTime? startDateValue = (model.StartDate == null) ? null
-        //                       : (DateTime?)_dateTimeHelper.ConvertToUtcTime(model.StartDate.Value, _dateTimeHelper.CurrentTimeZone);
-
-        //       DateTime? endDateValue = (model.EndDate == null) ? null
-        //                       : (DateTime?)_dateTimeHelper.ConvertToUtcTime(model.EndDate.Value, _dateTimeHelper.CurrentTimeZone).AddDays(1);
-
-        //       OrderStatus? orderStatus = model.OrderStatusId > 0 ? (OrderStatus?)(model.OrderStatusId) : null;
-        //       PaymentStatus? paymentStatus = model.PaymentStatusId > 0 ? (PaymentStatus?)(model.PaymentStatusId) : null;
-        //       ShippingStatus? shippingStatus = model.ShippingStatusId > 0 ? (ShippingStatus?)(model.ShippingStatusId) : null;
-
-
-        //       var items = _UserReportService.GetBestUsersReport(startDateValue, endDateValue,
-        //           orderStatus, paymentStatus, shippingStatus, 2, command.Page - 1, command.PageSize);
-        //       var gridModel = new DataSourceResult
-        //       {
-        //           Data = items.Select(x =>
-        //           {
-        //               var m = new BestUserReportLineModel
-        //               {
-        //                   UserId = x.UserId,
-        //                   OrderTotal = _priceFormatter.FormatPrice(x.OrderTotal, true, false),
-        //                   OrderCount = x.OrderCount,
-        //               };
-        //               var User = _UserService.GetUserById(x.UserId);
-        //               if (User != null)
-        //               {
-        //                   m.UserName = User.IsRegistered() ? User.Email : _localizationService.GetResource("Admin.Users.Guest");
-        //               }
-        //               return m;
-        //           }),
-        //           Total = items.TotalCount
-        //       };
-
-        //       return Json(gridModel);
-        //   }
-
-        //   [ChildActionOnly]
-        //   public virtual ActionResult ReportRegisteredUsers()
-        //   {
-        //       if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //           return Content("");
-
-        //       return PartialView();
-        //   }
-
-        //   [HttpPost]
-        //   public virtual ActionResult ReportRegisteredUsersList(DataSourceRequest command)
-        //   {
-        //       if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //           return AccessDeniedKendoGridJson();
-
-        //       var model = GetReportRegisteredUsersModel();
-        //       var gridModel = new DataSourceResult
-        //       {
-        //           Data = model,
-        //           Total = model.Count
-        //       };
-
-        //       return Json(gridModel);
-        //   }
-
-        //   [ChildActionOnly]
-        //public virtual ActionResult UserStatistics()
-        //{
-        //       if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
-        //           return Content("");
-
-        //       //a vendor doesn't have access to this report
-        //       if (_workContext.CurrentVendor != null)
-        //           return Content("");
-
-        //       return PartialView();
-        //}
-
-        //   [AcceptVerbs(HttpVerbs.Get)]
-        //   public virtual ActionResult LoadUserStatistics(string period)
-        //   {
-        //       if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //           return Content("");
-
-        //       var result = new List<object>();
-
-        //       var nowDt = _dateTimeHelper.ConvertToUserTime(DateTime.Now);
-        //       var timeZone = _dateTimeHelper.CurrentTimeZone;
-        //       var searchUserRoleIds = new[] { _UserService.GetUserRoleBySystemName(SystemUserRoleNames.Registered).Id };
-
-        //       var culture = new CultureInfo(_workContext.WorkingLanguage.LanguageCulture);
-
-        //       switch (period)
-        //       {
-        //           case "year":
-        //               //year statistics
-        //               var yearAgoDt = nowDt.AddYears(-1).AddMonths(1);
-        //               var searchYearDateUser = new DateTime(yearAgoDt.Year, yearAgoDt.Month, 1);
-        //               if (!timeZone.IsInvalidTime(searchYearDateUser))
-        //               {
-        //                   for (int i = 0; i <= 12; i++)
-        //                   {
-        //                       result.Add(new
-        //                       {
-        //                           date = searchYearDateUser.Date.ToString("Y", culture),
-        //                           value = _UserService.GetAllUsers(
-        //                               createdFromUtc: _dateTimeHelper.ConvertToUtcTime(searchYearDateUser, timeZone),
-        //                               createdToUtc: _dateTimeHelper.ConvertToUtcTime(searchYearDateUser.AddMonths(1), timeZone),
-        //                               UserRoleIds: searchUserRoleIds,
-        //                               pageIndex: 0,
-        //                               pageSize: 1).TotalCount.ToString()
-        //                       });
-
-        //                       searchYearDateUser = searchYearDateUser.AddMonths(1);
-        //                   }
-        //               }
-        //               break;
-
-        //           case "month":
-        //               //month statistics
-        //               var monthAgoDt = nowDt.AddDays(-30);
-        //               var searchMonthDateUser = new DateTime(monthAgoDt.Year, monthAgoDt.Month, monthAgoDt.Day);
-        //               if (!timeZone.IsInvalidTime(searchMonthDateUser))
-        //               {
-        //                   for (int i = 0; i <= 30; i++)
-        //                   {
-        //                       result.Add(new
-        //                       {
-        //                           date = searchMonthDateUser.Date.ToString("M", culture),
-        //                           value = _UserService.GetAllUsers(
-        //                               createdFromUtc: _dateTimeHelper.ConvertToUtcTime(searchMonthDateUser, timeZone),
-        //                               createdToUtc: _dateTimeHelper.ConvertToUtcTime(searchMonthDateUser.AddDays(1), timeZone),
-        //                               UserRoleIds: searchUserRoleIds,
-        //                               pageIndex: 0,
-        //                               pageSize: 1).TotalCount.ToString()
-        //                       });
-
-        //                       searchMonthDateUser = searchMonthDateUser.AddDays(1);
-        //                   }
-        //               }
-        //               break;
-
-        //           case "week":
-        //           default:
-        //               //week statistics
-        //               var weekAgoDt = nowDt.AddDays(-7);
-        //               var searchWeekDateUser = new DateTime(weekAgoDt.Year, weekAgoDt.Month, weekAgoDt.Day);
-        //               if (!timeZone.IsInvalidTime(searchWeekDateUser))
-        //               {
-        //                   for (int i = 0; i <= 7; i++)
-        //                   {
-        //                       result.Add(new
-        //                       {
-        //                           date = searchWeekDateUser.Date.ToString("d dddd", culture),
-        //                           value = _UserService.GetAllUsers(
-        //                               createdFromUtc: _dateTimeHelper.ConvertToUtcTime(searchWeekDateUser, timeZone),
-        //                               createdToUtc: _dateTimeHelper.ConvertToUtcTime(searchWeekDateUser.AddDays(1), timeZone),
-        //                               UserRoleIds: searchUserRoleIds,
-        //                               pageIndex: 0,
-        //                               pageSize: 1).TotalCount.ToString()
-        //                       });
-
-        //                       searchWeekDateUser = searchWeekDateUser.AddDays(1);
-        //                   }
-        //               }
-        //               break;
-        //       }
-
-        //       return Json(result, JsonRequestBehavior.AllowGet);
-        //   }
-
-        //   #endregion
-
-        //#region Current shopping cart/ wishlist
-
-        //[HttpPost]
-        //public virtual ActionResult GetCartList(int UserId, int cartTypeId)
-        //{
-        //    if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //        return AccessDeniedKendoGridJson();
-
-        //    var User = _UserService.GetUserById(UserId);
-        //    var cart = User.ShoppingCartItems.Where(x => x.ShoppingCartTypeId == cartTypeId).ToList();
-
-        //    var gridModel = new DataSourceResult
-        //    {
-        //        Data = cart.Select(sci =>
-        //        {
-        //            decimal taxRate;
-        //            var store = _storeService.GetStoreById(sci.StoreId); 
-        //            var sciModel = new ShoppingCartItemModel
-        //            {
-        //                Id = sci.Id,
-        //                Store = store != null ? store.Name : "Unknown",
-        //                ProductId = sci.ProductId,
-        //                Quantity = sci.Quantity,
-        //                ProductName = sci.Product.Name,
-        //                AttributeInfo = _productAttributeFormatter.FormatAttributes(sci.Product, sci.AttributesXml),
-        //                UnitPrice = _priceFormatter.FormatPrice(_taxService.GetProductPrice(sci.Product, _priceCalculationService.GetUnitPrice(sci), out taxRate)),
-        //                Total = _priceFormatter.FormatPrice(_taxService.GetProductPrice(sci.Product, _priceCalculationService.GetSubTotal(sci), out taxRate)),
-        //                UpdatedOn = _dateTimeHelper.ConvertToUserTime(sci.UpdatedOnUtc, DateTimeKind.Utc)
-        //            };
-        //            return sciModel;
-        //        }),
-        //        Total = cart.Count
-        //    };
-
-        //    return Json(gridModel);
-        //}
-
-        //#endregion
-
         #region Activity log
 
         [HttpPost]
-        public virtual ActionResult ListActivityLog(DataSourceRequest command, int UserId)
+        public virtual ActionResult ListActivityLog(DataSourceRequest command, int userId)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedKendoGridJson();
 
-            var activityLog = _UserActivityService.GetAllActivities(null, null, UserId, 0, command.Page - 1, command.PageSize);
+            var activityLog = _userActivityService.GetAllActivities(null, null, userId, 0, command.Page - 1, command.PageSize);
             var gridModel = new DataSourceResult
             {
                 Data = activityLog.Select(x =>
@@ -2326,41 +1841,6 @@ namespace Invenio.Admin.Controllers
 
         #endregion
 
-        //#region Back in stock subscriptions
-
-        //[HttpPost]
-        //public virtual ActionResult BackInStockSubscriptionList(DataSourceRequest command, int UserId)
-        //{
-        //    if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
-        //        return AccessDeniedKendoGridJson();
-
-        //    var subscriptions = _backInStockSubscriptionService.GetAllSubscriptionsByUserId(UserId,
-        //        0, command.Page - 1, command.PageSize);
-        //    var gridModel = new DataSourceResult
-        //    {
-        //        Data = subscriptions.Select(x =>
-        //        {
-        //            var store = _storeService.GetStoreById(x.StoreId);
-        //            var product = x.Product;
-        //            var m = new UserModel.BackInStockSubscriptionModel
-        //            {
-        //                Id = x.Id,
-        //                StoreName = store != null ? store.Name : "Unknown",
-        //                ProductId = x.ProductId,
-        //                ProductName = product != null ? product.Name : "Unknown",
-        //                CreatedOn = _dateTimeHelper.ConvertToUserTime(x.CreatedOnUtc, DateTimeKind.Utc)
-        //            };
-        //            return m;
-
-        //        }),
-        //        Total = subscriptions.TotalCount
-        //    };
-
-        //    return Json(gridModel);
-        //}
-
-        //#endregion
-
         #region Export / Import
 
         [HttpPost, ActionName("List")]
@@ -2372,12 +1852,12 @@ namespace Invenio.Admin.Controllers
 
             var searchDayOfBirth = 0;
             int searchMonthOfBirth = 0;
-            if (!String.IsNullOrWhiteSpace(model.SearchDayOfBirth))
+            if (!string.IsNullOrWhiteSpace(model.SearchDayOfBirth))
                 searchDayOfBirth = Convert.ToInt32(model.SearchDayOfBirth);
-            if (!String.IsNullOrWhiteSpace(model.SearchMonthOfBirth))
+            if (!string.IsNullOrWhiteSpace(model.SearchMonthOfBirth))
                 searchMonthOfBirth = Convert.ToInt32(model.SearchMonthOfBirth);
 
-            var Users = _UserService.GetAllUsers(
+            var users = _userService.GetAllUsers(
                 UserRoleIds: model.SearchUserRoleIds.ToArray(),
                 email: model.SearchEmail,
                 username: model.SearchUsername,
@@ -2392,7 +1872,7 @@ namespace Invenio.Admin.Controllers
 
             try
             {
-                byte[] bytes = _exportManager.ExportUsersToXlsx(Users);
+                byte[] bytes = _exportManager.ExportUsersToXlsx(users);
                 return File(bytes, MimeTypes.TextXlsx, "Users.xlsx");
             }
             catch (Exception exc)
@@ -2408,19 +1888,19 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var Users = new List<User>();
+            var users = new List<User>();
             if (selectedIds != null)
             {
                 var ids = selectedIds
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => Convert.ToInt32(x))
                     .ToArray();
-                Users.AddRange(_UserService.GetUsersByIds(ids));
+                users.AddRange(_userService.GetUsersByIds(ids));
             }
 
             try
             {
-                byte[] bytes = _exportManager.ExportUsersToXlsx(Users);
+                byte[] bytes = _exportManager.ExportUsersToXlsx(users);
                 return File(bytes, MimeTypes.TextXlsx, "Users.xlsx");
             }
             catch (Exception exc)
@@ -2439,12 +1919,12 @@ namespace Invenio.Admin.Controllers
 
             var searchDayOfBirth = 0;
             int searchMonthOfBirth = 0;
-            if (!String.IsNullOrWhiteSpace(model.SearchDayOfBirth))
+            if (!string.IsNullOrWhiteSpace(model.SearchDayOfBirth))
                 searchDayOfBirth = Convert.ToInt32(model.SearchDayOfBirth);
-            if (!String.IsNullOrWhiteSpace(model.SearchMonthOfBirth))
+            if (!string.IsNullOrWhiteSpace(model.SearchMonthOfBirth))
                 searchMonthOfBirth = Convert.ToInt32(model.SearchMonthOfBirth);
 
-            var Users = _UserService.GetAllUsers(
+            var users = _userService.GetAllUsers(
                 UserRoleIds: model.SearchUserRoleIds.ToArray(),
                 email: model.SearchEmail,
                 username: model.SearchUsername,
@@ -2459,7 +1939,7 @@ namespace Invenio.Admin.Controllers
 
             try
             {
-                var xml = _exportManager.ExportUsersToXml(Users);
+                var xml = _exportManager.ExportUsersToXml(users);
                 return new XmlDownloadResult(xml, "Users.xml");
             }
             catch (Exception exc)
@@ -2475,17 +1955,17 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
                 return AccessDeniedView();
 
-            var Users = new List<User>();
+            var users = new List<User>();
             if (selectedIds != null)
             {
                 var ids = selectedIds
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => Convert.ToInt32(x))
                     .ToArray();
-                Users.AddRange(_UserService.GetUsersByIds(ids));
+                users.AddRange(_userService.GetUsersByIds(ids));
             }
 
-            var xml = _exportManager.ExportUsersToXml(Users);
+            var xml = _exportManager.ExportUsersToXml(users);
             return new XmlDownloadResult(xml, "Users.xml");
         }
 

@@ -10,6 +10,7 @@ namespace Invenio.Core.Domain.Reports
 {
     public class Report : BaseEntity
     {
+        public long CheckedPartsQuantity { get; set; }
         public long OkPartsQuantity { get; set; }
         public long NokPartsQuantity { get; set; }
         public long ReworkPartsQuantity { get; set; }

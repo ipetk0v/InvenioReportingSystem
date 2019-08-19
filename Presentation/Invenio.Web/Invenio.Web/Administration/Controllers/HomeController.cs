@@ -17,10 +17,12 @@ using Invenio.Services.Users;
 //using Invenio.Services.Orders;
 using Invenio.Services.Security;
 using Invenio.Services.Orders;
-using Invenio.Services.Customers;
+using Invenio.Services.Supplier;
 using Invenio.Services.Reports;
 using System.Collections.Generic;
 using System.ServiceModel.Syndication;
+using Invenio.Services.Customers;
+using Invenio.Core.Domain.Reports;
 
 namespace Invenio.Admin.Controllers
 {
@@ -35,8 +37,8 @@ namespace Invenio.Admin.Controllers
         private readonly IUserService _UserService;
         private readonly IWorkContext _workContext;
         private readonly ICacheManager _cacheManager;
-        private readonly ICustomerService _customerService;
-        private readonly IManufacturerService _manufacturerService;
+        private readonly ISupplierService _supplierService;
+        private readonly ICustomerService _CustomerService;
         private readonly IReportService _reportService;
 
         #endregion
@@ -48,11 +50,11 @@ namespace Invenio.Admin.Controllers
             ISettingService settingService,
             IPermissionService permissionService,
             IOrderService orderService,
-            IUserService UserService,
+            IUserService userService,
             IWorkContext workContext,
             ICacheManager cacheManager,
+            ISupplierService supplierService,
             ICustomerService customerService,
-            IManufacturerService manufacturerService,
             IReportService reportService)
         {
             this._storeContext = storeContext;
@@ -60,11 +62,11 @@ namespace Invenio.Admin.Controllers
             this._settingService = settingService;
             this._permissionService = permissionService;
             this._orderService = orderService;
-            this._UserService = UserService;
+            this._UserService = userService;
             this._workContext = workContext;
             this._cacheManager = cacheManager;
-            this._customerService = customerService;
-            this._manufacturerService = manufacturerService;
+            this._supplierService = supplierService;
+            this._CustomerService = customerService;
             this._reportService = reportService;
         }
 
@@ -159,40 +161,56 @@ namespace Invenio.Admin.Controllers
 
             var allUsers = _UserService.GetAllUsers();
 
-            var numberOfCustomers = 0;
+            var numberOfSuppliers = 0;
             var numberOfUsers = new List<User>();
+            var numberNotApprovedReports = new List<Report>();
 
-            foreach (var reg in _workContext.CurrentUser.ManufacturerRegions)
+            if (_workContext.CurrentUser.IsAdmin())
             {
-                numberOfUsers.AddRange(allUsers.Where(x => x.Active == true && x.ManufacturerRegions.Contains(reg)));
+                numberOfUsers = _UserService.GetAllUsers().ToList();
+                numberOfSuppliers = _supplierService.GetAllSuppliers().ToList().Count;
 
-                foreach (var man in _manufacturerService
-                    .GetAllManufacturers(countryId: reg.CountryId, stateId: reg.Id))
+                model.NumberOfUsers = numberOfUsers.Distinct().Count();
+                model.NumberOfSuppliers = numberOfSuppliers;
+                model.NumberNotApprovedReports = _reportService.GetAllReports(isAprroved: 2).TotalCount;
+                model.NumberOfOrders = _orderService.GetAllOrders(published: true).Count;
+            }
+            else
+            {
+                foreach (var reg in _workContext.CurrentUser.CustomerRegions)
                 {
-                    numberOfUsers.AddRange(allUsers.Where(x => x.Active == true && x.Manufacturers.Contains(man)));
+                    numberOfUsers.AddRange(allUsers.Where(x => x.Active == true && x.CustomerRegions.Contains(reg)));
 
-                    foreach (var cus in _customerService.GetAllCustomers(manufacturerId: man.Id))
+                    foreach (var man in _CustomerService
+                        .GetAllCustomers(countryId: reg.CountryId, stateId: reg.Id))
                     {
-                        numberOfCustomers++;
-                        model.NumberOfOrders += _orderService.GetAllCustomerOrders(customerId: cus.Id).TotalCount;
+                        numberOfUsers.AddRange(allUsers.Where(x => x.Active == true && x.Customers.Contains(man)));
+                        numberNotApprovedReports.AddRange(_reportService.GetAllReports(CustomerId: man.Id, isAprroved: 2));
+
+                        foreach (var cus in _supplierService.GetAllSuppliers(CustomerId: man.Id))
+                        {
+                            numberOfSuppliers++;
+                            model.NumberOfOrders += _orderService.GetAllSupplierOrders(supplierId: cus.Id).TotalCount;
+                        }
                     }
                 }
-            }
 
-            foreach (var man in _workContext.CurrentUser.Manufacturers)
-            {
-                numberOfUsers.AddRange(allUsers.Where(x => x.Active == true && x.Manufacturers.Contains(man)));
-
-                foreach (var cus in _customerService.GetAllCustomers(manufacturerId: man.Id))
+                foreach (var man in _workContext.CurrentUser.Customers)
                 {
-                    numberOfCustomers++;
-                    model.NumberOfOrders += _orderService.GetAllCustomerOrders(customerId: cus.Id).TotalCount;
-                }
-            }
+                    numberOfUsers.AddRange(allUsers.Where(x => x.Active == true && x.Customers.Contains(man)));
+                    numberNotApprovedReports.AddRange(_reportService.GetAllReports(CustomerId: man.Id, isAprroved: 2));
 
-            model.NumberOfUsers = numberOfUsers.Distinct().Count();
-            model.NumberOfCustomers = numberOfCustomers;
-            model.NumberNotApprovedReports = _reportService.GetAllReports(isAprroved: 2).TotalCount;
+                    foreach (var cus in _supplierService.GetAllSuppliers(CustomerId: man.Id))
+                    {
+                        numberOfSuppliers++;
+                        model.NumberOfOrders += _orderService.GetAllSupplierOrders(supplierId: cus.Id).TotalCount;
+                    }
+                }
+
+                model.NumberOfUsers = numberOfUsers.Distinct().Count();
+                model.NumberOfSuppliers = numberOfSuppliers;
+                model.NumberNotApprovedReports = numberNotApprovedReports.Distinct().Count();
+            }
 
             return PartialView(model);
         }

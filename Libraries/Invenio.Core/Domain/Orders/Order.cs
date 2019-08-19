@@ -1,5 +1,4 @@
-﻿using Invenio.Core.Domain.Customers;
-using Invenio.Core.Domain.Parts;
+﻿using Invenio.Core.Domain.Suppliers;
 using System;
 
 namespace Invenio.Core.Domain.Orders
@@ -28,7 +27,7 @@ namespace Invenio.Core.Domain.Orders
 
         public bool Deleted { get; set; }
 
-        public int CustomerId { get; set; }
-        public virtual Customer Customer { get; set; }
+        public int SupplierId { get; set; }
+        public virtual Supplier Supplier { get; set; }
     }
 }

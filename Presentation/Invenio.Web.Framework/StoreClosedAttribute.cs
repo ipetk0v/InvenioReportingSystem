@@ -78,8 +78,8 @@ namespace Invenio.Web.Framework
 
             //access to a closed store?
             var permissionService = EngineContext.Current.Resolve<IPermissionService>();
-            if (permissionService.Authorize(StandardPermissionProvider.AccessClosedStore))
-                return;
+            //if (permissionService.Authorize(StandardPermissionProvider.AccessClosedStore))
+            //    return;
 
             var storeClosedUrl = new UrlHelper(filterContext.RequestContext).RouteUrl("StoreClosed");
             filterContext.Result = new RedirectResult(storeClosedUrl);

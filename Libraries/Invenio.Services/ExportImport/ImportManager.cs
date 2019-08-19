@@ -40,7 +40,7 @@ namespace Invenio.Services.ExportImport
         //private readonly IProductService _productService;
         //private readonly IProductAttributeService _productAttributeService;
         //private readonly ICategoryService _categoryService;
-        //private readonly IManufacturerService _manufacturerService;
+        //private readonly ICustomerService _CustomerService;
         private readonly IPictureService _pictureService;
         //private readonly IUrlRecordService _urlRecordService;
         private readonly IStoreContext _storeContext;
@@ -70,7 +70,7 @@ namespace Invenio.Services.ExportImport
         public ImportManager(
             //IProductService productService,
             //ICategoryService categoryService,
-            //IManufacturerService manufacturerService,
+            //ICustomerService CustomerService,
             IPictureService pictureService,
             //IUrlRecordService urlRecordService,
             IStoreContext storeContext,
@@ -97,7 +97,7 @@ namespace Invenio.Services.ExportImport
         {
             //this._productService = productService;
             //this._categoryService = categoryService;
-            //this._manufacturerService = manufacturerService;
+            //this._CustomerService = CustomerService;
             this._pictureService = pictureService;
             //this._urlRecordService = urlRecordService;
             this._storeContext = storeContext;
@@ -377,9 +377,9 @@ namespace Invenio.Services.ExportImport
         //        tempProperty = manager.GetProperty("SKU");
         //        var skuCellNum = tempProperty.Return(p => p.PropertyOrderPosition, -1);
 
-        //        var allManufacturersNames = new List<string>();
-        //        tempProperty = manager.GetProperty("Manufacturers");
-        //        var manufacturerCellNum = tempProperty.Return(p => p.PropertyOrderPosition, -1);
+        //        var allCustomersNames = new List<string>();
+        //        tempProperty = manager.GetProperty("Customers");
+        //        var CustomerCellNum = tempProperty.Return(p => p.PropertyOrderPosition, -1);
 
         //        manager.SetSelectList("ProductType", ProductType.SimpleProduct.ToSelectList(useLocalization: false));
         //        manager.SetSelectList("GiftCardType", GiftCardType.Virtual.ToSelectList(useLocalization: false));
@@ -461,11 +461,11 @@ namespace Invenio.Services.ExportImport
         //                    allSku.Add(sku);
         //            }
 
-        //            if (manufacturerCellNum > 0)
+        //            if (CustomerCellNum > 0)
         //            { 
-        //                var manufacturerIds = worksheet.Cells[endRow, manufacturerCellNum].Value.Return(p => p.ToString(), string.Empty);
-        //                if (!manufacturerIds.IsEmpty())
-        //                    allManufacturersNames.AddRange(manufacturerIds.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()));
+        //                var CustomerIds = worksheet.Cells[endRow, CustomerCellNum].Value.Return(p => p.ToString(), string.Empty);
+        //                if (!CustomerIds.IsEmpty())
+        //                    allCustomersNames.AddRange(CustomerIds.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()));
         //            }
 
         //            //counting the number of products
@@ -481,11 +481,11 @@ namespace Invenio.Services.ExportImport
         //            throw new ArgumentException(string.Format("The following category name(s) don't exist - {0}", string.Join(", ", notExistingCategories)));
         //        }
 
-        //        //performance optimization, the check for the existence of the manufacturers in one SQL request
-        //        var notExistingManufacturers = _manufacturerService.GetNotExistingManufacturers(allManufacturersNames.ToArray());
-        //        if (notExistingManufacturers.Any())
+        //        //performance optimization, the check for the existence of the Customers in one SQL request
+        //        var notExistingCustomers = _CustomerService.GetNotExistingCustomers(allCustomersNames.ToArray());
+        //        if (notExistingCustomers.Any())
         //        {
-        //            throw new ArgumentException(string.Format("The following manufacturer name(s) don't exist - {0}", string.Join(", ", notExistingManufacturers)));
+        //            throw new ArgumentException(string.Format("The following Customer name(s) don't exist - {0}", string.Join(", ", notExistingCustomers)));
         //        }
 
         //        //performance optimization, the check for the existence of the product attributes in one SQL request
@@ -513,11 +513,11 @@ namespace Invenio.Services.ExportImport
         //        //performance optimization, load all categories in one SQL request
         //        var allCategories = _categoryService.GetAllCategories(showHidden: true);
 
-        //        //performance optimization, load all manufacturers IDs for products in one SQL request
-        //        var allProductsManufacturerIds = _manufacturerService.GetProductManufacturerIds(allProductsBySku.Select(p => p.Id).ToArray());
+        //        //performance optimization, load all Customers IDs for products in one SQL request
+        //        var allProductsCustomerIds = _CustomerService.GetProductCustomerIds(allProductsBySku.Select(p => p.Id).ToArray());
 
-        //        //performance optimization, load all manufacturers in one SQL request
-        //        var allManufacturers = _manufacturerService.GetAllManufacturers(showHidden: true);
+        //        //performance optimization, load all Customers in one SQL request
+        //        var allCustomers = _CustomerService.GetAllCustomers(showHidden: true);
 
         //        //product to import images
         //        var productPictureMetadata = new List<ProductPictureMetadata>();
@@ -707,8 +707,8 @@ namespace Invenio.Services.ExportImport
         //                    case "SKU":
         //                        product.Sku = property.StringValue;
         //                        break;
-        //                    case "ManufacturerPartNumber":
-        //                        product.ManufacturerPartNumber = property.StringValue;
+        //                    case "CustomerPartNumber":
+        //                        product.CustomerPartNumber = property.StringValue;
         //                        break;
         //                    case "Gtin":
         //                        product.Gtin = property.StringValue;
@@ -1021,35 +1021,35 @@ namespace Invenio.Services.ExportImport
         //                }
         //            }
 
-        //            tempProperty = manager.GetProperty("Manufacturers");
+        //            tempProperty = manager.GetProperty("Customers");
         //            if (tempProperty != null)
         //            {
-        //                var manufacturerNames = tempProperty.StringValue;
+        //                var CustomerNames = tempProperty.StringValue;
 
-        //                //manufacturer mappings
-        //                var manufacturers = isNew || !allProductsManufacturerIds.ContainsKey(product.Id) ? new int[0] : allProductsManufacturerIds[product.Id];
-        //                var importedManufacturers = manufacturerNames.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(x => allManufacturers.First(m => m.Name == x.Trim()).Id).ToList();
-        //                foreach (var manufacturerId in importedManufacturers)
+        //                //Customer mappings
+        //                var Customers = isNew || !allProductsCustomerIds.ContainsKey(product.Id) ? new int[0] : allProductsCustomerIds[product.Id];
+        //                var importedCustomers = CustomerNames.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(x => allCustomers.First(m => m.Name == x.Trim()).Id).ToList();
+        //                foreach (var CustomerId in importedCustomers)
         //                {
-        //                    if (manufacturers.Any(c => c == manufacturerId))
+        //                    if (Customers.Any(c => c == CustomerId))
         //                        continue;
 
-        //                    var productManufacturer = new ProductManufacturer
+        //                    var productCustomer = new ProductCustomer
         //                    {
         //                        ProductId = product.Id,
-        //                        ManufacturerId = manufacturerId,
+        //                        CustomerId = CustomerId,
         //                        IsFeaturedProduct = false,
         //                        DisplayOrder = 1
         //                    };
-        //                    _manufacturerService.InsertProductManufacturer(productManufacturer);
+        //                    _CustomerService.InsertProductCustomer(productCustomer);
         //                }
 
-        //                //delete product manufacturers
-        //                var deletedProductsManufacturers = manufacturers.Where(manufacturerId => !importedManufacturers.Contains(manufacturerId))
-        //                        .Select(manufacturerId => product.ProductManufacturers.First(pc => pc.ManufacturerId == manufacturerId));
-        //                foreach (var deletedProductManufacturer in deletedProductsManufacturers)
+        //                //delete product Customers
+        //                var deletedProductsCustomers = Customers.Where(CustomerId => !importedCustomers.Contains(CustomerId))
+        //                        .Select(CustomerId => product.ProductCustomers.First(pc => pc.CustomerId == CustomerId));
+        //                foreach (var deletedProductCustomer in deletedProductsCustomers)
         //                {
-        //                    _manufacturerService.DeleteProductManufacturer(deletedProductManufacturer);
+        //                    _CustomerService.DeleteProductCustomer(deletedProductCustomer);
         //                }
         //            }
 
@@ -1229,10 +1229,10 @@ namespace Invenio.Services.ExportImport
         }
 
         /// <summary>
-        /// Import manufacturers from XLSX file
+        /// Import Customers from XLSX file
         /// </summary>
         /// <param name="stream">Stream</param>
-        //public virtual void ImportManufacturersFromXlsx(Stream stream)
+        //public virtual void ImportCustomersFromXlsx(Stream stream)
         //{
         //    using (var xlPackage = new ExcelPackage(stream))
         //    {
@@ -1242,9 +1242,9 @@ namespace Invenio.Services.ExportImport
         //            throw new InvenioException("No worksheet found");
 
         //        //the columns
-        //        var properties = GetPropertiesByExcelCells<Manufacturer>(worksheet);
+        //        var properties = GetPropertiesByExcelCells<Customer>(worksheet);
 
-        //        var manager = new PropertyManager<Manufacturer>(properties);
+        //        var manager = new PropertyManager<Customer>(properties);
 
         //        var iRow = 2;
         //        var setSeName = properties.Any(p => p.PropertyName == "SeName");
@@ -1260,21 +1260,21 @@ namespace Invenio.Services.ExportImport
 
         //            manager.ReadFromXlsx(worksheet, iRow);
 
-        //            var manufacturer = _manufacturerService.GetManufacturerById(manager.GetProperty("Id").IntValue);
+        //            var Customer = _CustomerService.GetCustomerById(manager.GetProperty("Id").IntValue);
 
-        //            var isNew = manufacturer == null;
+        //            var isNew = Customer == null;
 
-        //            manufacturer = manufacturer ?? new Manufacturer();
+        //            Customer = Customer ?? new Customer();
 
         //            if (isNew)
         //            {
-        //                manufacturer.CreatedOnUtc = DateTime.UtcNow;
+        //                Customer.CreatedOnUtc = DateTime.UtcNow;
 
         //                //default values
-        //                manufacturer.PageSize = _catalogSettings.DefaultManufacturerPageSize;
-        //                manufacturer.PageSizeOptions = _catalogSettings.DefaultManufacturerPageSizeOptions;
-        //                manufacturer.Published = true;
-        //                manufacturer.AllowUsersToSelectPageSize = true;
+        //                Customer.PageSize = _catalogSettings.DefaultCustomerPageSize;
+        //                Customer.PageSizeOptions = _catalogSettings.DefaultCustomerPageSizeOptions;
+        //                Customer.Published = true;
+        //                Customer.AllowUsersToSelectPageSize = true;
         //            }
 
         //            var seName = string.Empty;
@@ -1284,48 +1284,48 @@ namespace Invenio.Services.ExportImport
         //                switch (property.PropertyName)
         //                {
         //                    case "Name":
-        //                        manufacturer.Name = property.StringValue;
+        //                        Customer.Name = property.StringValue;
         //                        break;
         //                    case "Description":
-        //                        manufacturer.Description = property.StringValue;
+        //                        Customer.Description = property.StringValue;
         //                        break;
-        //                    case "ManufacturerTemplateId":
-        //                        manufacturer.ManufacturerTemplateId = property.IntValue;
+        //                    case "CustomerTemplateId":
+        //                        Customer.CustomerTemplateId = property.IntValue;
         //                        break;
         //                    case "MetaKeywords":
-        //                        manufacturer.MetaKeywords = property.StringValue;
+        //                        Customer.MetaKeywords = property.StringValue;
         //                        break;
         //                    case "MetaDescription":
-        //                        manufacturer.MetaDescription = property.StringValue;
+        //                        Customer.MetaDescription = property.StringValue;
         //                        break;
         //                    case "MetaTitle":
-        //                        manufacturer.MetaTitle = property.StringValue;
+        //                        Customer.MetaTitle = property.StringValue;
         //                        break;
         //                    case "Picture":
-        //                        var picture = LoadPicture(manager.GetProperty("Picture").StringValue, manufacturer.Name,
-        //                            isNew ? null : (int?) manufacturer.PictureId);
+        //                        var picture = LoadPicture(manager.GetProperty("Picture").StringValue, Customer.Name,
+        //                            isNew ? null : (int?) Customer.PictureId);
 
         //                        if (picture != null)
-        //                            manufacturer.PictureId = picture.Id;
+        //                            Customer.PictureId = picture.Id;
 
         //                        break;
         //                    case "PageSize":
-        //                        manufacturer.PageSize = property.IntValue;
+        //                        Customer.PageSize = property.IntValue;
         //                        break;
         //                    case "AllowUsersToSelectPageSize":
-        //                        manufacturer.AllowUsersToSelectPageSize = property.BooleanValue;
+        //                        Customer.AllowUsersToSelectPageSize = property.BooleanValue;
         //                        break;
         //                    case "PageSizeOptions":
-        //                        manufacturer.PageSizeOptions = property.StringValue;
+        //                        Customer.PageSizeOptions = property.StringValue;
         //                        break;
         //                    case "PriceRanges":
-        //                        manufacturer.PriceRanges = property.StringValue;
+        //                        Customer.PriceRanges = property.StringValue;
         //                        break;
         //                    case "Published":
-        //                        manufacturer.Published = property.BooleanValue;
+        //                        Customer.Published = property.BooleanValue;
         //                        break;
         //                    case "DisplayOrder":
-        //                        manufacturer.DisplayOrder = property.IntValue;
+        //                        Customer.DisplayOrder = property.IntValue;
         //                        break;
         //                    case "SeName":
         //                        seName = property.StringValue;
@@ -1333,22 +1333,22 @@ namespace Invenio.Services.ExportImport
         //                }
         //            }
 
-        //            manufacturer.UpdatedOnUtc = DateTime.UtcNow;
+        //            Customer.UpdatedOnUtc = DateTime.UtcNow;
 
         //            if (isNew)
-        //                _manufacturerService.InsertManufacturer(manufacturer);
+        //                _CustomerService.InsertCustomer(Customer);
         //            else
-        //                _manufacturerService.UpdateManufacturer(manufacturer);
+        //                _CustomerService.UpdateCustomer(Customer);
 
         //            //search engine name
         //            if (setSeName)
-        //                _urlRecordService.SaveSlug(manufacturer, manufacturer.ValidateSeName(seName, manufacturer.Name, true), 0);
+        //                _urlRecordService.SaveSlug(Customer, Customer.ValidateSeName(seName, Customer.Name, true), 0);
 
         //            iRow++;
         //        }
 
         //        //activity log
-        //        _UserActivityService.InsertActivity("ImportManufacturers", _localizationService.GetResource("ActivityLog.ImportManufacturers"), iRow - 2);
+        //        _UserActivityService.InsertActivity("ImportCustomers", _localizationService.GetResource("ActivityLog.ImportCustomers"), iRow - 2);
         //    }
         //}
 

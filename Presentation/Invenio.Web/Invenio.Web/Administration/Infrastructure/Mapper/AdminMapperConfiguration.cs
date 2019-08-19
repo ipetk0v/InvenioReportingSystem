@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Invenio.Admin.Models.Manufacturer;
+using Invenio.Admin.Models.Customer;
 //using Invenio.Admin.Models.Blogs;
 //using Invenio.Admin.Models.Catalog;
 //using Invenio.Admin.Models.Cms;
@@ -32,7 +32,7 @@ using Invenio.Core.Domain.Directory;
 //using Invenio.Core.Domain.Forums;
 using Invenio.Core.Domain.Localization;
 using Invenio.Core.Domain.Logging;
-using Invenio.Core.Domain.Manufacturers;
+using Invenio.Core.Domain.Customers;
 using Invenio.Core.Domain.Messages;
 using Invenio.Core.Domain.Users;
 //using Invenio.Core.Domain.News;
@@ -52,8 +52,8 @@ using Invenio.Core.Infrastructure.Mapper;
 //using Invenio.Services.Tax;
 using Invenio.Web.Framework.Security.Captcha;
 using System;
-using Invenio.Core.Domain.Customers;
-using Invenio.Admin.Models.Customers;
+using Invenio.Core.Domain.Suppliers;
+using Invenio.Admin.Models.Supplier;
 using Invenio.Core.Domain.Orders;
 using Invenio.Admin.Models.Orders;
 using Invenio.Admin.Models.Report;
@@ -243,19 +243,19 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //    .ForMember(dest => dest.SubjectToAcl, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AppliedDiscounts, mo => mo.Ignore())
                 //    .ForMember(dest => dest.LimitedToStores, mo => mo.Ignore());
-                //manufacturer
-                cfg.CreateMap<Manufacturer, ManufacturerModel>()
-                    .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());
-
-                cfg.CreateMap<ManufacturerModel, Manufacturer>()
-                    .ForMember(dest => dest.CreatedOnUtc, mo => mo.Ignore())
-                    .ForMember(dest => dest.UpdatedOnUtc, mo => mo.Ignore())
-                    .ForMember(dest => dest.Deleted, mo => mo.Ignore());
-
+                //Customer
                 cfg.CreateMap<Customer, CustomerModel>()
                     .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());
 
                 cfg.CreateMap<CustomerModel, Customer>()
+                    .ForMember(dest => dest.CreatedOnUtc, mo => mo.Ignore())
+                    .ForMember(dest => dest.UpdatedOnUtc, mo => mo.Ignore())
+                    .ForMember(dest => dest.Deleted, mo => mo.Ignore());
+
+                cfg.CreateMap<Supplier, SupplierModel>()
+                    .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());
+
+                cfg.CreateMap<SupplierModel, Supplier>()
                     .ForMember(dest => dest.CreatedOnUtc, mo => mo.Ignore())
                     .ForMember(dest => dest.UpdatedOnUtc, mo => mo.Ignore())
                     .ForMember(dest => dest.Deleted, mo => mo.Ignore());
@@ -287,7 +287,7 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //    .ForMember(dest => dest.AvailableProductTemplates, mo => mo.Ignore())
                 //    .ForMember(dest => dest.Locales, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AvailableCategories, mo => mo.Ignore())
-                //    .ForMember(dest => dest.AvailableManufacturers, mo => mo.Ignore())
+                //    .ForMember(dest => dest.AvailableCustomers, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AvailableProductAttributes, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AddPictureModel, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ProductPictureModels, mo => mo.Ignore())
@@ -307,7 +307,7 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //    .ForMember(dest => dest.Locales, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AvailableDiscounts, mo => mo.Ignore())
                 //    .ForMember(dest => dest.SelectedCategoryIds, mo => mo.Ignore())
-                //    .ForMember(dest => dest.SelectedManufacturerIds, mo => mo.Ignore())
+                //    .ForMember(dest => dest.SelectedCustomerIds, mo => mo.Ignore())
                 //    .ForMember(dest => dest.SelectedDiscountIds, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AvailableDeliveryDates, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AvailableProductAvailabilityRanges, mo => mo.Ignore())
@@ -330,7 +330,7 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //    .ForMember(dest => dest.ApprovedTotalReviews, mo => mo.Ignore())
                 //    .ForMember(dest => dest.NotApprovedTotalReviews, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ProductCategories, mo => mo.Ignore())
-                //    .ForMember(dest => dest.ProductManufacturers, mo => mo.Ignore())
+                //    .ForMember(dest => dest.ProductCustomers, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ProductPictures, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ProductReviews, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ProductSpecificationAttributes, mo => mo.Ignore())
@@ -646,7 +646,7 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //    .ForMember(dest => dest.DiscountLimitation, mo => mo.Ignore())
                 //    .ForMember(dest => dest.DiscountRequirements, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AppliedToCategories, mo => mo.Ignore())
-                //    .ForMember(dest => dest.AppliedToManufacturers, mo => mo.Ignore())
+                //    .ForMember(dest => dest.AppliedToCustomers, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AppliedToProducts, mo => mo.Ignore());
                 ////gift cards
                 //cfg.CreateMap<GiftCard, GiftCardModel>()
@@ -822,7 +822,7 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //        mo => mo.Ignore())
                 //    .ForMember(dest => dest.ShowSkuOnProductDetailsPage_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ShowSkuOnCatalogPages_OverrideForStore, mo => mo.Ignore())
-                //    .ForMember(dest => dest.ShowManufacturerPartNumber_OverrideForStore, mo => mo.Ignore())
+                //    .ForMember(dest => dest.ShowCustomerPartNumber_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ShowGtin_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ShowFreeShippingNotification_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AllowProductSorting_OverrideForStore, mo => mo.Ignore())
@@ -865,7 +865,7 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //    .ForMember(dest => dest.ProductsByTagPageSizeOptions_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.IncludeShortDescriptionInCompareProducts_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.IncludeFullDescriptionInCompareProducts_OverrideForStore, mo => mo.Ignore())
-                //    .ForMember(dest => dest.ManufacturersBlockItemsToDisplay_OverrideForStore, mo => mo.Ignore())
+                //    .ForMember(dest => dest.CustomersBlockItemsToDisplay_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.DisplayTaxShippingInfoFooter_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.DisplayTaxShippingInfoProductDetailsPage_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.DisplayTaxShippingInfoProductBoxes_OverrideForStore, mo => mo.Ignore())
@@ -887,8 +887,8 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //    .ForMember(dest => dest.CompareProductsNumber, mo => mo.Ignore())
                 //    .ForMember(dest => dest.DefaultCategoryPageSizeOptions, mo => mo.Ignore())
                 //    .ForMember(dest => dest.DefaultCategoryPageSize, mo => mo.Ignore())
-                //    .ForMember(dest => dest.DefaultManufacturerPageSizeOptions, mo => mo.Ignore())
-                //    .ForMember(dest => dest.DefaultManufacturerPageSize, mo => mo.Ignore())
+                //    .ForMember(dest => dest.DefaultCustomerPageSizeOptions, mo => mo.Ignore())
+                //    .ForMember(dest => dest.DefaultCustomerPageSize, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ProductSortingEnumDisabled, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ProductSortingEnumDisplayOrder, mo => mo.Ignore())
                 //    .ForMember(dest => dest.ExportImportUseDropdownlistsForAssociatedEntities, mo => mo.Ignore());
@@ -971,7 +971,7 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //        mo => mo.Ignore())
                 //    .ForMember(dest => dest.AssociatedProductPictureSize_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.CategoryThumbPictureSize_OverrideForStore, mo => mo.Ignore())
-                //    .ForMember(dest => dest.ManufacturerThumbPictureSize_OverrideForStore, mo => mo.Ignore())
+                //    .ForMember(dest => dest.CustomerThumbPictureSize_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.VendorThumbPictureSize_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.CartThumbPictureSize_OverrideForStore, mo => mo.Ignore())
                 //    .ForMember(dest => dest.MiniCartThumbPictureSize_OverrideForStore, mo => mo.Ignore())
@@ -984,18 +984,18 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //cfg.CreateMap<MediaSettingsModel, MediaSettings>()
                 //    .ForMember(dest => dest.ImageSquarePictureSize, mo => mo.Ignore())
                 //    .ForMember(dest => dest.AutoCompleteSearchThumbPictureSize, mo => mo.Ignore());
-                cfg.CreateMap<UserSettings, CustomerUserSettingsModel.UserSettingsModel>()
+                cfg.CreateMap<UserSettings, SupplierUserSettingsModel.UserSettingsModel>()
                     .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());
-                cfg.CreateMap<CustomerUserSettingsModel.UserSettingsModel, UserSettings>()
+                cfg.CreateMap<SupplierUserSettingsModel.UserSettingsModel, UserSettings>()
                     .ForMember(dest => dest.HashedPasswordFormat, mo => mo.Ignore())
                     .ForMember(dest => dest.AvatarMaximumSizeBytes, mo => mo.Ignore())
                     .ForMember(dest => dest.DownloadableProductsValidateUser, mo => mo.Ignore())
                     .ForMember(dest => dest.OnlineUserMinutes, mo => mo.Ignore())
                     .ForMember(dest => dest.SuffixDeletedUsers, mo => mo.Ignore())
                     .ForMember(dest => dest.DeleteGuestTaskOlderThanMinutes, mo => mo.Ignore());
-                cfg.CreateMap<AddressSettings, CustomerUserSettingsModel.AddressSettingsModel>()
+                cfg.CreateMap<AddressSettings, SupplierUserSettingsModel.AddressSettingsModel>()
                     .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());
-                cfg.CreateMap<CustomerUserSettingsModel.AddressSettingsModel, AddressSettings>();
+                cfg.CreateMap<SupplierUserSettingsModel.AddressSettingsModel, AddressSettings>();
                 //cfg.CreateMap<ProductEditorSettings, ProductEditorSettingsModel>()
                 //    .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());
                 //cfg.CreateMap<ProductEditorSettingsModel, ProductEditorSettings>();
@@ -1015,10 +1015,10 @@ namespace Invenio.Admin.Infrastructure.Mapper
                 //cfg.CreateMap<CategoryTemplate, CategoryTemplateModel>()
                 //    .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());
                 //cfg.CreateMap<CategoryTemplateModel, CategoryTemplate>();
-                ////manufacturer template
-                //cfg.CreateMap<ManufacturerTemplate, ManufacturerTemplateModel>()
+                ////Customer template
+                //cfg.CreateMap<CustomerTemplate, CustomerTemplateModel>()
                 //    .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());
-                //cfg.CreateMap<ManufacturerTemplateModel, ManufacturerTemplate>();
+                //cfg.CreateMap<CustomerTemplateModel, CustomerTemplate>();
                 ////product template
                 //cfg.CreateMap<ProductTemplate, ProductTemplateModel>()
                 //    .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());

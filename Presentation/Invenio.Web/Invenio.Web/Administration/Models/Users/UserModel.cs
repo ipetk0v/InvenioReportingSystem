@@ -22,10 +22,10 @@ namespace Invenio.Admin.Models.Users
             this.SelectedUserRoleIds= new List<int>();
             this.AvailableUserRoles = new List<SelectListItem>();
 
-            this.SelectedManufacturerIds = new List<int>();
-            this.SelectedManufacturerRegionIds = new List<int>();
-            this.AvailableManufacturers = new List<SelectListItem>();
-            this.AvailableManufacturerRegions = new List<SelectListItem>();
+            this.SelectedCustomerIds = new List<int>();
+            this.SelectedCustomerRegionIds = new List<int>();
+            this.AvailableCustomers = new List<SelectListItem>();
+            this.AvailableCustomerRegions = new List<SelectListItem>();
 
             this.AssociatedExternalAuthRecords = new List<AssociatedExternalAuthModel>();
             this.AvailableCountries = new List<SelectListItem>();
@@ -194,26 +194,26 @@ namespace Invenio.Admin.Models.Users
         [UIHint("MultiSelect")]
         public IList<int> SelectedUserRoleIds { get; set; }
 
-        //manufacturer
-        [NopResourceDisplayName("Admin.Users.Users.Fields.Manufacturers")]
-        public string ManufacturerNames { get; set; }
-        public List<SelectListItem> AvailableManufacturers { get; set; }
-        [NopResourceDisplayName("Admin.Users.Users.Fields.Manufacturers")]
+        //Customer
+        [NopResourceDisplayName("Admin.Users.Users.Fields.Customers")]
+        public string CustomerNames { get; set; }
+        public List<SelectListItem> AvailableCustomers { get; set; }
+        [NopResourceDisplayName("Admin.Users.Users.Fields.Customers")]
         [UIHint("MultiSelect")]
-        public IList<int> SelectedManufacturerIds { get; set; }
+        public IList<int> SelectedCustomerIds { get; set; }
 
-        //manufacturer region
-        [NopResourceDisplayName("Admin.Users.Users.Fields.ManufacturerRegions")]
-        public string ManufacturerRegionNames { get; set; }
-        public List<SelectListItem> AvailableManufacturerRegions { get; set; }
-        [NopResourceDisplayName("Admin.Users.Users.Fields.ManufacturerRegion")]
+        //Customer region
+        [NopResourceDisplayName("Admin.Users.Users.Fields.CustomerRegions")]
+        public string CustomerRegionNames { get; set; }
+        public List<SelectListItem> AvailableCustomerRegions { get; set; }
+        [NopResourceDisplayName("Admin.Users.Users.Fields.CustomerRegion")]
         [UIHint("MultiSelect")]
-        public IList<int> SelectedManufacturerRegionIds { get; set; }
+        public IList<int> SelectedCustomerRegionIds { get; set; }
 
-        //[NopResourceDisplayName("Admin.Users.Users.Fields.ManufacturerRegion")]
-        //public int SelectedManufacturerRegionId { get; set; }
-        //[NopResourceDisplayName("Admin.Users.Users.ManufacturerRegion.Fields.Regions")]
-        //public IList<SelectListItem> AvailableManufacturerRegions { get; set; }
+        //[NopResourceDisplayName("Admin.Users.Users.Fields.CustomerRegion")]
+        //public int SelectedCustomerRegionId { get; set; }
+        //[NopResourceDisplayName("Admin.Users.Users.CustomerRegion.Fields.Regions")]
+        //public IList<SelectListItem> AvailableCustomerRegions { get; set; }
 
         //newsletter subscriptions (per store)
         [NopResourceDisplayName("Admin.Users.Users.Fields.Newsletter")]

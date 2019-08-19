@@ -6,6 +6,8 @@
 
         SecondShift = 10,
 
-        NightShift = 15
+        RegularShift = 15,
+
+        NightShift = 20
     }
 }

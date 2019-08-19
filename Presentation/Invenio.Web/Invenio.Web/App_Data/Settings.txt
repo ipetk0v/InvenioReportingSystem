@@ -1,2 +1,2 @@
 DataProvider: sqlserver
-DataConnectionString: Data Source=localhost;Initial Catalog=INVENIODB972019;Integrated Security=False;Persist Security Info=False;User ID=web;Password=www
+DataConnectionString: Data Source=NTPC-KGEORGIEV\MSSQLSERVER01;Initial Catalog=InvenioDb16082019;Integrated Security=True;Persist Security Info=False

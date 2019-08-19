@@ -186,7 +186,7 @@ label, label + * {
 	font-size: 0 !important;
 }
 .category-description ul,
-.manufacturer-description ul,
+.Customer-description ul,
 .full-description ul,
 .topic-block ul,
 .topic-page ul,
@@ -196,7 +196,7 @@ label, label + * {
 	list-style: disc;
 }
 .category-description ol,
-.manufacturer-description ol,
+.Customer-description ol,
 .full-description ol,
 .topic-block ol,
 .topic-page ol,
@@ -206,7 +206,7 @@ label, label + * {
 	list-style: decimal;
 }
 .category-description p,
-.manufacturer-description p,
+.Customer-description p,
 .full-description p,
 .topic-block p,
 .topic-page p,
@@ -1264,7 +1264,7 @@ label, label + * {
 }
 
 .category-description,
-.manufacturer-description,
+.Customer-description,
 .vendor-description {
 	margin: 0 0 25px;
 	line-height: 22px;
@@ -1553,7 +1553,7 @@ label, label + * {
 
 .home-page-category-grid,
 .sub-category-grid,
-.manufacturer-grid,
+.Customer-grid,
 .vendor-grid {
 	margin: 0 0 20px;
 }
@@ -1595,15 +1595,15 @@ label, label + * {
 	font-weight: normal;
 }
 
-.manufacturer-grid .title {
+.Customer-grid .title {
 	margin: 0 0 15px;
 	text-align: center;
 	font-size: 16px;
 }
-.manufacturer-grid .title a:hover {
+.Customer-grid .title a:hover {
 	color: #4ab2f1;
 }
-.manufacturer-grid .picture {
+.Customer-grid .picture {
 	border: 1px solid #ddd;
 }
 
@@ -1858,7 +1858,7 @@ label, label + * {
     background-image: url('../images/wishlist-button.png');
 }
 
-.overview .manufacturers {
+.overview .Customers {
 	margin: 0 0 20px;
 }
 .overview .availability,

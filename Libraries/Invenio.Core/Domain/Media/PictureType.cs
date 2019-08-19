@@ -6,7 +6,7 @@ namespace Invenio.Core.Domain.Media
     public enum PictureType
     {
         /// <summary>
-        /// Entities (products, categories, manufacturers)
+        /// Entities (products, categories, Customers)
         /// </summary>
         Entity = 1,
         /// <summary>

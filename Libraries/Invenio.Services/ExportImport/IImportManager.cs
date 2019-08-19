@@ -29,10 +29,10 @@ namespace Invenio.Services.ExportImport
         int ImportStatesFromTxt(Stream stream);
 
         /// <summary>
-        /// Import manufacturers from XLSX file
+        /// Import Customers from XLSX file
         /// </summary>
         /// <param name="stream">Stream</param>
-        //void ImportManufacturersFromXlsx(Stream stream);
+        //void ImportCustomersFromXlsx(Stream stream);
 
         /// <summary>
         /// Import categories from XLSX file

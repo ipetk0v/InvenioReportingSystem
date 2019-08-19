@@ -130,23 +130,23 @@ namespace Invenio.Admin.Controllers
             return Json(gridModel);
         }
 
-        public virtual ActionResult AcivityLogDelete(int id)
-        {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageActivityLog))
-                return AccessDeniedView();
+        //public virtual ActionResult AcivityLogDelete(int id)
+        //{
+        //    if (!_permissionService.Authorize(StandardPermissionProvider.ManageActivityLog))
+        //        return AccessDeniedView();
 
-            var activityLog = _UserActivityService.GetActivityById(id);
-            if (activityLog == null)
-            {
-                throw new ArgumentException("No activity log found with the specified id");
-            }
-            _UserActivityService.DeleteActivity(activityLog);
+        //    var activityLog = _UserActivityService.GetActivityById(id);
+        //    if (activityLog == null)
+        //    {
+        //        throw new ArgumentException("No activity log found with the specified id");
+        //    }
+        //    _UserActivityService.DeleteActivity(activityLog);
 
-            //activity log
-            _UserActivityService.InsertActivity("DeleteActivityLog", _localizationService.GetResource("ActivityLog.DeleteActivityLog"));
+        //    //activity log
+        //    _UserActivityService.InsertActivity("DeleteActivityLog", _localizationService.GetResource("ActivityLog.DeleteActivityLog"));
 
-            return new NullJsonResult();
-        }
+        //    return new NullJsonResult();
+        //}
 
         //public virtual ActionResult ClearAll()
         //{

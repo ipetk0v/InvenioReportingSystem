@@ -8,10 +8,10 @@
         SORTING & REWORK REPORT
     </H1>
     <div style="padding-left: 300px;">
-        <table class="table" style="width: 400px; border: 3px;">
+        <table class="table" style="width: 400px; border: 1px;">
             <tr>
-                <td style="width: 150px; border-bottom-width: 3px;">SUPPLIER :</td>
-                <td style="border-bottom-width: 3px">@Model.CustomerName</td>
+                <td style="width: 150px; border-bottom-width: 1px;">SUPPLIER :</td>
+                <td style="border-bottom-width: 1px">@Model.SupplierName</td>
             </tr>
             <tr>
                 <td>PART NUMBER :</td>
@@ -38,7 +38,7 @@
     <br />
     <br />
     <div style="width: 100%;">
-        <table class="table maintable" style="border: 3px solid black;">
+        <table class="table maintable" style="border: 1px solid black;">
             <thead>
                 <tr>
                     <th>No</th>
@@ -58,31 +58,31 @@
                     <th>Rework percentage</th>
                 </tr>
                 <tr>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.RowNumber")</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.DateOfInspection")</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.PartNumber")</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.DeliveryNumber")</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.ChargeNumber")</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.Quantity")</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.FirstRunOkParts")</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.BlockedParts")</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.NokParts")</th>
-                    <th style="border-top: 3px">1</th>
-                    <th style="border-top: 3px">2</th>
-                    <th style="border-top: 3px">3</th>
-                    <th style="border-top: 3px">4</th>
-                    <th style="border-top: 3px">5</th>
-                    <th style="border-top: 3px">6</th>
-                    <th style="border-top: 3px">7</th>
-                    <th style="border-top: 3px">8</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.DescriptionOfBlockedParts")</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.NokPercentage")</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.ReworkedParts")</th>
-                    <th style="border-top: 3px">9</th>
-                    <th style="border-top: 3px">10</th>
-                    <th style="border-top: 3px">11</th>
-                    <th style="border-top: 3px">12</th>
-                    <th style="border-top: 3px">@T("Admin.Report.DailyFinalReport.ReworkedPercentage")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.RowNumber")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.DateOfInspection")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.PartNumber")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.DeliveryNumber")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.ChargeNumber")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.Quantity")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.FirstRunOkParts")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.BlockedParts")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.NokParts")</th>
+                    <th style="border-top: 1px">1</th>
+                    <th style="border-top: 1px">2</th>
+                    <th style="border-top: 1px">3</th>
+                    <th style="border-top: 1px">4</th>
+                    <th style="border-top: 1px">5</th>
+                    <th style="border-top: 1px">6</th>
+                    <th style="border-top: 1px">7</th>
+                    <th style="border-top: 1px">8</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.DescriptionOfBlockedParts")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.NokPercentage")</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.ReworkedParts")</th>
+                    <th style="border-top: 1px">9</th>
+                    <th style="border-top: 1px">10</th>
+                    <th style="border-top: 1px">11</th>
+                    <th style="border-top: 1px">12</th>
+                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.ReworkedPercentage")</th>
                 </tr>
             </thead>
             @{ var i = 1;}
@@ -135,38 +135,38 @@
                             @if (j == 1)
                             {
                                 <td>Description of defects:</td>
-                                <td style="border-left: 3px; border-top: 3px; border-right: 1px; border-bottom: 1px; width: 30px; text-align: center;">@j</td>
-                                <td style="border-right: 3px; border-top: 3px; width: 220px; ; border-bottom: 1px;">@description</td>
+                                <td style="border-left: 1px; border-top: 1px; border-right: 1px; border-bottom: 1px; width: 30px; text-align: center;">@j</td>
+                                <td style="border-right: 1px; border-top: 1px; width: 220px; ; border-bottom: 1px;">@description</td>
                             }
                             else if (j == 2)
                             {
                                 <td>@T("Admin.Report.DailyFinalReport.DescriptionOfDefects")</td>
-                                <td style="border-left: 3px; text-align: center; border-right: 1px; border-bottom: 1px;">@j</td>
-                                <td style="border-right: 3px; border-bottom: 1px;">@description</td>
+                                <td style="border-left: 1px; text-align: center; border-right: 1px; border-bottom: 1px;">@j</td>
+                                <td style="border-right: 1px; border-bottom: 1px;">@description</td>
                             }
                             else if (j == 9)
                             {
                                 <td>Description of rework:</td>
-                                <td style="border-left: 3px; border-top: 3px; text-align: center; border-right: 1px; border-bottom: 1px;">@j</td>
-                                <td style="border-right: 3px; border-top: 3px; border-bottom: 1px;">@description</td>
+                                <td style="border-left: 1px; border-top: 1px; text-align: center; border-right: 1px; border-bottom: 1px;">@j</td>
+                                <td style="border-right: 1px; border-top: 1px; border-bottom: 1px;">@description</td>
                             }
                             else if (j == 10)
                             {
                                 <td>@T("Admin.Report.DailyFinalReport.DescriptionOfRework")</td>
-                                <td style="border-left: 3px;  text-align: center; border-right: 1px; border-bottom: 1px;">@j</td>
-                                <td style="border-right: 3px; border-bottom: 1px;">@description</td>
+                                <td style="border-left: 1px;  text-align: center; border-right: 1px; border-bottom: 1px;">@j</td>
+                                <td style="border-right: 1px; border-bottom: 1px;">@description</td>
                             }
                             else if (j == 12)
                             {
                                 <td></td>
-                                <td style="border-left: 3px; border-bottom: 3px; text-align: center; border-right: 1px;">@j</td>
-                                <td style="border-right: 3px; border-bottom: 3px;">@description</td>
+                                <td style="border-left: 1px; border-bottom: 1px; text-align: center; border-right: 1px;">@j</td>
+                                <td style="border-right: 1px; border-bottom: 1px;">@description</td>
                             }
                             else
                             {
                                 <td></td>
-                                <td style="border-left: 3px; text-align: center; border-right: 1px; border-bottom: 1px;">@j</td>
-                                <td style="border-right: 3px; border-bottom: 1px;">@description</td>
+                                <td style="border-left: 1px; text-align: center; border-right: 1px; border-bottom: 1px;">@j</td>
+                                <td style="border-right: 1px; border-bottom: 1px;">@description</td>
                             }
 
                         </tr>
@@ -186,19 +186,19 @@
                     </tr>
                     <tr>
                         <td style="text-align: left;">Quantities</td>
-                        <td style="border: 3px solid black; border-right: 0px;">@Model.TotalChecked</td>
-                        <td style="border: 3px solid black;">@Model.TotalOk</td>
-                        <td style="border: 3px solid black; border-left: 0px;">@Model.TotalBlocked</td>
-                        <td style="border: 3px solid black; border-left: 0px;">@Model.TotalNok</td>
-                        <td style="border: 3px solid black; border-left: 0px;">@Model.TotalReworked</td>
+                        <td style="border: 1px solid black; border-right: 0px;">@Model.TotalChecked</td>
+                        <td style="border: 1px solid black;">@Model.TotalOk</td>
+                        <td style="border: 1px solid black; border-left: 0px;">@Model.TotalBlocked</td>
+                        <td style="border: 1px solid black; border-left: 0px;">@Model.TotalNok</td>
+                        <td style="border: 1px solid black; border-left: 0px;">@Model.TotalReworked</td>
                     </tr>
                     <tr>
                         <td style="text-align: left;">Percentages</td>
                         <td></td>
-                        <td style="border: 3px solid black; border-top: 0px">@(((decimal)Model.TotalOk / Model.TotalChecked * 100).ToString("0.00"))%</td>
-                        <td style="border: 3px solid black; border-top: 0px; border-left: 0px;">@(((decimal)Model.TotalBlocked / Model.TotalChecked * 100).ToString("0.00"))%</td>
-                        <td style="border: 3px solid black; border-top: 0px; border-left: 0px;">@(((decimal)Model.TotalNok / Model.TotalChecked * 100).ToString("0.00"))%</td>
-                        <td style="border: 3px solid black; border-top: 0px; border-left: 0px;">@(((decimal)Model.TotalReworked / Model.TotalChecked * 100).ToString("0.00"))%</td>
+                        <td style="border: 1px solid black; border-top: 0px">@(((decimal)Model.TotalOk / Model.TotalChecked * 100).ToString("0.00"))%</td>
+                        <td style="border: 1px solid black; border-top: 0px; border-left: 0px;">@(((decimal)Model.TotalBlocked / Model.TotalChecked * 100).ToString("0.00"))%</td>
+                        <td style="border: 1px solid black; border-top: 0px; border-left: 0px;">@(((decimal)Model.TotalNok / Model.TotalChecked * 100).ToString("0.00"))%</td>
+                        <td style="border: 1px solid black; border-top: 0px; border-left: 0px;">@(((decimal)Model.TotalReworked / Model.TotalChecked * 100).ToString("0.00"))%</td>
                     </tr>
                 </table>
 

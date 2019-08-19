@@ -1,4 +1,4 @@
-﻿@model Invenio.Admin.Models.Customers.CustomerModel
+﻿@model Invenio.Admin.Models.Customer.CustomerModel
 
 @{
     //page title
@@ -7,7 +7,7 @@
     Html.SetActiveMenuItemSystemName("Customers");
 }
 
-@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "customer-form" }))
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "Customer-form" }))
 {
     @Html.AntiForgeryToken()
     <div class="content-header clearfix">
@@ -24,7 +24,7 @@
                 <i class="fa fa-floppy-o"></i>
                 @T("Admin.Common.SaveContinue")
             </button>
-            <span id="customer-delete" class="btn bg-red">
+            <span id="Customer-delete" class="btn bg-red">
                 <i class="fa fa-trash-o"></i>
                 @T("Admin.Common.Delete")
             </span>
@@ -32,4 +32,4 @@
     </div>
     @Html.Partial("_CreateOrUpdate", Model)
 }
-@Html.DeleteConfirmation("customer-delete")
+@Html.DeleteConfirmation("Customer-delete")

@@ -35,7 +35,7 @@ namespace Invenio.Services.Reports
         }
 
         public IPagedList<Report> GetAllReports(
-            int manufacturerId = 0,
+            int CustomerId = 0,
             int regionId = 0,
             int orderId = 0,
             int isAprroved = 0,
@@ -48,11 +48,11 @@ namespace Invenio.Services.Reports
         {
             var query = _reportRepository.Table;
 
-            if (manufacturerId != 0)
-                query = query.Where(x => x.Order.Customer.ManufacturerId == manufacturerId);
+            if (CustomerId != 0)
+                query = query.Where(x => x.Order.Supplier.CustomerId == CustomerId);
 
             if (regionId != 0)
-                query = query.Where(x => x.Order.Customer.Manufacturer.StateProvinceId == regionId);
+                query = query.Where(x => x.Order.Supplier.Customer.StateProvinceId == regionId);
 
             if (orderId != 0)
                 query = query.Where(x => x.OrderId == orderId);

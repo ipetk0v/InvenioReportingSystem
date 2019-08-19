@@ -21,13 +21,9 @@
     </h1>
     <div class="pull-right">
         <a href="@Url.Action("ExportToExcel", routeValues:new {orderId=Model.OrderId})" target="_blank" class="btn btn-success">
-            <i class="fa fa-download"></i>iis
+            <i class="fa fa-download"></i>
             @T("Admin.Common.Export.Excel")
         </a>
-        @*<button type="button" name="download-excel" class="btn btn-success">
-                <i class="fa fa-download"></i>
-                @T("Admin.Common.Export.Excel")
-            </button>*@
         <a href="@Url.Action("ExportToPdf", routeValues:new {orderId=Model.OrderId})" target="_blank" class="btn btn-success">
             <i class="fa fa-download"></i>
             @T("Admin.Common.Export.PDF")
@@ -318,6 +314,10 @@
                                     {
                                         field: "TotalChecked",
                                         title: "@T("Admin.Report.DailyFinalReport.TotalChecked")"
+                                    },
+                                    {
+                                        field: "TotalOk",
+                                        title: "@T("Admin.Report.DailyFinalReport.TotalOk")"
                                     },
                                     {
                                         field: "TotalBlocked",

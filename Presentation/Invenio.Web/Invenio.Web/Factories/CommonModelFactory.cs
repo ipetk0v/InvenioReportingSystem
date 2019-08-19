@@ -47,7 +47,7 @@ namespace Invenio.Web.Factories
 
         //private readonly ICategoryService _categoryService;
         //private readonly IProductService _productService;
-        //private readonly IManufacturerService _manufacturerService;
+        //private readonly ICustomerService _CustomerService;
         //private readonly ITopicService _topicService;
         private readonly ILanguageService _languageService;
         private readonly ICurrencyService _currencyService;
@@ -83,7 +83,7 @@ namespace Invenio.Web.Factories
         public CommonModelFactory(
             //ICategoryService categoryService,
             //IProductService productService,
-            //IManufacturerService manufacturerService,
+            //ICustomerService CustomerService,
             //ITopicService topicService,
             ILanguageService languageService,
             ICurrencyService currencyService,
@@ -114,7 +114,7 @@ namespace Invenio.Web.Factories
         {
             //this._categoryService = categoryService;
             //this._productService = productService;
-            //this._manufacturerService = manufacturerService;
+            //this._CustomerService = CustomerService;
             //this._topicService = topicService;
             this._languageService = languageService;
             this._currencyService = currencyService;
@@ -317,8 +317,8 @@ namespace Invenio.Web.Factories
             {
                 IsAuthenticated = User.IsRegistered(),
                 UserName = User.IsRegistered() ? User.FormatUserName() : "",
-                ShoppingCartEnabled = _permissionService.Authorize(StandardPermissionProvider.EnableShoppingCart),
-                WishlistEnabled = _permissionService.Authorize(StandardPermissionProvider.EnableWishlist),
+                //ShoppingCartEnabled = _permissionService.Authorize(StandardPermissionProvider.EnableShoppingCart),
+                //WishlistEnabled = _permissionService.Authorize(StandardPermissionProvider.EnableWishlist),
                 AllowPrivateMessages = User.IsRegistered() /*&& _forumSettings.AllowPrivateMessages*/,
                 UnreadPrivateMessages = unreadMessage,
                 AlertMessage = alertMessage,
@@ -508,11 +508,11 @@ namespace Invenio.Web.Factories
         //                SeName = category.GetSeName(),
         //            }).ToList();
         //        }
-        //        //manufacturers
-        //        if (_commonSettings.SitemapIncludeManufacturers)
+        //        //Customers
+        //        if (_commonSettings.SitemapIncludeCustomers)
         //        {
-        //            var manufacturers = _manufacturerService.GetAllManufacturers(storeId: _storeContext.CurrentStore.Id);
-        //            model.Manufacturers = manufacturers.Select(category => new ManufacturerBriefInfoModel
+        //            var Customers = _CustomerService.GetAllCustomers(storeId: _storeContext.CurrentStore.Id);
+        //            model.Customers = Customers.Select(category => new CustomerBriefInfoModel
         //            {
         //                Id = category.Id,
         //                Name = category.GetLocalized(x => x.Name),

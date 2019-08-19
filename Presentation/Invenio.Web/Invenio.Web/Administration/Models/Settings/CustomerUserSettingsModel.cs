@@ -6,9 +6,9 @@ using Invenio.Web.Framework.Mvc;
 
 namespace Invenio.Admin.Models.Settings
 {
-    public partial class CustomerUserSettingsModel : BaseNopModel
+    public partial class SupplierUserSettingsModel : BaseNopModel
     {
-        public CustomerUserSettingsModel()
+        public SupplierUserSettingsModel()
         {
             UserSettings = new UserSettingsModel();
             AddressSettings = new AddressSettingsModel();
@@ -24,189 +24,189 @@ namespace Invenio.Admin.Models.Settings
 
         public partial class UserSettingsModel : BaseNopModel
         {
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.UsernamesEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.UsernamesEnabled")]
             public bool UsernamesEnabled { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AllowUsersToChangeUsernames")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AllowUsersToChangeUsernames")]
             public bool AllowUsersToChangeUsernames { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.CheckUsernameAvailabilityEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.CheckUsernameAvailabilityEnabled")]
             public bool CheckUsernameAvailabilityEnabled { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.UserRegistrationType")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.UserRegistrationType")]
             public int UserRegistrationType { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AllowUsersToUploadAvatars")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AllowUsersToUploadAvatars")]
             public bool AllowUsersToUploadAvatars { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.DefaultAvatarEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.DefaultAvatarEnabled")]
             public bool DefaultAvatarEnabled { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.ShowUsersLocation")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.ShowUsersLocation")]
             public bool ShowUsersLocation { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.ShowUsersJoinDate")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.ShowUsersJoinDate")]
             public bool ShowUsersJoinDate { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AllowViewingProfiles")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AllowViewingProfiles")]
             public bool AllowViewingProfiles { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.NotifyNewUserRegistration")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.NotifyNewUserRegistration")]
             public bool NotifyNewUserRegistration { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.RequireRegistrationForDownloadableProducts")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.RequireRegistrationForDownloadableProducts")]
             public bool RequireRegistrationForDownloadableProducts { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.HideDownloadableProductsTab")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.HideDownloadableProductsTab")]
             public bool HideDownloadableProductsTab { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.HideBackInStockSubscriptionsTab")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.HideBackInStockSubscriptionsTab")]
             public bool HideBackInStockSubscriptionsTab { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.UserNameFormat")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.UserNameFormat")]
             public int UserNameFormat { get; set; }
             
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.PasswordMinLength")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.PasswordMinLength")]
             public int PasswordMinLength { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.UnduplicatedPasswordsNumber")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.UnduplicatedPasswordsNumber")]
             public int UnduplicatedPasswordsNumber { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.PasswordRecoveryLinkDaysValid")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.PasswordRecoveryLinkDaysValid")]
             public int PasswordRecoveryLinkDaysValid { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.DefaultPasswordFormat")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.DefaultPasswordFormat")]
             public int DefaultPasswordFormat { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.PasswordLifetime")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.PasswordLifetime")]
             public int PasswordLifetime { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.FailedPasswordAllowedAttempts")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.FailedPasswordAllowedAttempts")]
             public int FailedPasswordAllowedAttempts { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.FailedPasswordLockoutMinutes")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.FailedPasswordLockoutMinutes")]
             public int FailedPasswordLockoutMinutes { get; set; }
             
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.NewsletterEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.NewsletterEnabled")]
             public bool NewsletterEnabled { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.NewsletterTickedByDefault")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.NewsletterTickedByDefault")]
             public bool NewsletterTickedByDefault { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.HideNewsletterBlock")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.HideNewsletterBlock")]
             public bool HideNewsletterBlock { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.NewsletterBlockAllowToUnsubscribe")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.NewsletterBlockAllowToUnsubscribe")]
             public bool NewsletterBlockAllowToUnsubscribe { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.StoreLastVisitedPage")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.StoreLastVisitedPage")]
             public bool StoreLastVisitedPage { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.EnteringEmailTwice")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.EnteringEmailTwice")]
             public bool EnteringEmailTwice { get; set; }
 
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.GenderEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.GenderEnabled")]
             public bool GenderEnabled { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.DateOfBirthEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.DateOfBirthEnabled")]
             public bool DateOfBirthEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.DateOfBirthRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.DateOfBirthRequired")]
             public bool DateOfBirthRequired { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.DateOfBirthMinimumAge")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.DateOfBirthMinimumAge")]
             [UIHint("Int32Nullable")]
             public int? DateOfBirthMinimumAge { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.CompanyEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.CompanyEnabled")]
             public bool CompanyEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.CompanyRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.CompanyRequired")]
             public bool CompanyRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.StreetAddressEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.StreetAddressEnabled")]
             public bool StreetAddressEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.StreetAddressRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.StreetAddressRequired")]
             public bool StreetAddressRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.StreetAddress2Enabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.StreetAddress2Enabled")]
             public bool StreetAddress2Enabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.StreetAddress2Required")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.StreetAddress2Required")]
             public bool StreetAddress2Required { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.ZipPostalCodeEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.ZipPostalCodeEnabled")]
             public bool ZipPostalCodeEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.ZipPostalCodeRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.ZipPostalCodeRequired")]
             public bool ZipPostalCodeRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.CityEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.CityEnabled")]
             public bool CityEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.CityRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.CityRequired")]
             public bool CityRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.CountryEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.CountryEnabled")]
             public bool CountryEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.CountryRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.CountryRequired")]
             public bool CountryRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.StateProvinceEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.StateProvinceEnabled")]
             public bool StateProvinceEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.StateProvinceRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.StateProvinceRequired")]
             public bool StateProvinceRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.PhoneEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.PhoneEnabled")]
             public bool PhoneEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.PhoneRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.PhoneRequired")]
             public bool PhoneRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.FaxEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.FaxEnabled")]
             public bool FaxEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.FaxRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.FaxRequired")]
             public bool FaxRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AcceptPrivacyPolicyEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AcceptPrivacyPolicyEnabled")]
             public bool AcceptPrivacyPolicyEnabled { get; set; }
         }
 
         public partial class AddressSettingsModel : BaseNopModel
         {
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.CompanyEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.CompanyEnabled")]
             public bool CompanyEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.CompanyRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.CompanyRequired")]
             public bool CompanyRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.StreetAddressEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.StreetAddressEnabled")]
             public bool StreetAddressEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.StreetAddressRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.StreetAddressRequired")]
             public bool StreetAddressRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.StreetAddress2Enabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.StreetAddress2Enabled")]
             public bool StreetAddress2Enabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.StreetAddress2Required")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.StreetAddress2Required")]
             public bool StreetAddress2Required { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.ZipPostalCodeEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.ZipPostalCodeEnabled")]
             public bool ZipPostalCodeEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.ZipPostalCodeRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.ZipPostalCodeRequired")]
             public bool ZipPostalCodeRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.CityEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.CityEnabled")]
             public bool CityEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.CityRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.CityRequired")]
             public bool CityRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.CountryEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.CountryEnabled")]
             public bool CountryEnabled { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.StateProvinceEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.StateProvinceEnabled")]
             public bool StateProvinceEnabled { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.PhoneEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.PhoneEnabled")]
             public bool PhoneEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.PhoneRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.PhoneRequired")]
             public bool PhoneRequired { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.FaxEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.FaxEnabled")]
             public bool FaxEnabled { get; set; }
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AddressFormFields.FaxRequired")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AddressFormFields.FaxRequired")]
             public bool FaxRequired { get; set; }
         }
 
@@ -217,19 +217,19 @@ namespace Invenio.Admin.Models.Settings
                 AvailableTimeZones = new List<SelectListItem>();
             }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.AllowUsersToSetTimeZone")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.AllowUsersToSetTimeZone")]
             public bool AllowUsersToSetTimeZone { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.DefaultStoreTimeZone")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.DefaultStoreTimeZone")]
             public string DefaultStoreTimeZoneId { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.DefaultStoreTimeZone")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.DefaultStoreTimeZone")]
             public IList<SelectListItem> AvailableTimeZones { get; set; }
         }
 
         public partial class ExternalAuthenticationSettingsModel : BaseNopModel
         {
-            [NopResourceDisplayName("Admin.Configuration.Settings.CustomerUser.ExternalAuthenticationAutoRegisterEnabled")]
+            [NopResourceDisplayName("Admin.Configuration.Settings.SupplierUser.ExternalAuthenticationAutoRegisterEnabled")]
             public bool AutoRegisterEnabled { get; set; }
         }
         #endregion

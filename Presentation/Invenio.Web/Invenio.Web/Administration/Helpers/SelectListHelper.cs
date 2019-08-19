@@ -55,25 +55,25 @@ namespace Invenio.Admin.Helpers
         //}
 
         ///// <summary>
-        ///// Get manufacturer list
+        ///// Get Customer list
         ///// </summary>
-        ///// <param name="manufacturerService">Manufacturer service</param>
+        ///// <param name="CustomerService">Customer service</param>
         ///// <param name="cacheManager">Cache manager</param>
         ///// <param name="showHidden">A value indicating whether to show hidden records</param>
-        ///// <returns>Manufacturer list</returns>
-        //public static List<SelectListItem> GetManufacturerList(IManufacturerService manufacturerService, ICacheManager cacheManager, bool showHidden = false)
+        ///// <returns>Customer list</returns>
+        //public static List<SelectListItem> GetCustomerList(ICustomerService CustomerService, ICacheManager cacheManager, bool showHidden = false)
         //{
-        //    if (manufacturerService == null)
-        //        throw new ArgumentNullException("manufacturerService");
+        //    if (CustomerService == null)
+        //        throw new ArgumentNullException("CustomerService");
 
         //    if (cacheManager == null)
         //        throw new ArgumentNullException("cacheManager");
 
-        //    string cacheKey = string.Format(ModelCacheEventConsumer.MANUFACTURERS_LIST_KEY, showHidden);
+        //    string cacheKey = string.Format(ModelCacheEventConsumer.CustomerS_LIST_KEY, showHidden);
         //    var listItems = cacheManager.Get(cacheKey, () =>
         //    {
-        //        var manufacturers = manufacturerService.GetAllManufacturers(showHidden: showHidden);
-        //        return manufacturers.Select(m => new SelectListItem
+        //        var Customers = CustomerService.GetAllCustomers(showHidden: showHidden);
+        //        return Customers.Select(m => new SelectListItem
         //        {
         //            Text = m.Name,
         //            Value = m.Id.ToString()

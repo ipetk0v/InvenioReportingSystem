@@ -1,11 +1,11 @@
 ﻿using System;
 using Invenio.Core;
 using Invenio.Core.Domain.Criterias;
-using Invenio.Core.Domain.Customers;
+using Invenio.Core.Domain.Suppliers;
 using Invenio.Core.Infrastructure;
 using Invenio.Services.Authentication;
 using Invenio.Services.Criteria;
-using Invenio.Services.Customers;
+using Invenio.Services.Supplier;
 using Invenio.Services.DeliveryNumber;
 using Invenio.Services.Localization;
 using Invenio.Services.Orders;
@@ -23,10 +23,10 @@ using Invenio.Services.Reports;
 
 namespace Invenio.Web.Controllers
 {
-    public partial class HomeController : BasePublicController
+    public class HomeController : BasePublicController
     {
         private readonly IWorkContext _workContext;
-        private readonly ICustomerService _customerService;
+        private readonly ISupplierService _supplierService;
         private readonly IOrderService _orderService;
         private readonly ICriteriaService _criteriaService;
         private readonly ILocalizationService _localizationService;
@@ -38,7 +38,7 @@ namespace Invenio.Web.Controllers
 
         public HomeController(
             IWorkContext workContext,
-            ICustomerService customerService,
+            ISupplierService supplierService,
             IOrderService orderService,
             ICriteriaService criteriaService,
             ILocalizationService localizationService,
@@ -49,7 +49,7 @@ namespace Invenio.Web.Controllers
             IPartService partService)
         {
             _workContext = workContext;
-            _customerService = customerService;
+            _supplierService = supplierService;
             _orderService = orderService;
             _criteriaService = criteriaService;
             _localizationService = localizationService;
@@ -73,12 +73,12 @@ namespace Invenio.Web.Controllers
         }
 
         [HttpPost]
-        public virtual ActionResult GetAllOrdersByCustomer(int customerId)
+        public virtual ActionResult GetAllOrdersBySupplier(int supplierId)
         {
-            if (customerId == 0)
+            if (supplierId == 0)
                 return new NullJsonResult();
 
-            var result = _orderService.GetAllCustomerOrders(customerId);
+            var result = _orderService.GetAllSupplierOrders(supplierId);
             var viewModel = result.Select(x => new
             {
                 Text = x.Number,
@@ -168,9 +168,8 @@ namespace Invenio.Web.Controllers
             return Json(new { viewModel });
         }
 
-        [Authorize]
         [HttpPost]
-        public virtual ActionResult Index(IList<ReportModel> reports)
+        public virtual ActionResult Index(IList<ReportModel> reports, string returnUrl)
         {
             foreach (var report in reports)
             {
@@ -191,6 +190,7 @@ namespace Invenio.Web.Controllers
                 var entity = new Report
                 {
                     OrderId = report.OrderId,
+                    CheckedPartsQuantity = checkedQuantity,
                     OkPartsQuantity = okQuantity,
                     NokPartsQuantity = nokQuantity,
                     ReworkPartsQuantity = reworkedQuantity,
@@ -238,6 +238,8 @@ namespace Invenio.Web.Controllers
                 }
             }
 
+            if (returnUrl == "logout")
+                return RedirectToRoute("Logout");
 
             var model = PrepareReportModel();
             return View(model);
@@ -264,37 +266,44 @@ namespace Invenio.Web.Controllers
             model.WorkShifts.Add(
                 new SelectListItem
                 {
+                    Text = WorkShifts.RegularShift.GetLocalizedEnum(_localizationService, _workContext),
+                    Value = ((int)WorkShifts.RegularShift).ToString()
+                });
+
+            model.WorkShifts.Add(
+                new SelectListItem
+                {
                     Text = WorkShifts.NightShift.GetLocalizedEnum(_localizationService, _workContext),
                     Value = ((int)WorkShifts.NightShift).ToString()
                 });
 
-            var customers = new List<Customer>();
-            if (_workContext.CurrentUser.ManufacturerRegions.Any())
+            var suppliers = new List<Supplier>();
+            if (_workContext.CurrentUser.CustomerRegions.Any())
             {
-                foreach (var region in _workContext.CurrentUser.ManufacturerRegions)
+                foreach (var region in _workContext.CurrentUser.CustomerRegions)
                 {
-                    customers.AddRange(_customerService.GetAllCustomers(countryId: region.CountryId, stateId: region.Id));
+                    suppliers.AddRange(_supplierService.GetAllSuppliers(countryId: region.CountryId, stateId: region.Id));
                 }
             }
 
-            if (_workContext.CurrentUser.Manufacturers.Any())
+            if (_workContext.CurrentUser.Customers.Any())
             {
-                foreach (var manufacturer in _workContext.CurrentUser.Manufacturers)
+                foreach (var customer in _workContext.CurrentUser.Customers)
                 {
-                    customers.AddRange(_customerService.GetCustomersByManufacturer(manufacturer.Id));
+                    suppliers.AddRange(_supplierService.GetSuppliersByCustomer(customer.Id));
                 }
             }
 
-            model.Customers.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.Customer"), Value = "0" });
-            foreach (var customer in customers)
+            model.Suppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.Supplier"), Value = "0" });
+            foreach (var supplier in suppliers)
             {
-                var orders = _orderService.GetAllCustomerOrders(customer.Id);
+                var orders = _orderService.GetAllSupplierOrders(supplier.Id);
                 if (orders.Any())
                 {
-                    model.Customers.Add(new SelectListItem
+                    model.Suppliers.Add(new SelectListItem
                     {
-                        Text = customer.Name,
-                        Value = customer.Id.ToString()
+                        Text = supplier.Name,
+                        Value = supplier.Id.ToString()
                     });
                 }
             }
@@ -337,7 +346,7 @@ namespace Invenio.Web.Controllers
                     WorkShift = report.WorkShift.GetLocalizedEnum(_localizationService, _workContext),
                     DateOfInspection = report.DateOfInspection?.Date.ToShortDateString(),
                     Order = report.Order?.Number,
-                    Customer = order?.Customer?.Name,
+                    Supplier = order?.Supplier?.Name,
                     PartName = part?.SerNumber,
                     DeliveryNumber = delNumber?.Number,
                     ChargeNumber = chNumber?.Number,

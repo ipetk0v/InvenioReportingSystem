@@ -11,9 +11,9 @@ namespace Invenio.Data.Mapping.Orders
             this.Property(x => x.Name).HasMaxLength(100);
             this.Property(x => x.Number).HasMaxLength(200);
 
-            this.HasRequired(o => o.Customer)
+            this.HasRequired(o => o.Supplier)
                 .WithMany()
-                .HasForeignKey(o => o.CustomerId);
+                .HasForeignKey(o => o.SupplierId);
         }
     }
 }

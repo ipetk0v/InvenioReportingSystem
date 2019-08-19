@@ -84,173 +84,232 @@
                     <div id="reports-grid"></div>
 
                     <script>
-                        $(document).ready(function() {
-                            $("#reports-grid").kendoGrid({
-                                dataSource: {
-                                    type: "json",
-                                    transport: {
-                                        read: {
-                                            url: "@Url.Action("List", "Report", new { filterByReportId = filterByReportId.HasValue ? filterByReportId : null })",
-                                            type: "POST",
-                                            dataType: "json",
-                                            data: additionalData
-                                        },
-                                        update: {
-                                            url: "@Html.Raw(Url.Action("Update", "Report"))",
-                                            type: "POST",
-                                            dataType: "json",
-                                            data: addAntiForgeryToken
-                                        },
-                                        destroy: {
-                                            url: "@Html.Raw(Url.Action("Delete", "Report"))",
-                                            type: "POST",
-                                            dataType: "json",
-                                            data: addAntiForgeryToken
-                                        }
+                    $(document).ready(function() {
+                        $("#reports-grid").kendoGrid({
+                            dataSource: {
+                                type: "json",
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("List", "Report", new { filterByReportId })",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: additionalData
                                     },
-                                    schema: {
-                                        data: "Data",
-                                        total: "Total",
-                                        errors: "Errors",
-                                        model: {
-                                            id: "Id",
-                                            fields: {
-                                                Id: { editable: false, type: "number" },
-                                                UserName: { editable: false, type: "string" },
-                                                WorkShiftName: { editable: false, type: "string" },
-                                                OrderNumber: { editable: false, type: "string" },
-                                                CustomerName: { editable: false, type: "string" },
-                                                OkPartsQuantity: { editable: true, type: "long" },
-                                                NokPartsQuantity: { editable: true, type:"long"},
-                                                ReworkPartsQuantity: { editable: true, type:"long"},
-                                                Approved: { editable: true, type: "boolean" },
-                                                CreatedOn: { editable: false, type: "date" },
-                                                DateOfInspection: { editable: false, type: "date" },
-                                                ApprovedOn: { editable: false, type: "string" }
-                                            }
-                                        }
+                                    update: {
+                                        url: "@Html.Raw(Url.Action("Update", "Report"))",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: addAntiForgeryToken
                                     },
-                                    requestEnd: function(e) {
-                                        if (e.type == "update") {
-                                            this.read();
-                                        }
-                                    },
-                                    error: function(e) {
-                                        display_kendoui_grid_error(e);
-                                        // Cancel the changes
-                                        this.cancelChanges();
-                                    },
-                                    pageSize: @(defaultGridPageSize),
-                                    serverPaging: true,
-                                    serverFiltering: true,
-                                    serverSorting: true
-                                },
-                                pageable: {
-                                    refresh: true,
-                                    pageSizes: [@(gridPageSizes)],
-                                    @Html.Partial("_GridPagerMessages")
-                                },
-                                editable: {
-                                    confirmation: "@T("Admin.Common.DeleteConfirmation")",
-                                    mode: "inline"
-                                },
-                                scrollable: false,
-                                dataBound: onDataBound,
-                                columns: [
-                                    {
-                                        field: "Id",
-                                        headerTemplate: "<input id='mastercheckbox' type='checkbox'/>",
-                                        headerAttributes: { style: "text-align:center" },
-                                        attributes: { style: "text-align:center" },
-                                        template: "<input type='checkbox' value='#=Id#' class='checkboxGroups'/>",
-                                        width: 50
-                                    },{
-                                        field: "UserName",
-                                        title: "@T("Admin.Reports.Fields.UserName")",
-                                        width: 100,
-                                        headerAttributes: { style: "text-align:center" },
-                                        attributes: { style: "text-align:center" }
-                                    },{
-                                        field: "WorkShiftName",
-                                        title: "@T("Admin.Reports.Fields.WorkShiftName")",
-                                        width: 100,
-                                        headerAttributes: { style: "text-align:center" },
-                                        attributes: { style: "text-align:center" }
-                                    },{
-                                        field: "OrderNumber",
-                                        title: "@T("Admin.Reports.Fields.OrderNumber")",
-                                        width: 100,
-                                        headerAttributes: { style: "text-align:center" },
-                                        attributes: { style: "text-align:center" }
-                                    },{
-                                        field: "CustomerName",
-                                        title: "@T("Admin.Reports.Fields.CustomerName")",
-                                        width: 100,
-                                        headerAttributes: { style: "text-align:center" },
-                                        attributes: { style: "text-align:center" }
-                                    },{
-                                        field: "OkPartsQuantity",
-                                        title: "@T("Admin.Reports.Fields.OkPartsQuantity")",
-                                        width: 100,
-                                        headerAttributes: { style: "text-align:center" },
-                                        attributes: { style: "text-align:center" }
-                                    },{
-                                        field: "NokPartsQuantity",
-                                        title: "@T("Admin.Reports.Fields.NokPartsQuantity")",
-                                        width: 100,
-                                        headerAttributes: { style: "text-align:center" },
-                                        attributes: { style: "text-align:center" }
-                                    },{
-                                        field: "ReworkPartsQuantity",
-                                        title: "@T("Admin.Reports.Fields.ReworkPartsQuantity")",
-                                        width: 100,
-                                        headerAttributes: { style: "text-align:center" },
-                                        attributes: { style: "text-align:center" }
-                                    },{
-                                        field: "Approved",
-                                        title: "@T("Admin.Reports.Fields.IsApproved")",
-                                        width: 100,
-                                        headerAttributes: { style: "text-align:center" },
-                                        attributes: { style: "text-align:center" },
-                                        template: '# if(Approved) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
-                                    },{
-                                        field: "DateOfInspection",
-                                        title: "@T("Admin.Reports.Fields.DateOfInspection")",
-                                        width: 100,
-                                        type: "date",
-                                        format: "{0:dd MMM yyyy}"
-                                    },{
-                                        field: "ApprovedOn",
-                                        title: "@T("Admin.Reports.Fields.ApprovedOn")",
-                                        width: 100,
-                                        type: "date",
-                                        format: "{0:dd MMM yyyy}",
-                                        template: "#= ApprovedOn != '0001-01-01T00:00:00' ? kendo.toString(kendo.parseDate(ApprovedOn), 'dd MMM yyyy') : ''  #"
-                                    },{
-                                        field: "CreatedOn",
-                                        title: "@T("Admin.Reports.Fields.CreatedOn")",
-                                        width: 100,
-                                        type: "date",
-                                        format: "{0:dd MMM yyyy}"
-                                    }, {
-                                        command: [
-                                            {
-                                                name: "edit",
-                                                text: {
-                                                    edit: "@T("Admin.Common.Edit")",
-                                                    update: "@T("Admin.Common.Update")",
-                                                    cancel: "@T("Admin.Common.Cancel")"
-                                                }
-                                            }, {
-                                                name: "destroy",
-                                                text: "@T("Admin.Common.Delete")"
-                                            }
-                                        ],
-                                        width: 200
+                                    destroy: {
+                                        url: "@Html.Raw(Url.Action("Delete", "Report"))",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: addAntiForgeryToken
                                     }
-                                ]
-                            });
+                                },
+                                schema: {
+                                    data: "Data",
+                                    total: "Total",
+                                    errors: "Errors",
+                                    model: {
+                                        id: "Id",
+                                        fields: {
+                                            Id: { editable: false, type: "number" },
+                                            UserName: { editable: false, type: "string" },
+                                            WorkShiftName: { editable: false, type: "string" },
+                                            OrderNumber: { editable: false, type: "string" },
+                                            SupplierName: { editable: false, type: "string" },
+                                            OkPartsQuantity: { editable: true, type: "long" },
+                                            NokPartsQuantity: { editable: true, type:"long"},
+                                            ReworkPartsQuantity: { editable: true, type:"long"},
+                                            Approved: { editable: true, type: "boolean" },
+                                            CreatedOn: { editable: false, type: "date" },
+                                            DateOfInspection: { editable: false, type: "date" },
+                                            ApprovedOn: { editable: false, type: "string" }
+                                        }
+                                    }
+                                },
+                                requestEnd: function(e) {
+                                    if (e.type == "update") {
+                                        this.read();
+                                    }
+                                },
+                                error: function(e) {
+                                    display_kendoui_grid_error(e);
+                                    // Cancel the changes
+                                    this.cancelChanges();
+                                },
+                                pageSize: @(defaultGridPageSize),
+                                serverPaging: true,
+                                serverFiltering: true,
+                                serverSorting: true
+                            },
+                            pageable: {
+                                refresh: true,
+                                pageSizes: [@(gridPageSizes)],
+                                @Html.Partial("_GridPagerMessages")
+                            },
+                            editable: {
+                                confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                mode: "inline"
+                            },
+                            //details grid
+                            detailInit: detailInit,
+                            scrollable: false,
+                            dataBound: onDataBound,
+                            columns: [
+                                {
+                                    field: "Id",
+                                    headerTemplate: "<input id='mastercheckbox' type='checkbox'/>",
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" },
+                                    template: "<input type='checkbox' value='#=Id#' class='checkboxGroups'/>",
+                                    width: 50
+                                },{
+                                    field: "UserName",
+                                    title: "@T("Admin.Reports.Fields.UserName")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" }
+                                },{
+                                    field: "WorkShiftName",
+                                    title: "@T("Admin.Reports.Fields.WorkShiftName")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" }
+                                },{
+                                    field: "OrderNumber",
+                                    title: "@T("Admin.Reports.Fields.OrderNumber")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" }
+                                },{
+                                    field: "SupplierName",
+                                    title: "@T("Admin.Reports.Fields.SupplierName")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" }
+                                },{
+                                    field: "CheckedPartsQuantity",
+                                    title: "@T("Admin.Reports.Fields.CheckedPartsQuantity")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" }
+                                },{
+                                    field: "OkPartsQuantity",
+                                    title: "@T("Admin.Reports.Fields.OkPartsQuantity")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" }
+                                },{
+                                    field: "NokPartsQuantity",
+                                    title: "@T("Admin.Reports.Fields.NokPartsQuantity")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" }
+                                },{
+                                    field: "ReworkPartsQuantity",
+                                    title: "@T("Admin.Reports.Fields.ReworkPartsQuantity")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" }
+                                },{
+                                    field: "Approved",
+                                    title: "@T("Admin.Reports.Fields.IsApproved")",
+                                    width: 100,
+                                    headerAttributes: { style: "text-align:center" },
+                                    attributes: { style: "text-align:center" },
+                                    template: '# if(Approved) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
+                                },{
+                                    field: "DateOfInspection",
+                                    title: "@T("Admin.Reports.Fields.DateOfInspection")",
+                                    width: 100,
+                                    type: "date",
+                                    format: "{0:dd MMM yyyy}"
+                                },{
+                                    field: "ApprovedOn",
+                                    title: "@T("Admin.Reports.Fields.ApprovedOn")",
+                                    width: 100,
+                                    type: "date",
+                                    format: "{0:dd MMM yyyy}",
+                                    template: "#= ApprovedOn != '0001-01-01T00:00:00' ? kendo.toString(kendo.parseDate(ApprovedOn), 'dd MMM yyyy') : ''  #"
+                                },{
+                                    field: "CreatedOn",
+                                    title: "@T("Admin.Reports.Fields.CreatedOn")",
+                                    width: 100,
+                                    type: "date",
+                                    format: "{0:dd MMM yyyy}"
+                                }, {
+                                    command: [
+                                        {
+                                            name: "edit",
+                                            text: {
+                                                edit: "@T("Admin.Common.Edit")",
+                                                update: "@T("Admin.Common.Update")",
+                                                cancel: "@T("Admin.Common.Cancel")"
+                                            }
+                                        }, {
+                                            name: "destroy",
+                                            text: "@T("Admin.Common.Delete")"
+                                        }
+                                    ],
+                                    width: 200
+                                }
+                            ]
                         });
+                    });
+
+
+                        //details grid
+                            function detailInit(e) {
+                                $("<div/>").appendTo(e.detailCell).kendoGrid({
+                                    dataSource: {
+                                        type: "json",
+                                        transport: {
+                                            read: {
+                                                url: "@Html.Raw(Url.Action("ListDetails", "Report"))?reportId="+e.data.Id,
+                                                type: "POST",
+                                                dataType: "json",
+                                                data: addAntiForgeryToken
+                                            }
+                                        },
+                                        schema: {
+                                            data: "Data",
+                                            total: "Total",
+                                            errors: "Errors"
+                                        },
+                                        error: function(e) {
+                                            display_kendoui_grid_error(e);
+                                            // Cancel the changes
+                                            this.cancelChanges();
+                                        },
+                                        serverPaging: true,
+                                        serverFiltering: true,
+                                        serverSorting: true
+                                    },
+                                    scrollable: false,
+                                    sortable: true,
+                                    pageable: {
+                                        refresh: true,
+                                        numeric: false,
+                                        previousNext: false,
+                                        info: false,
+                                        @Html.Partial("_GridPagerMessages")
+                                    },
+                                    columns: [
+                                        {
+                                            field: "Criteria",
+                                            title: "@T("Admin.Report.List.Details.Criteria")",
+                                            //width: 400
+                                        },{
+                                            field: "CriteriaQuantity",
+                                            title: "@T("Admin.Report.List.Details.CriteriaQuantity")",
+                                            //width: 150
+                                        },
+                                    ]
+                                });
+                            }
                     </script>
 
                     <script type="text/javascript">

@@ -88,10 +88,10 @@ namespace Invenio.Services.Orders
             return new PagedList<Order>(query, pageIndex, pageSize);
         }
 
-        public IPagedList<Order> GetAllCustomerOrders(int customerId, int pageIndex = 0, int pageSize = int.MaxValue,
+        public IPagedList<Order> GetAllSupplierOrders(int supplierId, int pageIndex = 0, int pageSize = int.MaxValue,
             bool showHidden = false)
         {
-            if (customerId == 0)
+            if (supplierId == 0)
                 return null;
 
             var query = _orderRepository.Table;
@@ -100,7 +100,7 @@ namespace Invenio.Services.Orders
                 query = query.Where(x => x.Published);
 
             query = query.Where(x => x.Deleted == false);
-            query = query.Where(x => x.CustomerId == customerId);
+            query = query.Where(x => x.SupplierId == supplierId);
             query = query.OrderBy(x => x.Id);
 
             return new PagedList<Order>(query, pageIndex, pageSize);

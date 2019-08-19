@@ -19,7 +19,7 @@ namespace Invenio.Services.Orders
             int pageSize = int.MaxValue,
             bool showHidden = false);
 
-        IPagedList<Order> GetAllCustomerOrders(int customerId, int pageIndex = 0, int pageSize = int.MaxValue,
+        IPagedList<Order> GetAllSupplierOrders(int supplierId, int pageIndex = 0, int pageSize = int.MaxValue,
             bool showHidden = false);
 
         Order GetOrderById(int orderId);

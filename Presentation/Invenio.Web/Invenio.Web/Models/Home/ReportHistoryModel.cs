@@ -17,7 +17,7 @@ namespace Invenio.Web.Models.Home
     {
         public string WorkShift { get; set; }
         public string DateOfInspection { get; set; }
-        public string Customer { get; set; }
+        public string Supplier { get; set; }
         public string PartName { get; set; }
         public string Order { get; set; }
         public string DeliveryNumber { get; set; }

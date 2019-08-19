@@ -1,23 +1,23 @@
-﻿using Invenio.Admin.Models.Customers;
-using Invenio.Services.Security;
-using Invenio.Web.Framework.Kendoui;
-using System.Web.Mvc;
-using Invenio.Services.Customers;
-using System.Linq;
-using Invenio.Admin.Extensions;
-using Invenio.Web.Framework.Controllers;
-using System;
+﻿using Invenio.Admin.Extensions;
+using Invenio.Admin.Models.Customer;
 using Invenio.Core.Domain.Common;
-using Invenio.Admin.Models.Common;
+using Invenio.Core.Domain.Customers;
+using Invenio.Core.Domain.Suppliers;
+using Invenio.Services.Customers;
 using Invenio.Services.Directory;
 using Invenio.Services.Localization;
 using Invenio.Services.Logging;
-using Invenio.Services.Common;
-using Invenio.Core.Domain.Directory;
+using Invenio.Services.Security;
+using Invenio.Services.Supplier;
+using Invenio.Web.Framework.Controllers;
+using Invenio.Web.Framework.Kendoui;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
 using Invenio.Core;
-using Invenio.Services.Catalog;
-using Invenio.Core.Domain.Customers;
+using Invenio.Core.Domain.Orders;
+using Invenio.Core.Domain.Users;
 
 namespace Invenio.Admin.Controllers
 {
@@ -29,10 +29,7 @@ namespace Invenio.Admin.Controllers
         private readonly ILocalizationService _localizationService;
         private readonly IUserActivityService _userActivityService;
         private readonly IStateProvinceService _stateProvinceService;
-        private readonly IAddressAttributeService _addressAttributeService;
-        private readonly IAddressAttributeParser _addressAttributeParser;
-        private readonly IManufacturerService _manufacturerService;
-        private readonly AddressSettings _addressSettings;
+        private readonly ISupplierService _supplierService;
         private readonly IWorkContext _workContext;
 
         public CustomerController(
@@ -42,12 +39,8 @@ namespace Invenio.Admin.Controllers
             ILocalizationService localizationService,
             IUserActivityService userActivityService,
             IStateProvinceService stateProvinceService,
-            IAddressAttributeService addressAttributeService,
-            IAddressAttributeParser addressAttributeParser,
-            IManufacturerService manufacturerService,
-            IWorkContext workContext,
-            AddressSettings addressSettings
-            )
+            ISupplierService supplierService,
+            IWorkContext workContext)
         {
             _permissionService = permissionService;
             _customerService = customerService;
@@ -55,10 +48,7 @@ namespace Invenio.Admin.Controllers
             _localizationService = localizationService;
             _userActivityService = userActivityService;
             _stateProvinceService = stateProvinceService;
-            _addressAttributeService = addressAttributeService;
-            _addressAttributeParser = addressAttributeParser;
-            _manufacturerService = manufacturerService;
-            _addressSettings = addressSettings;
+            _supplierService = supplierService;
             _workContext = workContext;
         }
 
@@ -82,23 +72,6 @@ namespace Invenio.Admin.Controllers
             model.AvailableStates.Add(new SelectListItem { Text = "*", Value = "0" });
             foreach (var c in _stateProvinceService.GetStateProvinces())
                 model.AvailableStates.Add(new SelectListItem { Text = c.Name, Value = c.Id.ToString() });
-            //manufacturers
-            model.AvailableManufacturers.Add(new SelectListItem { Text = "*", Value = "0" });
-            if (_workContext.CurrentUser.ManufacturerRegions.Any())
-            {
-                foreach (var region in _workContext.CurrentUser.ManufacturerRegions)
-                {
-                    foreach (var m in _manufacturerService.GetAllManufacturers(null, region.CountryId, region.Id))
-                        model.AvailableManufacturers.Add(new SelectListItem { Text = m.Name, Value = m.Id.ToString() });
-                }
-
-            }
-
-            if (_workContext.CurrentUser.Manufacturers.Any())
-            {
-                foreach (var m in _workContext.CurrentUser.Manufacturers)
-                    model.AvailableManufacturers.Add(new SelectListItem { Text = m.Name, Value = m.Id.ToString() });
-            }
 
             return View(model);
         }
@@ -109,72 +82,43 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
                 return AccessDeniedKendoGridJson();
 
+            if (_workContext.CurrentUser.IsAdmin())
+            {
+                var customers2 = _customerService
+                    .GetAllCustomers(
+                        model.SearchCustomerName, model.CountryId, model.StateProvinceId, command.Page - 1, command.PageSize, showHidden: true);
+
+                var gridModel2 = new DataSourceResult
+                {
+                    Data = customers2.Select(PrepareCustomerModel),
+                    Total = customers2.TotalCount
+                };
+
+                return Json(gridModel2);
+            }
+
             var customers = _customerService
-                .GetAllCustomers(model.SearchCustomerName, model.CountryId, model.StateProvinceId, model.ManufacturerId, command.Page - 1, command.PageSize);
+                .GetAllCustomers(
+                    model.SearchCustomerName, model.CountryId, model.StateProvinceId, showHidden: true);
 
-            var filtredCustomers = new List<Customer>();
-            if (_workContext.CurrentUser.ManufacturerRegions.Any())
-            {
-                foreach (var region in _workContext.CurrentUser.ManufacturerRegions)
-                {
-                    var manufacturers =
-                        _manufacturerService.GetAllManufacturers(countryId: region.CountryId, stateId: region.Id);
+            var crCustomer = new List<Customer>();
+            var rCustomers = new List<Customer>();
+            if (_workContext.CurrentUser.CustomerRegions.Any())
+                crCustomer = customers.Where(x => _workContext.CurrentUser.CustomerRegions.Contains(x.StateProvince)).ToList();
 
-                    foreach (var manufacturer in manufacturers)
-                    {
-                        filtredCustomers.AddRange(customers.Where(x => x.Manufacturer == manufacturer));
-                    }
-                }
-            }
+            if (_workContext.CurrentUser.Customers.Any())
+                rCustomers = customers.Where(x => _workContext.CurrentUser.Customers.Contains(x)).ToList();
 
-            if (_workContext.CurrentUser.Manufacturers.Any())
-            {
-                foreach (var manufacturer in _workContext.CurrentUser.Manufacturers)
-                {
-                    filtredCustomers.AddRange(customers.Where(x => x.Manufacturer == manufacturer));
-                }
-            }
+            var result = crCustomer.Concat(rCustomers).Distinct().ToList();
 
-            filtredCustomers = filtredCustomers.Distinct().ToList();
-
+            var pagedList = new PagedList<Customer>(result, command.Page - 1, command.PageSize);
             var gridModel = new DataSourceResult
             {
-                Data = filtredCustomers.Select(PrepareCustomerModel),
-                Total = filtredCustomers.Count
+                Data = pagedList.Select(PrepareCustomerModel),
+                Total = pagedList.TotalCount
             };
 
             return Json(gridModel);
-        }
-
-        private CustomerModel PrepareCustomerModel(Customer customer)
-        {
-            var model = customer.ToModel();
-
-            if (customer.ManufacturerId.HasValue)
-                model.ManufacturerName = _manufacturerService.GetManufacturerById(customer.ManufacturerId.Value).Name;
-
-            return model;
-        }
-
-        private void PrepareCustomerModel(CustomerModel model)
-        {
-            model.AvailableManufacturer.Add(new SelectListItem { Text = "None", Value = "0" });
-
-            if (_workContext.CurrentUser.ManufacturerRegions.Any())
-            {
-                foreach (var region in _workContext.CurrentUser.ManufacturerRegions)
-                {
-                    foreach (var m in _manufacturerService.GetAllManufacturers(null, region.CountryId, region.Id))
-                        model.AvailableManufacturer.Add(new SelectListItem { Text = m.Name, Value = m.Id.ToString() });
-                }
-
-            }
-
-            if (_workContext.CurrentUser.Manufacturers.Any())
-            {
-                foreach (var m in _workContext.CurrentUser.Manufacturers)
-                    model.AvailableManufacturer.Add(new SelectListItem { Text = m.Name, Value = m.Id.ToString() });
-            }
         }
 
         public virtual ActionResult Create()
@@ -187,8 +131,7 @@ namespace Invenio.Admin.Controllers
                 Published = true
             };
 
-            PrepareCustomerModel(model);
-            PrepareAddressModel(model, null, false);
+            PrepareCountryAndStateModel(model);
 
             return View(model);
         }
@@ -202,27 +145,37 @@ namespace Invenio.Admin.Controllers
             if (ModelState.IsValid)
             {
                 var customer = model.ToEntity();
+
+                if (model.CountryId == 0)
+                    customer.CountryId = null;
+
+                if (model.StateProvinceId == 0)
+                    customer.StateProvinceId = null;
+
                 customer.CreatedOnUtc = DateTime.UtcNow;
                 customer.UpdatedOnUtc = DateTime.UtcNow;
-
-                //custom address attributes
-                var customAttributes = form.ParseCustomAddressAttributes(_addressAttributeParser, _addressAttributeService);
-                var customAttributeWarnings = _addressAttributeParser.GetAttributeWarnings(customAttributes);
-                foreach (var error in customAttributeWarnings)
-                {
-                    ModelState.AddModelError("", error);
-                }
-
-                var address = model.Address.ToEntity();
-                address.CustomAttributes = customAttributes;
-                address.CreatedOnUtc = DateTime.UtcNow;
-                //some validation
-                if (address.CountryId == 0)
-                    address.CountryId = null;
-                if (address.StateProvinceId == 0)
-                    address.StateProvinceId = null;
-                customer.Address = address;
                 _customerService.InsertCustomer(customer);
+
+                var supplier = new Supplier
+                {
+                    Name = customer.Name,
+                    Comment = customer.Comment,
+                    CreatedOnUtc = DateTime.Now,
+                    UpdatedOnUtc = DateTime.Now,
+                    DisplayOrder = 0,
+                    Published = true,
+                    Address = new Address
+                    {
+                        CountryId = customer.CountryId,
+                        StateProvinceId = customer.StateProvinceId,
+                        CreatedOnUtc = DateTime.Now
+                    },
+                    CustomerId = customer.Id
+                };
+                _supplierService.InsertSupplier(supplier);
+
+                //ACL (supplier roles)
+                //SaveCustomerAcl(customer, model);
 
                 //activity log
                 _userActivityService.InsertActivity("AddNewCustomer", _localizationService.GetResource("ActivityLog.AddNewCustomer"), customer.Name);
@@ -239,8 +192,7 @@ namespace Invenio.Admin.Controllers
                 return RedirectToAction("List");
             }
 
-            PrepareCustomerModel(model);
-            PrepareAddressModel(model, null, true);
+            PrepareCountryAndStateModel(model);
             return View(model);
         }
 
@@ -255,9 +207,7 @@ namespace Invenio.Admin.Controllers
                 return RedirectToAction("List");
 
             var model = customer.ToModel();
-
-            PrepareCustomerModel(model);
-            PrepareAddressModel(model, null, false);
+            PrepareCountryAndStateModel(model);
             return View(model);
         }
 
@@ -277,10 +227,10 @@ namespace Invenio.Admin.Controllers
                 //int prevPictureId = customer.PictureId;
                 customer = model.ToEntity(customer);
 
-                if (customer.Address.CountryId == 0)
-                    customer.Address.CountryId = null;
-                if (customer.Address.StateProvinceId == 0)
-                    customer.Address.StateProvinceId = null;
+                if (customer.CountryId == 0)
+                    customer.CountryId = null;
+                if (customer.StateProvinceId == 0)
+                    customer.StateProvinceId = null;
 
                 customer.UpdatedOnUtc = DateTime.UtcNow;
                 _customerService.UpdateCustomer(customer);
@@ -296,7 +246,7 @@ namespace Invenio.Admin.Controllers
                 //activity log
                 _userActivityService.InsertActivity("EditCustomer", _localizationService.GetResource("ActivityLog.EditCustomer"), customer.Name);
 
-                SuccessNotification(_localizationService.GetResource("Admin.Catalog.Customer.Updated"));
+                SuccessNotification(_localizationService.GetResource("Admin.Catalog.Customers.Updated"));
 
                 if (continueEditing)
                 {
@@ -308,6 +258,7 @@ namespace Invenio.Admin.Controllers
                 return RedirectToAction("List");
             }
 
+            PrepareCountryAndStateModel(model);
             return View(model);
         }
 
@@ -327,55 +278,41 @@ namespace Invenio.Admin.Controllers
             //activity log
             _userActivityService.InsertActivity("DeleteCustomer", _localizationService.GetResource("ActivityLog.DeleteCustomer"), customer.Name);
 
-            SuccessNotification(_localizationService.GetResource("Admin.Catalog.Customer.Deleted"));
+            SuccessNotification(_localizationService.GetResource("Admin.Catalog.Customers.Deleted"));
             return RedirectToAction("List");
         }
 
         [NonAction]
-        protected virtual void PrepareAddressModel(CustomerModel model, Address address, /*Customer customer,*/ bool excludeProperties)
+        protected CustomerModel PrepareCustomerModel(Customer customer)
         {
-            if (model.Address == null)
-                model.Address = new AddressModel();
+            var model = customer.ToModel();
 
-            model.Address.FirstNameEnabled = true;
-            //model.Address.FirstNameRequired = true;
-            model.Address.LastNameEnabled = true;
-            //model.Address.LastNameRequired = true;
-            model.Address.EmailEnabled = true;
-            //model.Address.EmailRequired = true;
-            model.Address.CompanyEnabled = _addressSettings.CompanyEnabled;
-            //model.Address.CompanyRequired = _addressSettings.CompanyRequired;
-            model.Address.CountryEnabled = _addressSettings.CountryEnabled;
-            //model.Address.CountryRequired = _addressSettings.CountryEnabled; //country is required when enabled
-            model.Address.StateProvinceEnabled = _addressSettings.StateProvinceEnabled;
-            model.Address.CityEnabled = _addressSettings.CityEnabled;
-            //model.Address.CityRequired = _addressSettings.CityRequired;
-            model.Address.StreetAddressEnabled = _addressSettings.StreetAddressEnabled;
-            //model.Address.StreetAddressRequired = _addressSettings.StreetAddressRequired;
-            model.Address.StreetAddress2Enabled = _addressSettings.StreetAddress2Enabled;
-            //model.Address.StreetAddress2Required = _addressSettings.StreetAddress2Required;
-            model.Address.ZipPostalCodeEnabled = _addressSettings.ZipPostalCodeEnabled;
-            //model.Address.ZipPostalCodeRequired = _addressSettings.ZipPostalCodeRequired;
-            model.Address.PhoneEnabled = _addressSettings.PhoneEnabled;
-            //model.Address.PhoneRequired = _addressSettings.PhoneRequired;
-            model.Address.FaxEnabled = _addressSettings.FaxEnabled;
-            //model.Address.FaxRequired = _addressSettings.FaxRequired;
+            if (model.CountryId.HasValue)
+                model.CountryName = _countryService.GetCountryById(model.CountryId.Value).Name;
 
+            if (model.StateProvinceId.HasValue)
+                model.StateProvinceName = _stateProvinceService.GetStateProvinceById(model.StateProvinceId.Value).Name;
+
+            return model;
+        }
+
+        [NonAction]
+        protected virtual void PrepareCountryAndStateModel(CustomerModel model)
+        {
             //countries
-            model.Address.AvailableCountries.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Address.SelectCountry"), Value = "0" });
-            foreach (var c in _countryService.GetAllCountries(showHidden: true))
-                model.Address.AvailableCountries.Add(new SelectListItem { Text = c.Name, Value = c.Id.ToString(), Selected = (c.Id == model.Address.CountryId) });
+            model.AvailableCountries.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Address.SelectCountry"), Value = "0" });
+            foreach (var c in _countryService.GetAllCountries())
+                model.AvailableCountries.Add(new SelectListItem { Text = c.Name, Value = c.Id.ToString(), Selected = (c.Id == model.CountryId) });
             //states
-            var states = model.Address.CountryId.HasValue ? _stateProvinceService.GetStateProvincesByCountryId(model.Address.CountryId.Value, showHidden: true).ToList() : new List<StateProvince>();
+            //var states = model.CountryId.HasValue ? _stateProvinceService.GetStateProvincesByCountryId(model.CountryId.Value, showHidden: false).ToList() : new List<StateProvince>();
+            var states = _stateProvinceService.GetStateProvinces().ToList();
             if (states.Any())
             {
                 foreach (var s in states)
-                    model.Address.AvailableStates.Add(new SelectListItem { Text = s.Name, Value = s.Id.ToString(), Selected = (s.Id == model.Address.StateProvinceId) });
+                    model.AvailableStates.Add(new SelectListItem { Text = s.Name, Value = s.Id.ToString(), Selected = (s.Id == model.StateProvinceId) });
             }
             else
-                model.Address.AvailableStates.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Address.OtherNonUS"), Value = "0" });
-            //customer attribute services
-            model.Address.PrepareCustomAddressAttributes(address, _addressAttributeService, _addressAttributeParser);
+                model.AvailableStates.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Address.OtherNonUS"), Value = "0" });
         }
     }
 }

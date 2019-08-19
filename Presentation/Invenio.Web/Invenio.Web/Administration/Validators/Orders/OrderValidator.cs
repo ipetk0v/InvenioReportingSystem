@@ -11,7 +11,7 @@ namespace Invenio.Admin.Validators.Orders
     {
         public OrderValidator(ILocalizationService localizationService, IDbContext dbContext)
         {
-            RuleFor(x => x.CustomerId).GreaterThan(0).WithMessage(localizationService.GetResource("Admin.Order.Validator.Customer.IsRequired"));
+            RuleFor(x => x.supplierId).GreaterThan(0).WithMessage(localizationService.GetResource("Admin.Order.Validator.Supplier.IsRequired"));
             RuleFor(x => x.Number).NotEmpty()
                 .WithMessage(localizationService.GetResource("Admin.Order.Validator.Number.IsRequired"));
 

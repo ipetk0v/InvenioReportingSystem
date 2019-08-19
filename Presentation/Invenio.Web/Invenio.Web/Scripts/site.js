@@ -2,9 +2,9 @@
     return Math.round(new Date().getTime() + (Math.random() * 100));
 }
 
-function show_alert(message, errorMessage) {
+function show_alert(message, errorMessage, returnUrl) {
     if (confirm(message)) {
-        submitReports(errorMessage);
+        submitReports(errorMessage, returnUrl);
     } else {
         return false;
     }
@@ -14,7 +14,7 @@ function addNewReport() {
     var element = $('#last-report');
 
     var newElement = element.clone();
-    newElement.find('select[name^="Customer"]').attr("id", uniqId());
+    newElement.find('select[name^="Supplier"]').attr("id", uniqId());
     newElement.find('select[name^="Order"]').attr("id", uniqId());
     newElement.find('select[name^="Order"]').hide();
     newElement.find('select[name^="Part"]').attr("id", uniqId());
@@ -24,7 +24,9 @@ function addNewReport() {
     newElement.find('select[name^="ChargeNumber"]').attr("id", uniqId());
     newElement.find('select[name^="ChargeNumber"]').hide();
     newElement.find('select[name^="BlockedPart"]').attr("id", uniqId());
+    newElement.find('select[name^="BlockedPart"]').parent().parent().attr("hidden", "hidden");
     newElement.find('select[name^="ReworkedPart"]').attr("id", uniqId());
+    newElement.find('select[name^="ReworkedPart"]').parent().parent().attr("hidden", "hidden");
 
     var el = newElement.appendTo($('#reports'));
     element.removeAttr('id');
@@ -38,24 +40,31 @@ function addNewReport() {
     el.find('#reworked-parts-list').children().find('option').not(':first').remove();
     el.find('#CheckedQuantity').val(0);
     el.find('#input-ok').val(0);
+    el.find('#CheckedQuantity').attr("disabled", "disabled");
     el.find('#input-nok').val(0);
     el.find('#input-reworked').val(0);
 }
 
 function addBlockedRow(element) {
     element = $(element);
+    var selectedValue = element.find(":selected").val();
+
     element.unbind("onchange");
     var row = element.parent().parent().clone();
     row.appendTo(element.parent().parent().parent().parent().find('#blocked-parts-list'));
-    row.children().find('input')[0].value = '';
+    row.children().find('input')[0].value = "";
+    row.find(`option[value="${selectedValue}"]`).remove();
 }
 
 function addReworkRow(element) {
     element = $(element);
+    var selectedValue = element.find(":selected").val();
+
     element.unbind("onchange");
     var row = element.parent().parent().clone();
     row.appendTo(element.parent().parent().parent().parent().find('#reworked-parts-list'));
     row.children().find('input')[0].value = '';
+    row.find(`option[value="${selectedValue}"]`).remove();
 }
 
 function orderFiltred(element) {
@@ -69,9 +78,9 @@ function orderFiltred(element) {
 
     $.ajax({
         type: "POST",
-        //url: "@(Url.Action("GetAllOrdersByCustomer"))",
-        url: "/Home/GetAllOrdersByCustomer",
-        data: { "customerId": data },
+        //url: "@(Url.Action("GetAllOrdersBySupplier"))",
+        url: "/Home/GetAllOrdersBySupplier",
+        data: { "supplierId": data },
         beforeSend: function () {
             orderDropDown.attr("disabled", true);
         },
@@ -123,6 +132,8 @@ function GetChargeNumbers(element) {
                     });
                 if (result.viewModel.length > 0) {
                     chargeNumberDropDown.show();
+                } else {
+                    RemoveDisabledQuantityAndCriteria(element);
                 }
             }
             chargeNumberDropDown.attr("disabled", false);
@@ -184,18 +195,33 @@ function GetDeliveryNumber(element) {
 
             if (result !== null && result !== undefined) {
                 $.each(result.viewModel,
-                    function (text, value) {
+                    function(text, value) {
                         delNumberDropDown.append(
                             $('<option></option>').val(value.Value).html(value.Text)
                         );
                     });
                 if (result.viewModel.length > 0) {
                     delNumberDropDown.show();
+                } else {
+                    RemoveDisabledQuantityAndCriteria(element);
                 }
             }
+            
             deliveryNumberDropDown.attr("disabled", false);
         }
     });
+}
+
+function RemoveDisabledQuantityAndCriteria(element) {
+    element = $(element);
+    var inputChecked = element.parent().parent().find('input[name^="CheckedQuantity"]');
+    inputChecked.attr("disabled", false);
+
+    var blockedPartsDropDown = element.parent().parent().parent().find('select[name^="BlockedPart"]').parent().parent();
+    blockedPartsDropDown.removeAttr("hidden");
+
+    var reworkedPartsDropDown = element.parent().parent().parent().find('select[name^="ReworkedPart"]').parent().parent();
+    reworkedPartsDropDown.removeAttr("hidden");
 }
 
 function GetDataByOrder(element) {
@@ -261,7 +287,12 @@ function GetDataByOrder(element) {
     });
 }
 
-function submitReports(errorMessage) {
+function removeRow(element) {
+    $(element).parent().parent().parent().parent().remove();
+    var a = $("#reports").children('.row.mt-5').last().attr("id","last-report");
+}
+
+function submitReports(errorMessage, returnUrl) {
     var reports = $('#reports').children();
 
     var models = new Array();
@@ -271,7 +302,7 @@ function submitReports(errorMessage) {
         var object = new Object();
         var element = $(this);
 
-        object.CustomerId = $(element.find('[name^="Customer"]')[0]).val();
+        object.supplierId = $(element.find('[name^="Supplier"]')[0]).val();
         object.OrderId = $(element.find('[name^="Order"]')[0]).val();
         object.PartId = $(element.find('[name^="Part"]')[0]).val();
         object.DeliveryNumberId = $(element.find('[name^="DeliveryNumber"]')[0]).val();
@@ -283,7 +314,7 @@ function submitReports(errorMessage) {
 
         if (object.WorkShiftId < 1
             || object.CheckedQuantity < 1
-            || object.CustomerId < 1
+            || object.supplierId < 1
             || object.OrderId < 1
             || object.PartId < 1
             || object.ReportDate === "") {
@@ -325,13 +356,11 @@ function submitReports(errorMessage) {
 
     if (errors === true) {
         alert(errorMessage);
-
     } else {
         $.ajax({
             type: "POST",
-            //url: "@(Url.Action("Index","Home"))",
             url: "/Home/Index",
-            data: { "reports": models },
+            data: { "reports": models, "returnUrl": returnUrl },
             success: function (result) {
                 $("#ignismyModal").modal("show").delay(2000).fadeOut();
                 setTimeout(function () { location.reload(); }, 2000);

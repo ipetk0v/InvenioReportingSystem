@@ -7,9 +7,9 @@ namespace Invenio.Data.Mapping.Customers
         public CustomerMap()
         {
             ToTable("Customer");
-            this.HasKey(c => c.Id);
-            this.Property(x => x.Comment).HasMaxLength(200);
+            this.HasKey(m => m.Id);
             this.Property(x => x.Name).HasMaxLength(100);
+            this.Property(x => x.Comment).HasMaxLength(250);
         }
     }
 }

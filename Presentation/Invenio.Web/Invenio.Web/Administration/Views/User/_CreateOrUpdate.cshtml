@@ -239,31 +239,31 @@
             </div>
             <div class="form-group">
                 <div class="col-md-3">
-                    @Html.NopLabelFor(model => model.SelectedManufacturerRegionIds)
+                    @Html.NopLabelFor(model => model.SelectedCustomerRegionIds)
                 </div>
                 <div class="col-md-9">
                     <div class="input-group input-group-required">
-                        @Html.EditorFor(model => model.SelectedManufacturerRegionIds, new { SelectList = Model.AvailableManufacturerRegions })
+                        @Html.EditorFor(model => model.SelectedCustomerRegionIds, new { SelectList = Model.AvailableCustomerRegions })
                         <div class="input-group-btn">
                             @Html.RequiredHint()
                         </div>
                     </div>
                     <script>
                         $(document).ready(function() {
-                            var ManufacturerRegionIdsInput = $('#@Html.FieldIdFor(model => model.SelectedManufacturerRegionIds)').data("kendoMultiSelect");
-                            ManufacturerRegionIdsInput.setOptions({
-                                ManufacturerRegionIdsInput: false
+                            var CustomerRegionIdsInput = $('#@Html.FieldIdFor(model => model.SelectedCustomerRegionIds)').data("kendoMultiSelect");
+                            CustomerRegionIdsInput.setOptions({
+                                CustomerRegionIdsInput: false
                             });
 
-                            @if (Model.AvailableManufacturerRegions.Count == 0)
+                            @if (Model.AvailableCustomerRegions.Count == 0)
                             {
                                 <text>
-                                    ManufacturerRegionIdsInput.setOptions({
+                                    CustomerRegionIdsInput.setOptions({
                                         enable: false,
-                                        placeholder: '@T("Admin.Users.Users.Fields.ManufacturerRegion.NoRegionManufacturer")'
+                                        placeholder: '@T("Admin.Users.Users.Fields.CustomerRegion.NoRegionCustomer")'
                                     });
-                                    ManufacturerRegionIdsInput._placeholder();
-                                    ManufacturerRegionIdsInput._enable();
+                                    CustomerRegionIdsInput._placeholder();
+                                    CustomerRegionIdsInput._enable();
                                 </text>
                             }
                         });
@@ -272,31 +272,31 @@
             </div>
                 <div class="form-group">
                     <div class="col-md-3">
-                        @Html.NopLabelFor(model => model.SelectedManufacturerIds)
+                        @Html.NopLabelFor(model => model.SelectedCustomerIds)
                     </div>
                     <div class="col-md-9">
                         <div class="input-group input-group-required">
-                            @Html.EditorFor(model => model.SelectedManufacturerIds, new { SelectList = Model.AvailableManufacturers })
+                            @Html.EditorFor(model => model.SelectedCustomerIds, new { SelectList = Model.AvailableCustomers })
                             <div class="input-group-btn">
                                 @Html.RequiredHint()
                             </div>
                         </div>
                         <script>
                         $(document).ready(function() {
-                            var ManufacturerIdsInput = $('#@Html.FieldIdFor(model => model.SelectedManufacturerIds)').data("kendoMultiSelect");
-                            ManufacturerIdsInput.setOptions({
-                                ManufacturerIdsInput: false
+                            var CustomerIdsInput = $('#@Html.FieldIdFor(model => model.SelectedCustomerIds)').data("kendoMultiSelect");
+                            CustomerIdsInput.setOptions({
+                                CustomerIdsInput: false
                             });
 
-                            @if (Model.AvailableManufacturers.Count == 0)
+                            @if (Model.AvailableCustomers.Count == 0)
                             {
                                 <text>
-                            ManufacturerIdsInput.setOptions({
+                            CustomerIdsInput.setOptions({
                                         enable: false,
-                                        placeholder: '@T("Admin.Users.Users.Fields.Manufacturer.NoManufacturer")'
+                                        placeholder: '@T("Admin.Users.Users.Fields.Customer.NoCustomer")'
                                     });
-                            ManufacturerIdsInput._placeholder();
-                            ManufacturerIdsInput._enable();
+                            CustomerIdsInput._placeholder();
+                            CustomerIdsInput._enable();
                                 </text>
                             }
                         });

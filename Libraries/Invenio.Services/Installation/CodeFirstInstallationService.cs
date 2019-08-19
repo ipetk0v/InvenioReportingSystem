@@ -2173,14 +2173,14 @@ namespace Invenio.Services.Installation
 
             var UserRoles = new List<UserRole>
                                 {
-                                    crAdministrators,
-                                    crRegistered,
                                     crGuests,
-                                    crGeneralManager,
-                                    crRegionalManager,
-                                    crSupervisor,
-                                    crTeamLeader,
+                                    crRegistered,
                                     crOperator,
+                                    crTeamLeader,
+                                    crSupervisor,
+                                    crRegionalManager,
+                                    crGeneralManager,
+                                    crAdministrators,
                                 };
             _UserRoleRepository.Insert(UserRoles);
 
@@ -2258,7 +2258,7 @@ namespace Invenio.Services.Installation
                 UseStoredProcedureForLoadingCategories = false,
                 SitemapEnabled = true,
                 SitemapIncludeCategories = true,
-                SitemapIncludeManufacturers = true,
+                SitemapIncludeCustomers = true,
                 SitemapIncludeProducts = false,
                 DisplayJavaScriptDisabledWarning = false,
                 UseFullTextSearch = false,
@@ -2371,7 +2371,7 @@ namespace Invenio.Services.Installation
                 ProductThumbPictureSizeOnProductDetailsPage = 100,
                 AssociatedProductPictureSize = 220,
                 CategoryThumbPictureSize = 450,
-                ManufacturerThumbPictureSize = 420,
+                CustomerThumbPictureSize = 420,
                 VendorThumbPictureSize = 450,
                 CartThumbPictureSize = 80,
                 MiniCartThumbPictureSize = 70,
@@ -2560,9 +2560,9 @@ namespace Invenio.Services.Installation
                 },
                 new ActivityLogType
                 {
-                    SystemKeyword = "AddNewManufacturer",
+                    SystemKeyword = "AddNewCustomer",
                     Enabled = true,
-                    Name = "Add a new manufacturer"
+                    Name = "Add a new Customer"
                 },
                 new ActivityLogType
                 {
@@ -2758,9 +2758,9 @@ namespace Invenio.Services.Installation
                 },
                 new ActivityLogType
                 {
-                    SystemKeyword = "DeleteManufacturer",
+                    SystemKeyword = "DeleteCustomer",
                     Enabled = true,
-                    Name = "Delete a manufacturer"
+                    Name = "Delete a Customer"
                 },
                 new ActivityLogType
                 {
@@ -2980,9 +2980,9 @@ namespace Invenio.Services.Installation
                 },
                 new ActivityLogType
                 {
-                    SystemKeyword = "EditManufacturer",
+                    SystemKeyword = "EditCustomer",
                     Enabled = true,
-                    Name = "Edit a manufacturer"
+                    Name = "Edit a Customer"
                 },
                 new ActivityLogType
                 {
@@ -3124,9 +3124,9 @@ namespace Invenio.Services.Installation
                 //},
                 //new ActivityLogType
                 //{
-                //    SystemKeyword = "ImportManufacturers",
+                //    SystemKeyword = "ImportCustomers",
                 //    Enabled = true,
-                //    Name = "Manufacturers were imported"
+                //    Name = "Customers were imported"
                 //},
                 //new ActivityLogType
                 //{
@@ -3161,9 +3161,9 @@ namespace Invenio.Services.Installation
                 //},
                 //new ActivityLogType
                 //{
-                //    SystemKeyword = "PublicStore.ViewManufacturer",
+                //    SystemKeyword = "PublicStore.ViewCustomer",
                 //    Enabled = false,
-                //    Name = "Public store. View a manufacturer"
+                //    Name = "Public store. View a Customer"
                 //},
                 //new ActivityLogType
                 //{

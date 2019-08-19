@@ -5,7 +5,7 @@ using Invenio.Core.Domain.DeliveryNumbers;
 using Invenio.Core.Domain.Orders;
 using Invenio.Core.Domain.Parts;
 using Invenio.Services.ChargeNumber;
-using Invenio.Services.Customers;
+using Invenio.Services.Supplier;
 using Invenio.Services.DeliveryNumber;
 using Invenio.Services.Localization;
 using Invenio.Services.Logging;
@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using Invenio.Core.Domain.ChargeNumbers;
+using Invenio.Core.Domain.Users;
 using Invenio.Services;
 using Invenio.Services.Reports;
 
@@ -32,7 +33,7 @@ namespace Invenio.Admin.Controllers
         private readonly IOrderService _orderService;
         private readonly IUserActivityService _userActivityService;
         private readonly ILocalizationService _localizationService;
-        private readonly ICustomerService _customerService;
+        private readonly ISupplierService _supplierService;
         private readonly IWorkContext _workContext;
         private readonly IPartService _partService;
         private readonly IDeliveryNumberService _delNumberService;
@@ -44,7 +45,7 @@ namespace Invenio.Admin.Controllers
             IOrderService orderService,
             IUserActivityService userActivityService,
             ILocalizationService localizationService,
-            ICustomerService customerService,
+            ISupplierService supplierService,
             IWorkContext workContext,
             IPartService partService,
             IDeliveryNumberService delNumberService,
@@ -56,7 +57,7 @@ namespace Invenio.Admin.Controllers
             _orderService = orderService;
             _userActivityService = userActivityService;
             _localizationService = localizationService;
-            _customerService = customerService;
+            _supplierService = supplierService;
             _workContext = workContext;
             _partService = partService;
             _delNumberService = delNumberService;
@@ -101,6 +102,29 @@ namespace Invenio.Admin.Controllers
             else if (model.SearchPublishedId == 2)
                 overridePublished = false;
 
+            if (_workContext.CurrentUser.IsAdmin())
+            {
+                var orders2 = _orderService
+                    .GetAllOrders(
+                        model.SearchOrderNumber,
+                        model.Status,
+                        model.CreateDate,
+                        model.StartDate,
+                        model.EndDate,
+                        overridePublished,
+                        showHidden: true,
+                        pageIndex: command.Page - 1,
+                        pageSize: command.PageSize);
+
+                var gridModel2 = new DataSourceResult
+                {
+                    Data = orders2.Select(PrepareOrderListModel),
+                    Total = orders2.TotalCount
+                };
+
+                return Json(gridModel2);
+            }
+
             var orders = _orderService
                 .GetAllOrders(
                     model.SearchOrderNumber,
@@ -109,14 +133,23 @@ namespace Invenio.Admin.Controllers
                     model.StartDate,
                     model.EndDate,
                     overridePublished,
-                    command.Page - 1,
-                    command.PageSize,
                     showHidden: true);
 
+            var crOrders = new List<Order>();
+            var cOrders = new List<Order>();
+            if (_workContext.CurrentUser.CustomerRegions.Any())
+                crOrders = orders.Where(x => _workContext.CurrentUser.CustomerRegions.Contains(x.Supplier.Customer.StateProvince)).ToList();
+
+            if (_workContext.CurrentUser.Customers.Any())
+                cOrders = orders.Where(x => _workContext.CurrentUser.Customers.Contains(x.Supplier.Customer)).ToList();
+
+            var result = crOrders.Concat(cOrders).Distinct().ToList();
+
+            var pagedList = new PagedList<Order>(result, command.Page - 1, command.PageSize);
             var gridModel = new DataSourceResult
             {
-                Data = orders.Select(PrepareOrderListModel),
-                Total = orders.TotalCount
+                Data = pagedList.Select(PrepareOrderListModel),
+                Total = pagedList.TotalCount
             };
 
             return Json(gridModel);
@@ -198,34 +231,49 @@ namespace Invenio.Admin.Controllers
             model.EndDate = model.EndDate ?? new DateTime?();
             model.Published = model.Published != false;
 
-            model.AvailableCustomers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Customers.Order.Select.Customer"), Value = "0" });
-            foreach (var region in _workContext.CurrentUser.ManufacturerRegions)
+            model.AvailableSuppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Suppliers.Order.Select.Supplier"), Value = "0" });
+            if (_workContext.CurrentUser.IsAdmin())
             {
-                var customers = _customerService.GetAllCustomers(countryId: region.CountryId, stateId: region.Id);
-                foreach (var customer in customers)
+                var suppliers = _supplierService.GetAllSuppliers();
+                foreach (var supplier in suppliers)
                 {
-                    model.AvailableCustomers.Add(new SelectListItem
+                    model.AvailableSuppliers.Add(new SelectListItem
                     {
-                        Text = customer.Name,
-                        Value = customer.Id.ToString()
+                        Text = supplier.Name,
+                        Value = supplier.Id.ToString()
                     });
                 }
             }
-
-            foreach (var manufacturer in _workContext.CurrentUser.Manufacturers)
+            else
             {
-                foreach (var customer in _customerService.GetCustomersByManufacturer(manufacturer.Id))
+                foreach (var region in _workContext.CurrentUser.CustomerRegions)
                 {
-                    model.AvailableCustomers.Add(new SelectListItem
+                    var suppliers = _supplierService.GetAllSuppliers(countryId: region.CountryId, stateId: region.Id);
+                    foreach (var supplier in suppliers)
                     {
-                        Text = customer.Name,
-                        Value = customer.Id.ToString()
-                    });
+                        model.AvailableSuppliers.Add(new SelectListItem
+                        {
+                            Text = supplier.Name,
+                            Value = supplier.Id.ToString()
+                        });
+                    }
+                }
+
+                foreach (var customer in _workContext.CurrentUser.Customers)
+                {
+                    foreach (var supplier in _supplierService.GetSuppliersByCustomer(customer.Id))
+                    {
+                        model.AvailableSuppliers.Add(new SelectListItem
+                        {
+                            Text = supplier.Name,
+                            Value = supplier.Id.ToString()
+                        });
+                    }
                 }
             }
 
-            model.AvailablePartNumbers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Customers.Order.Select.PartNumber"), Value = "0" });
-            model.AvailableDeliveryNumbers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Customers.Order.Select.DeliveryNumber"), Value = "0" });
+            model.AvailablePartNumbers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Suppliers.Order.Select.PartNumber"), Value = "0" });
+            model.AvailableDeliveryNumbers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Suppliers.Order.Select.DeliveryNumber"), Value = "0" });
 
             var parts = _partService.GetAllOrderParts(model.Id);
             if (parts == null) return;
@@ -251,9 +299,25 @@ namespace Invenio.Admin.Controllers
                     Value = delNumber.Id.ToString()
                 });
             }
+
+            var chargeNumbers = new List<ChargeNumber>();
+            if (delNumbers.Any())
+            {
+                foreach (var delNumber in delNumbers)
+                {
+                    chargeNumbers.AddRange(_chargeNumberService.GetAllDeliveryChargeNumbers(delNumber.Id));
+                }
+            }
+
+            model.IsChargeNumberQuantityAvailable = false;
+            if (chargeNumbers.Any())
+            {
+                model.TotalPartsQuantity = chargeNumbers.Select(x => x.Quantity ?? 0).Sum();
+                model.IsChargeNumberQuantityAvailable = true;
+            }
         }
 
-        public virtual ActionResult Edit(int id)
+        public virtual ActionResult Edit(int id, string tab)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedView();
@@ -266,6 +330,7 @@ namespace Invenio.Admin.Controllers
             var model = order.ToModel();
 
             PrepareOrderModel(model);
+            model.TabReload = tab;
             return View(model);
         }
 
@@ -277,7 +342,7 @@ namespace Invenio.Admin.Controllers
 
             var order = _orderService.GetOrderById(model.Id);
             if (order == null || order.Deleted)
-                //No manufacturer found with the specified id
+                //No Customer found with the specified id
                 return RedirectToAction("List");
 
             if (ModelState.IsValid)
@@ -331,7 +396,7 @@ namespace Invenio.Admin.Controllers
 
             var order = _orderService.GetOrderById(id);
             if (order == null)
-                //No manufacturer found with the specified id
+                //No Customer found with the specified id
                 return RedirectToAction("List");
 
             var reports = _reportService.GetAllReports(orderId: id);
@@ -532,7 +597,8 @@ namespace Invenio.Admin.Controllers
                 {
                     DeliverNumber = x.DeliveryNumber.Number,
                     Id = x.Id,
-                    ChargeNumber = x.Number
+                    ChargeNumber = x.Number,
+                    ChargeNumberQuantity = x.Quantity ?? 0
                 }).ToList();
 
             var gridModel = new DataSourceResult
@@ -544,7 +610,7 @@ namespace Invenio.Admin.Controllers
             return Json(gridModel);
         }
 
-        public virtual ActionResult ChargeNumberDelete(int id)
+        public virtual ActionResult ChargeNumberDelete(int id, int orderId)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedView();
@@ -559,13 +625,19 @@ namespace Invenio.Admin.Controllers
                 _reportService.DeleteReport(report);
             }
 
-            _chargeNumberService.DeleteChargeNumber(chargeNumber);
+            if (orderId > 0)
+            {
+                var order = _orderService.GetOrderById(orderId);
+                order.TotalPartsQuantity -= chargeNumber.Quantity ?? 0;
+                _orderService.UpdateOrder(order);
+            }
 
+            _chargeNumberService.DeleteChargeNumber(chargeNumber);
             return new NullJsonResult();
         }
 
         [ValidateInput(false)]
-        public virtual ActionResult ChargeNumberAdd(int deliveryNumberId, string charNumber)
+        public virtual ActionResult ChargeNumberAdd(int deliveryNumberId, string charNumber, int quantity, int orderId)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedView();
@@ -580,10 +652,18 @@ namespace Invenio.Admin.Controllers
             var chargeNumber = new ChargeNumber
             {
                 DeliveryNumberId = deliveryNumber.Id,
-                Number = charNumber.Trim()
+                Number = charNumber.Trim(),
+                Quantity = quantity
             };
 
             _chargeNumberService.InsertChargeNumber(chargeNumber);
+
+            if (orderId > 0)
+            {
+                var order = _orderService.GetOrderById(orderId);
+                order.TotalPartsQuantity = _chargeNumberService.GetAllDeliveryChargeNumbers(deliveryNumberId).Select(x => x.Quantity ?? 0).Sum();
+                _orderService.UpdateOrder(order);
+            }
 
             return Json(new { Result = true }, JsonRequestBehavior.AllowGet);
         }

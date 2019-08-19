@@ -169,7 +169,7 @@
     <Compile Include="Domain\Configuration\Setting.cs" />
     <Compile Include="Domain\Criterias\Criteria.cs" />
     <Compile Include="Domain\Criterias\CriteriaType.cs" />
-    <Compile Include="Domain\Customers\Customer.cs" />
+    <Compile Include="Domain\Suppliers\Supplier.cs" />
     <Compile Include="Domain\DeliveryNumbers\DeliveryNumber.cs" />
     <Compile Include="Domain\Directory\Country.cs" />
     <Compile Include="Domain\Directory\Currency.cs" />
@@ -196,7 +196,7 @@
     <Compile Include="Domain\Logging\ActivityLogType.cs" />
     <Compile Include="Domain\Logging\Log.cs" />
     <Compile Include="Domain\Logging\LogLevel.cs" />
-    <Compile Include="Domain\Manufacturers\Manufacturer.cs" />
+    <Compile Include="Domain\Customers\Customer.cs" />
     <Compile Include="Domain\Media\Download.cs" />
     <Compile Include="Domain\Media\MediaSettings.cs" />
     <Compile Include="Domain\Media\Picture.cs" />

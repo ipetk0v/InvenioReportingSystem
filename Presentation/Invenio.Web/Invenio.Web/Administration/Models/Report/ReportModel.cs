@@ -1,13 +1,11 @@
-﻿using System;
-using Invenio.Core.Domain.Orders;
-using Invenio.Core.Domain.Reports;
-using Invenio.Core.Domain.Users;
-using Invenio.Web.Framework.Mvc;
+﻿using Invenio.Web.Framework.Mvc;
+using System;
 
 namespace Invenio.Admin.Models.Report
 {
     public class ReportModel : BaseNopEntityModel
     {
+        public long CheckedPartsQuantity { get; set; }
         public long OkPartsQuantity { get; set; }
         public long NokPartsQuantity { get; set; }
         public long ReworkPartsQuantity { get; set; }
@@ -16,10 +14,9 @@ namespace Invenio.Admin.Models.Report
         public bool Deleted { get; set; }
         public string UserName { get; set; }
         public string OrderNumber { get; set; }
-        public string CustomerName { get; set; }
+        public string SupplierName { get; set; }
 
         public string WorkShiftName { get; set; }
-        //public WorkShift WorkShift { get; set; }
         public int WorkShift { get; set; }
 
         public DateTime CreatedOn { get; set; }
@@ -27,9 +24,6 @@ namespace Invenio.Admin.Models.Report
         public DateTime DateOfInspection { get; set; }
 
         public int UserId { get; set; }
-        //public User User { get; set; }
-
         public int OrderId { get; set; }
-        //public Order Order { get; set; }
     }
 }

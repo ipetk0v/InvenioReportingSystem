@@ -98,9 +98,9 @@ namespace Invenio.Admin.Models.Settings
             public bool SitemapIncludeCategories { get; set; }
             public bool SitemapIncludeCategories_OverrideForStore { get; set; }
 
-            [NopResourceDisplayName("Admin.Configuration.Settings.GeneralCommon.SitemapIncludeManufacturers")]
-            public bool SitemapIncludeManufacturers { get; set; }
-            public bool SitemapIncludeManufacturers_OverrideForStore { get; set; }
+            [NopResourceDisplayName("Admin.Configuration.Settings.GeneralCommon.SitemapIncludeCustomers")]
+            public bool SitemapIncludeCustomers { get; set; }
+            public bool SitemapIncludeCustomers_OverrideForStore { get; set; }
 
             [NopResourceDisplayName("Admin.Configuration.Settings.GeneralCommon.SitemapIncludeProducts")]
             public bool SitemapIncludeProducts { get; set; }

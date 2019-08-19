@@ -80,7 +80,7 @@
 --CREATE PROCEDURE [dbo].[ProductLoadAllPaged]
 --(
 --	@CategoryIds		nvarchar(MAX) = null,	--a list of category IDs (comma-separated list). e.g. 1,2,3
---	@ManufacturerId		int = 0,
+--	@CustomerId		int = 0,
 --	@StoreId			int = 0,
 --	@VendorId			int = 0,
 --	@WarehouseId		int = 0,
@@ -93,7 +93,7 @@
 --	@PriceMax			decimal(18, 4) = null,
 --	@Keywords			nvarchar(4000) = null,
 --	@SearchDescriptions bit = 0, --a value indicating whether to search by a specified "keyword" in product descriptions
---	@SearchManufacturerPartNumber bit = 0, -- a value indicating whether to search by a specified "keyword" in manufacturer part number
+--	@SearchCustomerPartNumber bit = 0, -- a value indicating whether to search by a specified "keyword" in Customer part number
 --	@SearchSku			bit = 0, --a value indicating whether to search by a specified "keyword" in product SKU
 --	@SearchProductTags  bit = 0, --a value indicating whether to search by a specified "keyword" in product tags
 --	@UseFullTextSearch  bit = 0,
@@ -290,14 +290,14 @@
 --				SET @sql = @sql + ' AND PATINDEX(@Keywords, lp.[LocaleValue]) > 0 '
 --		END
 
---		--manufacturer part number (exact match)
---		IF @SearchManufacturerPartNumber = 1
+--		--Customer part number (exact match)
+--		IF @SearchCustomerPartNumber = 1
 --		BEGIN
 --			SET @sql = @sql + '
 --			UNION
 --			SELECT p.Id
 --			FROM Product p with (NOLOCK)
---			WHERE p.[ManufacturerPartNumber] = @OriginalKeywords '
+--			WHERE p.[CustomerPartNumber] = @OriginalKeywords '
 --		END
 
 --		--SKU (exact match)
@@ -388,10 +388,10 @@
 --			ON p.Id = pcm.ProductId'
 --	END
 	
---	IF @ManufacturerId > 0
+--	IF @CustomerId > 0
 --	BEGIN
 --		SET @sql = @sql + '
---		LEFT JOIN Product_Manufacturer_Mapping pmm with (NOLOCK)
+--		LEFT JOIN Product_Customer_Mapping pmm with (NOLOCK)
 --			ON p.Id = pmm.ProductId'
 --	END
 	
@@ -427,11 +427,11 @@
 --		END
 --	END
 	
---	--filter by manufacturer
---	IF @ManufacturerId > 0
+--	--filter by Customer
+--	IF @CustomerId > 0
 --	BEGIN
 --		SET @sql = @sql + '
---		AND pmm.ManufacturerId = ' + CAST(@ManufacturerId AS nvarchar(max))
+--		AND pmm.CustomerId = ' + CAST(@CustomerId AS nvarchar(max))
 		
 --		IF @FeaturedProducts IS NOT NULL
 --		BEGIN
@@ -648,8 +648,8 @@
 --		--category position (display order)
 --		IF @CategoryIdsCount > 0 SET @sql_orderby = ' pcm.DisplayOrder ASC'
 		
---		--manufacturer position (display order)
---		IF @ManufacturerId > 0
+--		--Customer position (display order)
+--		IF @CustomerId > 0
 --		BEGIN
 --			IF LEN(@sql_orderby) > 0 SET @sql_orderby = @sql_orderby + ', '
 --			SET @sql_orderby = @sql_orderby + ' pmm.DisplayOrder ASC'

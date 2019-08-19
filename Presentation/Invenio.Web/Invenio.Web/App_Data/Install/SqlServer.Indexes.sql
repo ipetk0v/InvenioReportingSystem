@@ -82,7 +82,7 @@ GO
 --CREATE NONCLUSTERED INDEX [IX_Product_ProductAttribute_Mapping_ProductId_DisplayOrder] ON [Product_ProductAttribute_Mapping] ([ProductId] ASC, [DisplayOrder] ASC)
 --GO
 
---CREATE NONCLUSTERED INDEX [IX_Manufacturer_DisplayOrder] ON [Manufacturer] ([DisplayOrder] ASC)
+--CREATE NONCLUSTERED INDEX [IX_Customer_DisplayOrder] ON [Customer] ([DisplayOrder] ASC)
 --GO
 
 --CREATE NONCLUSTERED INDEX [IX_Category_DisplayOrder] ON [Category] ([DisplayOrder] ASC)
@@ -133,7 +133,7 @@ GO
 --CREATE NONCLUSTERED INDEX [IX_PCM_Product_and_Category] ON [Product_Category_Mapping] ([CategoryId] ASC, [ProductId] ASC)
 --GO
 
---CREATE NONCLUSTERED INDEX [IX_PMM_Product_and_Manufacturer] ON [Product_Manufacturer_Mapping] ([ManufacturerId] ASC, [ProductId] ASC)
+--CREATE NONCLUSTERED INDEX [IX_PMM_Product_and_Customer] ON [Product_Customer_Mapping] ([CustomerId] ASC, [ProductId] ASC)
 --GO
 
 --CREATE NONCLUSTERED INDEX [IX_PSAM_AllowFiltering] ON [Product_SpecificationAttribute_Mapping] ([AllowFiltering] ASC) INCLUDE ([ProductId],[SpecificationAttributeOptionId])
@@ -166,7 +166,7 @@ GO
 --CREATE NONCLUSTERED INDEX [IX_Category_LimitedToStores] ON [Category] ([LimitedToStores] ASC)
 --GO
 
---CREATE NONCLUSTERED INDEX [IX_Manufacturer_LimitedToStores] ON [Manufacturer] ([LimitedToStores] ASC)
+--CREATE NONCLUSTERED INDEX [IX_Customer_LimitedToStores] ON [Customer] ([LimitedToStores] ASC)
 --GO
 
 --CREATE NONCLUSTERED INDEX [IX_Product_LimitedToStores] ON [Product] ([LimitedToStores] ASC)
@@ -175,7 +175,7 @@ GO
 --CREATE NONCLUSTERED INDEX [IX_Category_SubjectToAcl] ON [Category] ([SubjectToAcl] ASC)
 --GO
 
---CREATE NONCLUSTERED INDEX [IX_Manufacturer_SubjectToAcl] ON [Manufacturer] ([SubjectToAcl] ASC)
+--CREATE NONCLUSTERED INDEX [IX_Customer_SubjectToAcl] ON [Customer] ([SubjectToAcl] ASC)
 --GO
 
 --CREATE NONCLUSTERED INDEX [IX_Product_SubjectToAcl] ON [Product] ([SubjectToAcl] ASC)

@@ -13,17 +13,17 @@ namespace Invenio.Services.ExportImport
     public partial interface IExportManager
     {
         /// <summary>
-        /// Export manufacturer list to xml
+        /// Export Customer list to xml
         /// </summary>
-        /// <param name="manufacturers">Manufacturers</param>
+        /// <param name="Customers">Customers</param>
         /// <returns>Result in XML format</returns>
-        //string ExportManufacturersToXml(IList<Manufacturer> manufacturers);
+        //string ExportCustomersToXml(IList<Customer> Customers);
 
         /// <summary>
-        /// Export manufacturers to XLSX
+        /// Export Customers to XLSX
         /// </summary>
-        /// <param name="manufacturers">Manufactures</param>
-        //byte[] ExportManufacturersToXlsx(IEnumerable<Manufacturer> manufacturers);
+        /// <param name="Customers">Manufactures</param>
+        //byte[] ExportCustomersToXlsx(IEnumerable<Customer> Customers);
 
         /// <summary>
         /// Export category list to xml

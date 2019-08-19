@@ -8,7 +8,7 @@ namespace Invenio.Admin.Models.Home
 
         public int NumberOfUsers { get; set; }
 
-        public int NumberOfCustomers { get; set; }
+        public int NumberOfSuppliers { get; set; }
 
         public int NumberNotApprovedReports { get; set; }
     }

@@ -23,6 +23,7 @@ using Invenio.Services.Common;
 using Invenio.Services.Configuration;
 using Invenio.Services.Criteria;
 using Invenio.Services.Customers;
+using Invenio.Services.Supplier;
 using Invenio.Services.DeliveryNumber;
 using Invenio.Services.Directory;
 using Invenio.Services.Events;
@@ -154,8 +155,8 @@ namespace Invenio.Web.Framework
             //builder.RegisterType<CategoryService>().As<ICategoryService>().InstancePerLifetimeScope();
             //builder.RegisterType<CompareProductsService>().As<ICompareProductsService>().InstancePerLifetimeScope();
             //builder.RegisterType<RecentlyViewedProductsService>().As<IRecentlyViewedProductsService>().InstancePerLifetimeScope();
-            builder.RegisterType<ManufacturerService>().As<IManufacturerService>().InstancePerLifetimeScope();
             builder.RegisterType<CustomerService>().As<ICustomerService>().InstancePerLifetimeScope();
+            builder.RegisterType<SupplierService>().As<ISupplierService>().InstancePerLifetimeScope();
             //builder.RegisterType<PriceFormatter>().As<IPriceFormatter>().InstancePerLifetimeScope();
             //builder.RegisterType<ProductAttributeFormatter>().As<IProductAttributeFormatter>().InstancePerLifetimeScope();
             //builder.RegisterType<ProductAttributeParser>().As<IProductAttributeParser>().InstancePerLifetimeScope();
@@ -165,7 +166,7 @@ namespace Invenio.Web.Framework
             //builder.RegisterType<SpecificationAttributeService>().As<ISpecificationAttributeService>().InstancePerLifetimeScope();
             //builder.RegisterType<ProductTemplateService>().As<IProductTemplateService>().InstancePerLifetimeScope();
             //builder.RegisterType<CategoryTemplateService>().As<ICategoryTemplateService>().InstancePerLifetimeScope();
-            //builder.RegisterType<ManufacturerTemplateService>().As<IManufacturerTemplateService>().InstancePerLifetimeScope();
+            //builder.RegisterType<CustomerTemplateService>().As<ICustomerTemplateService>().InstancePerLifetimeScope();
             //builder.RegisterType<TopicTemplateService>().As<ITopicTemplateService>().InstancePerLifetimeScope();
             //use static cache (between HTTP requests)
             //builder.RegisterType<ProductTagService>().As<IProductTagService>()

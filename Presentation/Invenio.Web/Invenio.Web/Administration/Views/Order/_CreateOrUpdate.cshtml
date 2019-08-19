@@ -15,20 +15,20 @@
     <div class="form-horizontal">
         <div id="User-edit" class="nav-tabs-custom">
             <ul class="nav nav-tabs">
-                @Html.RenderBootstrapTabHeader("tab-info", @T("admin.catalog.order.info"), true)
-                @Html.RenderBootstrapTabHeader("tab-parts", @T("admin.catalog.order.parts"), false)
-                @Html.RenderBootstrapTabHeader("tab-blocked-criteria", @T("admin.catalog.order.blocked.criteria"), false)
-                @Html.RenderBootstrapTabHeader("tab-rework-criteria", @T("admin.catalog.order.rework.criteria"), false)
-                @Html.RenderBootstrapTabHeader("tab-delivery-number", @T("admin.catalog.order.delivery.number"), false)
-                @Html.RenderBootstrapTabHeader("tab-charge-number", @T("admin.catalog.order.charge.number"), false)
+                @Html.RenderBootstrapTabHeader("tab-info", @T("admin.catalog.order.info"), string.IsNullOrEmpty(Model.TabReload))
+                @Html.RenderBootstrapTabHeader("tab-parts", @T("admin.catalog.order.parts"), Model.TabReload == "tab-parts")
+                @Html.RenderBootstrapTabHeader("tab-blocked-criteria", @T("admin.catalog.order.blocked.criteria"), Model.TabReload == "tab-blocked-criteria")
+                @Html.RenderBootstrapTabHeader("tab-rework-criteria", @T("admin.catalog.order.rework.criteria"), Model.TabReload == "tab-rework-criteria")
+                @Html.RenderBootstrapTabHeader("tab-delivery-number", @T("admin.catalog.order.delivery.number"), Model.TabReload == "tab-delivery-number")
+                @Html.RenderBootstrapTabHeader("tab-charge-number", @T("admin.catalog.order.charge.number"), Model.TabReload == "tab-charge-number")
             </ul>
             <div class="tab-content">
-                @Html.RenderBootstrapTabContent("tab-info", @TabInfo(), true)
-                @Html.RenderBootstrapTabContent("tab-parts", TabParts(), false)
-                @Html.RenderBootstrapTabContent("tab-blocked-criteria", TabBlockedCriteria(), false)
-                @Html.RenderBootstrapTabContent("tab-rework-criteria", TabReworkCriteria(), false)
-                @Html.RenderBootstrapTabContent("tab-delivery-number", TabDeliveryNumber(), false)
-                @Html.RenderBootstrapTabContent("tab-charge-number", TabChargeNumber(), false)
+                @Html.RenderBootstrapTabContent("tab-info", @TabInfo(), string.IsNullOrEmpty(Model.TabReload))
+                @Html.RenderBootstrapTabContent("tab-parts", TabParts(), Model.TabReload == "tab-parts")
+                @Html.RenderBootstrapTabContent("tab-blocked-criteria", TabBlockedCriteria(), Model.TabReload == "tab-blocked-criteria")
+                @Html.RenderBootstrapTabContent("tab-rework-criteria", TabReworkCriteria(), Model.TabReload == "tab-rework-criteria")
+                @Html.RenderBootstrapTabContent("tab-delivery-number", TabDeliveryNumber(), Model.TabReload == "tab-delivery-number")
+                @Html.RenderBootstrapTabContent("tab-charge-number", TabChargeNumber(), Model.TabReload == "tab-charge-number")
             </div>
         </div>
     </div>
@@ -45,11 +45,11 @@
                     @Html.HiddenFor(model => model.CreatedOnUtc)
                     <div class="form-group">
                         <div class="col-md-3">
-                            @Html.NopLabelFor(model => model.CustomerId)
+                            @Html.NopLabelFor(model => model.supplierId)
                         </div>
                         <div class="col-md-9">
-                            @Html.NopDropDownListFor(model => model.CustomerId, Model.AvailableCustomers)
-                            @Html.ValidationMessageFor(model => model.CustomerId)
+                            @Html.NopDropDownListFor(model => model.supplierId, Model.AvailableSuppliers)
+                            @Html.ValidationMessageFor(model => model.supplierId)
                         </div>
                     </div>
                     <div class="form-group">
@@ -75,7 +75,14 @@
                             @Html.NopLabelFor(model => model.TotalPartsQuantity)
                         </div>
                         <div class="col-md-9">
-                            @Html.NopEditorFor(model => model.TotalPartsQuantity)
+                            @if (Model.IsChargeNumberQuantityAvailable)
+                            {
+                                <input value="@Model.TotalPartsQuantity" readonly class="form-control" style="width:300px;" />
+                            }
+                            else
+                            {
+                                @Html.NopEditorFor(model => model.TotalPartsQuantity)
+                            }
                             @Html.ValidationMessageFor(model => model.TotalPartsQuantity)
                         </div>
                     </div>
@@ -150,6 +157,9 @@
 }
 @helper TabParts()
 {
+    var defaultGridPageSize = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+
     if (Model.Id > 0)
     {
         <div class="panel-group">
@@ -194,15 +204,14 @@
                                 // Cancel the changes
                                 this.cancelChanges();
                             },
+                            pageSize: @(defaultGridPageSize),
                             serverPaging: true,
                             serverFiltering: true,
                             serverSorting: true
                         },
                         pageable: {
                             refresh: true,
-                            numeric: false,
-                            previousNext: false,
-                            info: false,
+                            pageSizes: [@(gridPageSizes)],
                             @Html.Partial("_GridPagerMessages")
                         },
                         editable: {
@@ -272,7 +281,8 @@
                     var grid = $("#parts-grid").data('kendoGrid');
                     grid.dataSource.read();
                     $('#add-order-parts').attr('disabled', false);
-                    location.reload();
+                    window.location.search = 'tab=tab-parts';
+
                 },
                 error:function (xhr, ajaxOptions, thrownError){
                     alert('Failed to add order parts.');
@@ -294,6 +304,9 @@
 }
 @helper TabBlockedCriteria()
 {
+    var defaultGridPageSize = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+
     if (Model.Id > 0)
     {
         <div class="panel-group">
@@ -338,15 +351,14 @@
                                 // Cancel the changes
                                 this.cancelChanges();
                             },
+                            pageSize: @(defaultGridPageSize),
                             serverPaging: true,
                             serverFiltering: true,
                             serverSorting: true
                         },
                         pageable: {
                             refresh: true,
-                            numeric: false,
-                            previousNext: false,
-                            info: false,
+                            pageSizes: [@(gridPageSizes)],
                             @Html.Partial("_GridPagerMessages")
                         },
                         editable: {
@@ -434,6 +446,9 @@
 }
 @helper TabReworkCriteria()
 {
+    var defaultGridPageSize = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+
     if (Model.Id > 0)
     {
         <div class="panel-group">
@@ -478,15 +493,14 @@
                                 // Cancel the changes
                                 this.cancelChanges();
                             },
+                            pageSize: @(defaultGridPageSize),
                             serverPaging: true,
                             serverFiltering: true,
                             serverSorting: true
                         },
                         pageable: {
                             refresh: true,
-                            numeric: false,
-                            previousNext: false,
-                            info: false,
+                            pageSizes: [@(gridPageSizes)],
                             @Html.Partial("_GridPagerMessages")
                         },
                         editable: {
@@ -574,6 +588,9 @@
 }
 @helper TabDeliveryNumber()
 {
+    var defaultGridPageSize = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+
     if (Model.Id > 0)
     {
         <div class="panel-group">
@@ -618,15 +635,14 @@
                                 // Cancel the changes
                                 this.cancelChanges();
                             },
+                            pageSize: @(defaultGridPageSize),
                             serverPaging: true,
                             serverFiltering: true,
                             serverSorting: true
                         },
                         pageable: {
                             refresh: true,
-                            numeric: false,
-                            previousNext: false,
-                            info: false,
+                            pageSizes: [@(gridPageSizes)],
                             @Html.Partial("_GridPagerMessages")
                         },
                         editable: {
@@ -700,7 +716,8 @@
                     var grid = $("#delivery-number-grid").data('kendoGrid');
                     grid.dataSource.read();
                     $('#add-delivery-number').attr('disabled', false);
-                    location.reload();
+                    window.location.search = 'tab=tab-delivery-number';
+                    //location.reload();
                 },
                 error:function (xhr, ajaxOptions, thrownError){
                     alert('Failed to add delivery number.');
@@ -723,6 +740,9 @@
 
 @helper TabChargeNumber()
 {
+    var defaultGridPageSize = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+
     if (Model.Id > 0)
     {
         <div class="panel-group">
@@ -766,39 +786,43 @@
                                 display_kendoui_grid_error(e);
                                 // Cancel the changes
                                 this.cancelChanges();
-                            },
+                        },
+                            pageSize: @(defaultGridPageSize),
                             serverPaging: true,
                             serverFiltering: true,
                             serverSorting: true
                         },
                         pageable: {
-                            refresh: true,
-                            numeric: false,
-                            previousNext: false,
-                            info: false,
+                        refresh: true,
+                            pageSizes: [@(gridPageSizes)],
                             @Html.Partial("_GridPagerMessages")
-                        },
+                    },
                         editable: {
                             confirmation: "@T("Admin.Common.DeleteConfirmation")",
                             mode: "inline"
                         },
                         scrollable: false,
                         columns: [
+                             {
+                                 field: "DeliverNumber",
+                                 title: "@T("Admin.Orders.DeliveryNumber.Fields.Description")",
+                                 encoded: false
+                             },
+                             {
+                             field: "ChargeNumber",
+                             title: "@T("Admin.Orders.ChargeNumber.Fields.Description")",
+                             encoded: false
+                            },
                             {
-                                field: "DeliverNumber",
-                                title: "@T("Admin.Orders.DeliveryNumber.Fields.Description")",
+                                field: "ChargeNumberQuantity",
+                                title: "@T("Admin.Orders.ChargeNumberQuantity.Fields.Description")",
                                 encoded: false
                             },
-                         {
-                         field: "ChargeNumber",
-                         title: "@T("Admin.Orders.ChargeNumber.Fields.Description")",
-                         encoded: false
-                         },
-                        {
-                            command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
-                            title: "@T("Admin.Common.Delete")",
-                            width: 100
-                        }
+                            {
+                                command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
+                                title: "@T("Admin.Common.Delete")",
+                                width: 100
+                            }
                         ]
                     });
                 });
@@ -811,15 +835,19 @@
                 </div>
                 <div class="panel-body">
                     <div class="form-group">
-                        <div class="col-md-5">
+                        <div class="col-md-3">
                             @Html.NopDropDownListFor(model => model.DeliveryNumberId, Model.AvailableDeliveryNumbers)
                             @Html.ValidationMessageFor(model => model.DeliveryNumberId)
                         </div>
-                        <div class="col-md-5">
-                            @Html.NopEditorFor(model => model.AddOrderChargeNumber)
+                        <div class="col-md-3">
+                            @Html.EditorFor(model => model.AddOrderChargeNumber, new { htmlAttributes = new { @class = "form-control", placeholder = @T("Charge номер") } })
                             @Html.ValidationMessageFor(model => model.AddOrderChargeNumber)
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
+                            @Html.NopEditorFor(model => model.AddOrderChargeNumberQuantity)
+                            @Html.ValidationMessageFor(model => model.AddOrderChargeNumber)
+                        </div>
+                        <div class="col-md-3">
                             <button type="button" id="add-charge-number" class="btn btn-primary">@T("Admin.Orders.ChargeNumber.AddButton")</button>
                         </div>
                     </div>
@@ -832,11 +860,15 @@
         $('#add-charge-number').click(function () {
             var chargeNumber = $("#@Html.FieldIdFor(model => model.AddOrderChargeNumber)").val();
             var deliveryNumberId = $("#@Html.FieldIdFor(model => model.DeliveryNumberId)").val();
+            var quantity = $("#@Html.FieldIdFor(model => model.AddOrderChargeNumberQuantity)").val();
+            var orderId = "@Model.Id";
             $('#add-charge-number').attr('disabled', true);
 
             var postData = {
                 charNumber: chargeNumber,
-                deliveryNumberId: deliveryNumberId
+                deliveryNumberId: deliveryNumberId,
+                quantity: quantity,
+                orderId: orderId
                 };
             addAntiForgeryToken(postData);
 
@@ -853,7 +885,8 @@
                         alert('Failed to add charge number.');
                     }
                     $('#add-charge-number').attr('disabled', false);
-                    location.reload();
+                    window.location.search = 'tab=tab-charge-number';
+                    //location.reload();
                 },
                 error:function (xhr, ajaxOptions, thrownError){
                     alert('Failed to add charge number.');

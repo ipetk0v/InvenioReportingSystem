@@ -4,7 +4,7 @@ namespace Invenio.Admin.Models.Report
 {
     public class FinalReportModel : BaseNopEntityModel
     {
-        public string Customer { get; set; }
+        public string Supplier { get; set; }
 
         public string PartNumber { get; set; }
 

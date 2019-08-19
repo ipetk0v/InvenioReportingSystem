@@ -37,7 +37,7 @@ namespace Invenio.Admin.Infrastructure
             builder.RegisterType<HomeController>()
                 .WithParameter(ResolvedParameter.ForNamed<ICacheManager>("nop_cache_static"));
 
-            builder.RegisterType<ManufacturerController>()
+            builder.RegisterType<CustomerController>()
                 .WithParameter(ResolvedParameter.ForNamed<ICacheManager>("nop_cache_static"));
 
             //builder.RegisterType<OrderController>()

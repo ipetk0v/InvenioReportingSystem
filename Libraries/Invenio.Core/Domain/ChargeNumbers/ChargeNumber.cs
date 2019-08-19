@@ -7,6 +7,8 @@ namespace Invenio.Core.Domain.ChargeNumbers
     {
         public string Number { get; set; }
 
+        public int? Quantity { get; set; }
+
         public int DeliveryNumberId { get; set; }
         public DeliveryNumber DeliveryNumber { get; set; }
     }

@@ -1,5 +1,4 @@
-﻿using Invenio.Core.Domain.Common;
-using Invenio.Core.Domain.Manufacturers;
+﻿using Invenio.Core.Domain.Directory;
 using System;
 
 namespace Invenio.Core.Domain.Customers
@@ -14,10 +13,10 @@ namespace Invenio.Core.Domain.Customers
         public bool Deleted { get; set; }
         public bool Published { get; set; }
 
-        public int? AddressId { get; set; }
-        public virtual Address Address { get; set; }
+        public int? CountryId { get; set; }
+        public virtual Country Country { get; set; }
 
-        public int? ManufacturerId { get; set; }
-        public virtual Manufacturer Manufacturer { get; set; }
+        public int? StateProvinceId { get; set; }
+        public virtual StateProvince StateProvince { get; set; }
     }
 }

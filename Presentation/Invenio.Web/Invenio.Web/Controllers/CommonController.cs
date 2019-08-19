@@ -1,11 +1,9 @@
-﻿using System;
-using System.Web.Mvc;
-using Invenio.Core;
+﻿using Invenio.Core;
 using Invenio.Core.Domain;
 using Invenio.Core.Domain.Common;
-using Invenio.Core.Domain.Users;
 using Invenio.Core.Domain.Localization;
 using Invenio.Core.Domain.Messages;
+using Invenio.Core.Domain.Users;
 //using Invenio.Core.Domain.Tax;
 //using Invenio.Core.Domain.Vendors;
 using Invenio.Services.Common;
@@ -21,6 +19,8 @@ using Invenio.Web.Framework.Security;
 using Invenio.Web.Framework.Security.Captcha;
 using Invenio.Web.Framework.Themes;
 using Invenio.Web.Models.Common;
+using System;
+using System.Web.Mvc;
 
 namespace Invenio.Web.Controllers
 {
@@ -179,9 +179,9 @@ namespace Invenio.Web.Controllers
         //}
         //available even when navigation is not allowed
         [PublicStoreAllowNavigation(true)]
-        public virtual ActionResult SetCurrency(int UserCurrency, string returnUrl = "")
+        public virtual ActionResult SetCurrency(int userCurrency, string returnUrl = "")
         {
-            var currency = _currencyService.GetCurrencyById(UserCurrency);
+            var currency = _currencyService.GetCurrencyById(userCurrency);
             if (currency != null)
                 _workContext.WorkingCurrency = currency;
 

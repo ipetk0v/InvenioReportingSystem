@@ -32,7 +32,7 @@ namespace Invenio.Admin.Controllers
         private readonly IPermissionService _permissionService;
         //private readonly IProductService _productService;
         //private readonly ICategoryService _categoryService;
-        //private readonly IManufacturerService _manufacturerService;
+        //private readonly ICustomerService _CustomerService;
         private readonly IStoreService _storeService;
         //private readonly IVendorService _vendorService;
         private readonly IWorkContext _workContext;
@@ -48,7 +48,7 @@ namespace Invenio.Admin.Controllers
             IPermissionService permissionService,
             //IProductService productService,
             //ICategoryService categoryService,
-            //IManufacturerService manufacturerService,
+            //ICustomerService CustomerService,
             IStoreService storeService,
             //IVendorService vendorService,
             IWorkContext workContext, 
@@ -60,7 +60,7 @@ namespace Invenio.Admin.Controllers
             this._permissionService = permissionService;
             //this._productService = productService;
             //this._categoryService = categoryService;
-            //this._manufacturerService = manufacturerService;
+            //this._CustomerService = CustomerService;
             this._storeService = storeService;
             //this._vendorService = vendorService;
             this._workContext = workContext;
@@ -254,11 +254,11 @@ namespace Invenio.Admin.Controllers
         //    foreach (var c in categories)
         //        model.AvailableCategories.Add(c);
 
-        //    //manufacturers
-        //    model.AvailableManufacturers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = "0" });
-        //    var manufacturers = SelectListHelper.GetManufacturerList(_manufacturerService, _cacheManager, true);
-        //    foreach (var m in manufacturers)
-        //        model.AvailableManufacturers.Add(m);
+        //    //Customers
+        //    model.AvailableCustomers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = "0" });
+        //    var Customers = SelectListHelper.GetCustomerList(_CustomerService, _cacheManager, true);
+        //    foreach (var m in Customers)
+        //        model.AvailableCustomers.Add(m);
 
         //    //stores
         //    model.AvailableStores.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = "0" });
@@ -293,7 +293,7 @@ namespace Invenio.Admin.Controllers
 
         //    var products = _productService.SearchProducts(
         //        categoryIds: new List<int> { model.SearchCategoryId },
-        //        manufacturerId: model.SearchManufacturerId,
+        //        CustomerId: model.SearchCustomerId,
         //        storeId: model.SearchStoreId,
         //        vendorId: model.SearchVendorId,
         //        productType: model.SearchProductTypeId > 0 ? (ProductType?)model.SearchProductTypeId : null,

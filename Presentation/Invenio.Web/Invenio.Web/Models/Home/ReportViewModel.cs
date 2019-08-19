@@ -21,7 +21,7 @@ namespace Invenio.Web.Models.Home
         public ReportModel()
         {
             WorkShifts = new List<SelectListItem>();
-            Customers = new List<SelectListItem>();
+            Suppliers = new List<SelectListItem>();
             Orders = new List<SelectListItem>();
             DeliveryNumbers = new List<SelectListItem>();
             ChargeNumbers = new List<SelectListItem>();
@@ -36,8 +36,8 @@ namespace Invenio.Web.Models.Home
         public IList<SelectListItem> WorkShifts { get; set; }
         public DateTime ReportDate { get; set; }
 
-        public int CustomerId { get; set; }
-        public IList<SelectListItem> Customers { get; set; }
+        public int supplierId { get; set; }
+        public IList<SelectListItem> Suppliers { get; set; }
 
         public int PartId { get; set; }
         public IList<SelectListItem> Parts { get; set; }

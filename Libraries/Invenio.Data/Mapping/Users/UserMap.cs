@@ -17,11 +17,11 @@ namespace Invenio.Data.Mapping.Users
                 .WithMany()
                 .Map(m => m.ToTable("User_UserRole_Mapping"));
 
-            this.HasMany(c => c.Manufacturers)
+            this.HasMany(c => c.Customers)
                 .WithMany()
-                .Map(m => m.ToTable("User_Manufacturer_Mapping"));
+                .Map(m => m.ToTable("User_Customer_Mapping"));
 
-            this.HasMany(c => c.ManufacturerRegions)
+            this.HasMany(c => c.CustomerRegions)
                 .WithMany()
                 .Map(m => m.ToTable("User_Region_Mapping"));
 

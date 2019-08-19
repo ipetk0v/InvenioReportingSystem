@@ -1,12 +1,12 @@
 ﻿@model CustomerModel
-@using Invenio.Admin.Models.Customers;
+@using Invenio.Admin.Models.Customer;
 
 @Html.ValidationSummary(false)
 @Html.HiddenFor(model => model.Id)
 
 @{
     //custom tabs
-    var eventMessage = new AdminTabStripCreated(this.Html, "customer-edit");
+    var eventMessage = new AdminTabStripCreated(this.Html, "Customer-edit");
     EngineContext.Current.Resolve<IEventPublisher>().Publish(eventMessage);
     foreach (var eventBlock in eventMessage.BlocksToRender)
     {
@@ -18,7 +18,7 @@
     <div class="form-horizontal">
         <div id="User-edit" class="nav-tabs-custom">
             <ul class="nav nav-tabs">
-                @Html.RenderBootstrapTabHeader("tab-info", @T("admin.catalog.customers.info"), true)
+                @Html.RenderBootstrapTabHeader("tab-info", @T("admin.catalog.Customers.info"), true)
             </ul>
             <div class="tab-content">
                 @Html.RenderBootstrapTabContent("tab-info", @TabInfo(), true)
@@ -32,7 +32,7 @@
     <div class="panel-group">
         <div class="panel panel-default">
             <div class="panel-heading">
-                @T("admin.catalog.customers.commoninfo")
+                @T("admin.catalog.Customeres.commoninfo")
             </div>
             <div class="panel-body">
                 <div>
@@ -47,20 +47,21 @@
                     </div>
                     <div class="form-group">
                         <div class="col-md-3">
-                            @Html.NopLabelFor(model => model.ManufacturerId)
+                            @Html.NopLabelFor(model => model.CountryId)
                         </div>
                         <div class="col-md-9">
-                            @Html.NopDropDownListFor(model => model.ManufacturerId, Model.AvailableManufacturer, required: true)
-                            @Html.ValidationMessageFor(model => model.ManufacturerId)
+                            @Html.NopDropDownListFor(model => model.CountryId, Model.AvailableCountries, new { onchange = "stateProvinceFilter()" })
+                            @Html.ValidationMessageFor(model => model.CountryId)
+
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="col-md-3">
-                            @Html.NopLabelFor(model => model.Comment)
+                            @Html.NopLabelFor(model => model.StateProvinceId)
                         </div>
                         <div class="col-md-9">
-                            @Html.NopEditorFor(model => model.Comment)
-                            @Html.ValidationMessageFor(model => model.Comment)
+                            @Html.NopDropDownListFor(model => model.StateProvinceId, Model.AvailableStates)
+                            @Html.ValidationMessageFor(model => model.StateProvinceId)
                         </div>
                     </div>
                     <div class="form-group">
@@ -81,17 +82,42 @@
                             @Html.ValidationMessageFor(model => model.DisplayOrder)
                         </div>
                     </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.NopLabelFor(model => model.Comment)
+                        </div>
+                        <div class="col-md-9">
+                            @Html.NopEditorFor(model => model.Comment)
+                            @Html.ValidationMessageFor(model => model.Comment)
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                @T("admin.catalog.customers.contact.address")
-            </div>
-            <div class="panel-body">
-                @Html.EditorFor(model => model.Address, "Address")
             </div>
         </div>
     </div>
 }
 
+    <script type="text/javascript">
+    $(document).ready(stateProvinceFilter());
+
+    function stateProvinceFilter() {
+        console.log($("#CountryId").val())
+      var selectedItem = $("#CountryId").val();
+      var ddlStates = $("#@Html.FieldIdFor(model => model.StateProvinceId)");
+      $.ajax({
+          cache: false,
+          type: "GET",
+          url: "@(Url.Action("GetStatesByCountryId", "Country"))",
+          data: { "countryId": selectedItem, "addSelectStateItem": "false" },
+          success: function (data) {
+              ddlStates.html('');
+              $.each(data, function (id, option) {
+                  ddlStates.append($('<option></option>').val(option.id).html(option.name));
+              });
+          },
+          error: function (xhr, ajaxOptions, thrownError) {
+              alert('Failed to retrieve states.');
+          }
+      });
+    };
+    </script>

@@ -40,9 +40,9 @@ namespace Invenio.Core.Domain.Common
         /// </summary>
         public bool SitemapIncludeCategories { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating whether to include manufacturers to sitemap
+        /// Gets or sets a value indicating whether to include Customers to sitemap
         /// </summary>
-        public bool SitemapIncludeManufacturers { get; set; }
+        public bool SitemapIncludeCustomers { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether to include products to sitemap
         /// </summary>

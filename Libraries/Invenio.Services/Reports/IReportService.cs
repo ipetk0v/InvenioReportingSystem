@@ -10,7 +10,7 @@ namespace Invenio.Services.Reports
         void DeleteReport(Report report);
 
         IPagedList<Report> GetAllReports(
-            int manufacturerId = 0,
+            int CustomerId = 0,
             int regionId = 0,
             int orderId = 0,
             int isAprroved = 0,
@@ -21,7 +21,7 @@ namespace Invenio.Services.Reports
             int pageSize = int.MaxValue,
             bool showHidden = false);
 
-        //IPagedList<Report> GetAllCustomerReports(int customerId, int pageIndex = 0, int pageSize = int.MaxValue,
+        //IPagedList<Report> GetAllSupplierReports(int supplierId, int pageIndex = 0, int pageSize = int.MaxValue,
         //    bool showHidden = false);
 
         Report GetReportById(int reportId);

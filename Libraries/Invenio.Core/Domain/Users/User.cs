@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Invenio.Core.Domain.Common;
 using Invenio.Core.Domain.Directory;
-using Invenio.Core.Domain.Manufacturers;
+using Invenio.Core.Domain.Customers;
 
 namespace Invenio.Core.Domain.Users
 {
@@ -13,8 +13,8 @@ namespace Invenio.Core.Domain.Users
     {
         private ICollection<ExternalAuthenticationRecord> _externalAuthenticationRecords;
         private ICollection<UserRole> _UserRoles;
-        private ICollection<Manufacturer> _Manufacturers;
-        private ICollection<StateProvince> _ManufacturerRegions;
+        private ICollection<Customer> _Customers;
+        private ICollection<StateProvince> _CustomerRegions;
         //private ICollection<ShoppingCartItem> _shoppingCartItems;
         //private ICollection<ReturnRequest> _returnRequests;
         private ICollection<Address> _addresses;
@@ -154,16 +154,16 @@ namespace Invenio.Core.Domain.Users
             protected set => _UserRoles = value;
         }
 
-        public virtual ICollection<Manufacturer> Manufacturers
+        public virtual ICollection<Customer> Customers
         {
-            get => _Manufacturers ?? (_Manufacturers = new List<Manufacturer>());
-            protected set => _Manufacturers = value;
+            get => _Customers ?? (_Customers = new List<Customer>());
+            protected set => _Customers = value;
         }
 
-        public virtual ICollection<StateProvince> ManufacturerRegions
+        public virtual ICollection<StateProvince> CustomerRegions
         {
-            get => _ManufacturerRegions ?? (_ManufacturerRegions = new List<StateProvince>());
-            protected set => _ManufacturerRegions = value;
+            get => _CustomerRegions ?? (_CustomerRegions = new List<StateProvince>());
+            protected set => _CustomerRegions = value;
         }
 
         /// <summary>

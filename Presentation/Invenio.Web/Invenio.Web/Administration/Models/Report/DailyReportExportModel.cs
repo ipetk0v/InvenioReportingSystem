@@ -55,7 +55,7 @@ namespace Invenio.Admin.Models.Report
         {
             get
             {
-                return string.Join(", ", Items.Select(s => s.PartNumber).ToList());
+                return string.Join(", ", Items.Select(s => s.PartNumber).Distinct().ToList());
             }
         }
 
@@ -66,12 +66,12 @@ namespace Invenio.Admin.Models.Report
 
         public int QuantityToCheck
         {
-            get { return _order.CheckedPartsQuantity; }
+            get { return _order.TotalPartsQuantity; }
         }
 
-        public string CustomerName
+        public string SupplierName
         {
-            get { return _order.Customer.Name; }
+            get { return _order.Supplier.Name; }
         }
 
         public long TotalChecked

@@ -1,11 +1,11 @@
-﻿@model CustomerUserSettingsModel
+﻿@model SupplierUserSettingsModel
 
 @using Invenio.Core.Domain.Users;
 @using Invenio.Services
 
 @{
     //page title
-    ViewBag.Title = T("Admin.Configuration.Settings.CustomerUser").Text;
+    ViewBag.Title = T("Admin.Configuration.Settings.SupplierUser").Text;
     //active menu item (system name)
     Html.SetActiveMenuItemSystemName("User and user settings");
 }
@@ -15,7 +15,7 @@
     @Html.AntiForgeryToken()
     <div class="content-header clearfix">
         <h1 class="pull-left">
-            @T("Admin.Configuration.Settings.CustomerUser")
+            @T("Admin.Configuration.Settings.SupplierUser")
         </h1>
         <div class="pull-right">
             <button type="submit" name="save" class="btn bg-blue">
@@ -38,9 +38,9 @@
 
             <div id="Usersettings-edit" class="nav-tabs-custom">
                 <ul class="nav nav-tabs">
-                    @Html.RenderBootstrapTabHeader("tab-User", @T("Admin.Configuration.Settings.CustomerUser.UserSettings"), true)
-                    @Html.RenderBootstrapTabHeader("tab-Userformfields", @T("Admin.Configuration.Settings.CustomerUser.UserFormFields"))
-                    @Html.RenderBootstrapTabHeader("tab-addressformfields", @T("Admin.Configuration.Settings.CustomerUser.AddressFormFields"))
+                    @Html.RenderBootstrapTabHeader("tab-User", @T("Admin.Configuration.Settings.SupplierUser.UserSettings"), true)
+                    @Html.RenderBootstrapTabHeader("tab-Userformfields", @T("Admin.Configuration.Settings.SupplierUser.UserFormFields"))
+                    @Html.RenderBootstrapTabHeader("tab-addressformfields", @T("Admin.Configuration.Settings.SupplierUser.AddressFormFields"))
                 </ul>
                 <div class="tab-content">
                     @Html.RenderBootstrapTabContent("tab-User", @TabUserSettings(), true)
@@ -70,7 +70,7 @@
     <div class="panel-group">
         <div class="panel panel-default">
             <div class="panel-heading">
-                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Common")
+                @T("Admin.Configuration.Settings.SupplierUser.BlockTitle.Common")
             </div>
             <div class="panel-body">
                 <div class="form-group">
@@ -104,7 +104,7 @@
         </div>
         <div class="panel panel-default advanced-setting">
             <div class="panel-heading">
-                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Password")
+                @T("Admin.Configuration.Settings.SupplierUser.BlockTitle.Password")
             </div>
             <div class="panel-body">
                 <div class="form-group">
@@ -183,7 +183,7 @@
         </div>
         <div class="panel panel-default advanced-setting">
             <div class="panel-heading">
-                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Account")
+                @T("Admin.Configuration.Settings.SupplierUser.BlockTitle.Account")
             </div>
             <div class="panel-body">
                 <div class="form-group">
@@ -289,7 +289,7 @@
         </div>
         <div class="panel panel-default advanced-setting">
             <div class="panel-heading">
-                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Profile")
+                @T("Admin.Configuration.Settings.SupplierUser.BlockTitle.Profile")
             </div>
             <div class="panel-body">
                 <div class="form-group">
@@ -350,7 +350,7 @@
         </div>
         <div class="panel panel-default advanced-setting">
             <div class="panel-heading">
-                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.TimeZone")
+                @T("Admin.Configuration.Settings.SupplierUser.BlockTitle.TimeZone")
             </div>
             <div class="panel-body">
                 <div class="form-group">
@@ -375,7 +375,7 @@
         </div>
         @*<div class="panel panel-default advanced-setting">
             <div class="panel-heading">
-                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.ExternalAuthentication")
+                @T("Admin.Configuration.Settings.SupplierUser.BlockTitle.ExternalAuthentication")
             </div>
             <div class="panel-body">
                 <div class="form-group">
@@ -516,11 +516,11 @@
     <div class="panel-group">
         <div class="panel panel-default">
             <div class="panel-heading">
-                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.DefaultFields")
+                @T("Admin.Configuration.Settings.SupplierUser.BlockTitle.DefaultFields")
             </div>
             <div class="panel-body">
                 <p>
-                    <em>@T("Admin.Configuration.Settings.CustomerUser.UserFormFields.Description")</em>
+                    <em>@T("Admin.Configuration.Settings.SupplierUser.UserFormFields.Description")</em>
                 </p>
                 <div class="form-group">
                     <div class="col-md-3">
@@ -835,11 +835,11 @@
     <div class="panel-group">
         <div class="panel panel-default">
             <div class="panel-heading">
-                @T("Admin.Configuration.Settings.CustomerUser.BlockTitle.DefaultFields")
+                @T("Admin.Configuration.Settings.SupplierUser.BlockTitle.DefaultFields")
             </div>
             <div class="panel-body">
                 <p>
-                    <em>@T("Admin.Configuration.Settings.CustomerUser.AddressFormFields.Description")</em>
+                    <em>@T("Admin.Configuration.Settings.SupplierUser.AddressFormFields.Description")</em>
                 </p>
                 <div class="form-group">
                     <div class="col-md-3">

@@ -75,7 +75,7 @@
     <Compile Include="Mapping\Common\SearchTermMap.cs" />
     <Compile Include="Mapping\Configuration\SettingMap.cs" />
     <Compile Include="Mapping\Criterias\CriteriaMap.cs" />
-    <Compile Include="Mapping\Customers\CustomerMap.cs" />
+    <Compile Include="Mapping\Supplier\SupplierMap.cs" />
     <Compile Include="Mapping\DeliveryNumbers\DeliveryNumberMap.cs" />
     <Compile Include="Mapping\Directory\CountryMap.cs" />
     <Compile Include="Mapping\Directory\CurrencyMap.cs" />
@@ -88,7 +88,7 @@
     <Compile Include="Mapping\Logging\ActivityLogMap.cs" />
     <Compile Include="Mapping\Logging\ActivityLogTypeMap.cs" />
     <Compile Include="Mapping\Logging\LogMap.cs" />
-    <Compile Include="Mapping\Manufacturers\ManufacturerMap.cs" />
+    <Compile Include="Mapping\Customers\CustomerMap.cs" />
     <Compile Include="Mapping\Media\DownloadMap.cs" />
     <Compile Include="Mapping\Media\PictureMap.cs" />
     <Compile Include="Mapping\Messages\EmailAccountMap.cs" />
@@ -109,13 +109,9 @@
     <Compile Include="Mapping\Users\UserMap.cs" />
     <Compile Include="Mapping\Users\UserPasswordMap.cs" />
     <Compile Include="Mapping\Users\UserRoleMap.cs" />
-    <Compile Include="Migrations\201906251916351_Initial.cs" />
-    <Compile Include="Migrations\201906251916351_Initial.Designer.cs">
-      <DependentUpon>201906251916351_Initial.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201906251918060_ReportDateOfInspection.cs" />
-    <Compile Include="Migrations\201906251918060_ReportDateOfInspection.Designer.cs">
-      <DependentUpon>201906251918060_ReportDateOfInspection.cs</DependentUpon>
+    <Compile Include="Migrations\201907271015055_InitialCreate.cs" />
+    <Compile Include="Migrations\201907271015055_InitialCreate.Designer.cs">
+      <DependentUpon>201907271015055_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="NopObjectContext.cs" />
@@ -135,11 +131,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201906251916351_Initial.resx">
-      <DependentUpon>201906251916351_Initial.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201906251918060_ReportDateOfInspection.resx">
-      <DependentUpon>201906251918060_ReportDateOfInspection.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201907271015055_InitialCreate.resx">
+      <DependentUpon>201907271015055_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -754,8 +754,8 @@ namespace Invenio.Admin.Controllers
         //                case "category":
         //                    detailsUrl = Url.Action("Edit", "Category", new { id = x.EntityId });
         //                    break;
-        //                case "manufacturer":
-        //                    detailsUrl = Url.Action("Edit", "Manufacturer", new { id = x.EntityId });
+        //                case "Customer":
+        //                    detailsUrl = Url.Action("Edit", "Customer", new { id = x.EntityId });
         //                    break;
         //                case "product":
         //                    detailsUrl = Url.Action("Edit", "Product", new { id = x.EntityId });
