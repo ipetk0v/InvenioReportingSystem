@@ -1,17 +1,19 @@
-﻿@model Invenio.Admin.Models.Orders.OrderListModel
+﻿@model Invenio.Admin.Models.Supplier.SupplierListModel
+
 @{
     var defaultGridPageSize = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
     var gridPageSizes = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
 
     //page title
-    ViewBag.Title = T("Admin.Catalog.Orders").Text;
+    ViewBag.Title = T("Admin.Catalog.Suppliers").Text;
     //active menu item (system name)
-    Html.SetActiveMenuItemSystemName("Orders");
+    Html.SetActiveMenuItemSystemName("Suppliers");
 }
+
 @Html.AntiForgeryToken()
 <div class="content-header clearfix">
     <h1 class="pull-left">
-        @T("Admin.Catalog.Orders")
+        @T("Admin.Catalog.Suppliers")
     </h1>
     <div class="pull-right">
         <a href="@Url.Action("Create")" class="btn bg-blue">
@@ -19,35 +21,36 @@
             @T("Admin.Common.AddNew")
         </a>
         @*<div class="btn-group">
-                <button type="button" class="btn btn-success">
-                    <i class="fa fa-download"></i>
-                    @T("Admin.Common.Export")
-                </button>
-                <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                    <span class="caret"></span>
-                    <span class="sr-only">&nbsp;</span>
-                </button>
-                <ul class="dropdown-menu" role="menu">
-                    <li>
-                        <a href="@Url.Action("ExportXml")">
-                            <i class="fa fa-file-code-o"></i>
-                            @T("Admin.Common.ExportToXml")
-                        </a>
-                    </li>
-                    <li>
-                        <a href="@Url.Action("ExportXlsx")">
-                            <i class="fa fa-file-excel-o"></i>
-                            @T("Admin.Common.ExportToExcel")
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <button type="button" name="importexcel" class="btn bg-olive" data-toggle="modal" data-target="#importexcel-window">
-                <i class="fa fa-upload"></i>
-                @T("Admin.Common.Import")
-            </button>*@
+            <button type="button" class="btn btn-success">
+                <i class="fa fa-download"></i>
+                @T("Admin.Common.Export")
+            </button>
+            <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">&nbsp;</span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li>
+                    <a href="@Url.Action("ExportXml")">
+                        <i class="fa fa-file-code-o"></i>
+                        @T("Admin.Common.ExportToXml")
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("ExportXlsx")">
+                        <i class="fa fa-file-excel-o"></i>
+                        @T("Admin.Common.ExportToExcel")
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <button type="button" name="importexcel" class="btn bg-olive" data-toggle="modal" data-target="#importexcel-window">
+            <i class="fa fa-upload"></i>
+            @T("Admin.Common.Import")
+        </button>*@
     </div>
 </div>
+
 <div class="content">
     <div class="form-horizontal">
         <div class="panel-group">
@@ -57,10 +60,10 @@
                         <div class="col-md-5">
                             <div class="form-group">
                                 <div class="col-md-4">
-                                    @Html.NopLabelFor(model => model.SearchOrderNumber)
+                                    @Html.NopLabelFor(model => model.SearchSupplierName)
                                 </div>
                                 <div class="col-md-8">
-                                    @Html.NopEditorFor(model => model.SearchOrderNumber)
+                                    @Html.NopEditorFor(model => model.SearchSupplierName)
                                 </div>
                             </div>
                             <div class="form-group">
@@ -72,24 +75,8 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <div class="col-md-4">
-                                    @Html.NopLabelFor(model => model.SupplierId)
-                                </div>
-                                <div class="col-md-8">
-                                    @Html.NopDropDownListFor(model => model.SupplierId, Model.AvailableSuppliers)
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-md-4">
-                                    @Html.NopLabelFor(model => model.SearchByPartName)
-                                </div>
-                                <div class="col-md-8">
-                                    @Html.NopEditorFor(model => model.SearchByPartName)
-                                </div>
-                            </div>
-                            <div class="form-group">
                                 <div class="col-md-8 col-md-offset-4">
-                                    <button type="button" id="search-orders" class="btn btn-primary btn-search">
+                                    <button type="button" id="search-Suppliers" class="btn btn-primary btn-search">
                                         <i class="fa fa-search"></i>
                                         @T("Admin.Common.Search")
                                     </button>
@@ -99,26 +86,18 @@
                         <div class="col-md-7">
                             <div class="form-group">
                                 <div class="col-md-4">
-                                    @Html.NopLabelFor(model => model.StartDate)
+                                    @Html.NopLabelFor(model => model.CountryId)
                                 </div>
                                 <div class="col-md-8">
-                                    @Html.EditorFor(model => model.StartDate)
+                                    @Html.NopDropDownListFor(model => model.CountryId, Model.AvailableCountries)
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-md-4">
-                                    @Html.NopLabelFor(model => model.EndDate)
+                                    @Html.NopLabelFor(model => model.StateProvinceId)
                                 </div>
                                 <div class="col-md-8">
-                                    @Html.EditorFor(model => model.EndDate)
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-md-4">
-                                    @Html.NopLabelFor(model => model.CreateDate)
-                                </div>
-                                <div class="col-md-8">
-                                    @Html.EditorFor(model => model.CreateDate)
+                                    @Html.NopDropDownListFor(model => model.StateProvinceId, Model.AvailableStates)
                                 </div>
                             </div>
                             <div class="form-group">
@@ -129,29 +108,23 @@
                                     @Html.NopDropDownListFor(model => model.SearchPublishedId, Model.AvailablePublished)
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <div class="col-md-4">
-                                    @Html.NopLabelFor(model => model.Status)
-                                </div>
-                                <div class="col-md-8">
-                                    @Html.NopDropDownListFor(model => model.Status, Model.AvailableStatus)
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="panel panel-default">
                 <div class="panel-body">
-                    <div id="Orders-grid"></div>
+                    <div id="Suppliers-grid"></div>
+
                     <script>
                         $(document).ready(function() {
-                            $("#Orders-grid").kendoGrid({
+                            $("#Suppliers-grid").kendoGrid({
                                 dataSource: {
                                     type: "json",
                                     transport: {
                                         read: {
-                                            url: "@Html.Raw(Url.Action("OrderList", "Order"))",
+                                            url: "@Html.Raw(Url.Action("List", "Supplier"))",
                                             type: "POST",
                                             dataType: "json",
                                             data: additionalData
@@ -183,53 +156,30 @@
                                 },
                                 scrollable: false,
                                 columns: [
-                                    {
-                                        field: "Number",
-                                        title: "@T("Admin.Catalog.Orders.Fields.Number")",
-                                        width:'200px'
-                                    }, {
-                                        field: "OrderStatus",
-                                        title: "@T("Admin.Catalog.Orders.Fields.OrderStatus")",
-                                        width: '150px',
-                                    template: '<span class="grid-report-item ' +
-                                        '# if(OrderStatusId == 0) {# blue #} #' +
-                                        '# if(OrderStatusId == 5) {# yellow #} #' +
-                                        '# if(OrderStatusId == 10) {# green #} #' +
-                                        '">#=OrderStatus#</span>'
-                                 },{
-                                    field: "PartsPerHour",
-                                    title: "@T("Admin.Catalog.Orders.Fields.PartsPerHour")",
+                                {
+                                    field: "Name",
+                                    title: "@T("Admin.Catalog.Suppliers.Fields.Name")"
                                 },{
-                                    field: "TotalPartsQuantity",
-                                    title: "@T("Admin.Catalog.Orders.Fields.TotalPartsQuantity")"
+                                    field: "CustomerName",
+                                    title: "@T("Admin.Catalog.Suppliers.Fields.Customer")"
+                                }, {
+                                    field: "Address.CountryName",
+                                    title: "@T("Admin.Catalog.Suppliers.Fields.Country")"
                                 },{
-                                    field: "CheckedPartsQuantity",
-                                        title: "@T("Admin.Catalog.Orders.Fields.CheckedPartsQuantity")",
-                                        template: '<span class="grid-report-item ' +
-                                            '# if(CheckedPartsQuantity > TotalPartsQuantity) {# red #} #">#=CheckedPartsQuantity#</span>'
-                                },{
-                                    field: "StartDate",
-                                    title: "@T("Admin.Suppliers.Order.Fields.StartDate")",
-                                    type: "date",
-                                    format: "{0:d}"
-                                },{
-                                    field: "EndDate",
-                                    title: "@T("Admin.Suppliers.Order.Fields.EndDate")",
-                                    type: "date",
-                                    format: "{0:d}"
-                                },{
-                                    field: "CreatedOnUtc",
-                                    title: "@T("Admin.Catalog.Orders.Fields.CreatedOn")",
-                                    type: "date",
-                                    format: "{0:d}"
+                                    field: "Address.StateProvinceName",
+                                    title: "@T("Admin.Catalog.Suppliers.Fields.StateProvince")"
                                 },{
                                     field: "Published",
-                                    title: "@T("Admin.Catalog.Orders.Fields.Published")",
+                                    title: "@T("Admin.Catalog.Suppliers.Fields.Published")",
                                     width: 100,
                                     headerAttributes: { style: "text-align:center" },
                                     attributes: { style: "text-align:center" },
                                     template: '# if(Published) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
-                                },{
+                                }, {
+                                    field: "DisplayOrder",
+                                    title: "@T("Admin.Catalog.Suppliers.Fields.DisplayOrder")",
+                                    width: 150
+                                }, {
                                     field: "Id",
                                     title: "@T("Admin.Common.Edit")",
                                     width: 100,
@@ -240,21 +190,22 @@
                             });
                         });
                     </script>
+
                     <script type="text/javascript">
                         $(document).ready(function () {
                             //load states when changing a country dropdownlist
-                            $("#@Html.FieldIdFor(model => model.CustomerId)").change(function() {
+                            $("#@Html.FieldIdFor(model => model.CountryId)").change(function() {
                                 var selectedItem = $(this).val();
-                                var ddlSupplier = $("#@Html.FieldIdFor(model => model.SupplierId)");
+                                var ddlStates = $("#@Html.FieldIdFor(model => model.StateProvinceId)");
                                 $.ajax({
                                     cache: false,
                                     type: "GET",
-                                    url: "@(Url.Action("GetSuppliersByCustomerId", "Order"))",
-                                    data: { "customerId": selectedItem, "addAsterisk": "true" },
+                                    url: "@(Url.Action("GetStatesByCountryId", "Country"))",
+                                    data: { "countryId": selectedItem, "addAsterisk": "true" },
                                     success: function(data) {
-                                        ddlSupplier.html('');
+                                        ddlStates.html('');
                                         $.each(data, function(id, option) {
-                                            ddlSupplier.append($('<option></option>').val(option.id).html(option.name));
+                                            ddlStates.append($('<option></option>').val(option.id).html(option.name));
                                         });
                                     },
                                     error: function(xhr, ajaxOptions, thrownError) {
@@ -264,17 +215,17 @@
                             });
 
                             //search button
-                            $('#search-orders').click(function() {
+                            $('#search-Suppliers').click(function() {
                                 //search
-                                var grid = $('#Orders-grid').data('kendoGrid');
+                                var grid = $('#Suppliers-grid').data('kendoGrid');
                                 grid.dataSource.page(1); //new search. Set page size to 1
                                 //grid.dataSource.read(); we already loaded the grid above using "page" function
                                 return false;
                             });
 
-                            $("#@Html.FieldIdFor(model => model.SearchOrderNumber)").keydown(function(event) {
+                            $("#@Html.FieldIdFor(model => model.SearchSupplierName)").keydown(function(event) {
                                 if (event.keyCode == 13) {
-                                    $("#search-orders").click();
+                                    $("#search-Suppliers").click();
                                     return false;
                                 }
                             });
@@ -282,15 +233,11 @@
 
                         function additionalData() {
                             var data = {
-                                SearchOrderNumber: $('#@Html.FieldIdFor(model => model.SearchOrderNumber)').val(),
-                                Status: $('#@Html.FieldIdFor(model => model.Status)').val(),
-                                SearchPublishedId: $('#@Html.FieldIdFor(model => model.SearchPublishedId)').val(),
-                                CreateDate: $('#@Html.FieldIdFor(model => model.CreateDate)').val(),
-                                StartDate: $('#@Html.FieldIdFor(model => model.StartDate)').val(),
-                                EndDate: $('#@Html.FieldIdFor(model => model.EndDate)').val(),
-                                SupplierId: $('#@Html.FieldIdFor(model => model.SupplierId)').val(),
-                                SearchByPartName: $('#@Html.FieldIdFor(model => model.SearchByPartName)').val(),
-                                CustomerId: $('#@Html.FieldIdFor(model => model.CustomerId)').val()
+                                SearchSupplierName: $('#@Html.FieldIdFor(model => model.SearchSupplierName)').val(),
+                                CountryId: $('#@Html.FieldIdFor(model => model.CountryId)').val(),
+                                StateProvinceId: $('#@Html.FieldIdFor(model => model.StateProvinceId)').val(),
+                                CustomerId: $('#@Html.FieldIdFor(model => model.CustomerId)').val(),
+                                SearchPublishedId: $('#@Html.FieldIdFor(model => model.SearchPublishedId)').val()
                             };
                             addAntiForgeryToken(data);
                             return data;
@@ -301,7 +248,8 @@
         </div>
     </div>
 </div>
-@*import Orders form*@
+
+@*import Suppliers form*@
 @*<div id="importexcel-window" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="importexcel-window-title">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -309,14 +257,14 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title" id="importexcel-window-title">@T("Admin.Common.ImportFromExcel")</h4>
             </div>
-            @using (Html.BeginForm("ImportFromXlsx", "Order", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            @using (Html.BeginForm("ImportFromXlsx", "Supplier", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
                 <div class="form-horizontal">
                     <div class="modal-body">
                         @Html.AntiForgeryToken()
                         <ul class="common-list">
                             <li>
-                                <em>@T("Admin.Catalog.Orders.List.ImportFromExcelTip")</em>
+                                <em>@T("Admin.Catalog.Supplier.List.ImportFromExcelTip")</em>
                             </li>
                             <li>
                                 <em>@T("Admin.Common.ImportFromExcel.ManyRecordsWarning")</em>

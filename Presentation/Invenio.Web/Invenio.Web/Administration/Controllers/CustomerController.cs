@@ -64,6 +64,14 @@ namespace Invenio.Admin.Controllers
 
             var model = new CustomerListModel();
 
+            //"published" property
+            //0 - all (according to "ShowHidden" parameter)
+            //1 - published only
+            //2 - unpublished only
+            model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SearchPublished.All"), Value = "0" });
+            model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SearchPublished.PublishedOnly"), Value = "1" });
+            model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SearchPublished.UnpublishedOnly"), Value = "2" });
+
             //countries
             model.AvailableCountries.Add(new SelectListItem { Text = "*", Value = "0" });
             foreach (var c in _countryService.GetAllCountries())
@@ -82,11 +90,20 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageCustomers))
                 return AccessDeniedKendoGridJson();
 
+            //0 - all (according to "ShowHidden" parameter)
+            //1 - published only
+            //2 - unpublished only
+            bool? overridePublished = null;
+            if (model.SearchPublishedId == 1)
+                overridePublished = true;
+            else if (model.SearchPublishedId == 2)
+                overridePublished = false;
+
             if (_workContext.CurrentUser.IsAdmin())
             {
                 var customers2 = _customerService
                     .GetAllCustomers(
-                        model.SearchCustomerName, model.CountryId, model.StateProvinceId, command.Page - 1, command.PageSize, showHidden: true);
+                        model.SearchCustomerName, model.CountryId, model.StateProvinceId, command.Page - 1, command.PageSize, showHidden: overridePublished);
 
                 var gridModel2 = new DataSourceResult
                 {
@@ -99,7 +116,7 @@ namespace Invenio.Admin.Controllers
 
             var customers = _customerService
                 .GetAllCustomers(
-                    model.SearchCustomerName, model.CountryId, model.StateProvinceId, showHidden: true);
+                    model.SearchCustomerName, model.CountryId, model.StateProvinceId, showHidden: overridePublished);
 
             var crCustomer = new List<Customer>();
             var rCustomers = new List<Customer>();

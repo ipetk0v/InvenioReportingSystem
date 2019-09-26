@@ -1266,6 +1266,8 @@
     <Compile Include="Models\Criteria\CriteriaListModel.cs" />
     <Compile Include="Models\Criteria\CriteriaResourceModel.cs" />
     <Compile Include="Models\Report\ListDetailsModel.cs" />
+    <Compile Include="Models\Report\ЕfficiencyListModel.cs" />
+    <Compile Include="Models\Report\ЕfficiencyModel.cs" />
     <Compile Include="Models\Supplier\SupplierListModel.cs" />
     <Compile Include="Models\Supplier\SupplierModel.cs" />
     <Compile Include="Models\Directory\CountryModel.cs" />
@@ -1563,6 +1565,7 @@
     <Content Include="Views\Log\List.cshtml" />
     <Content Include="Views\Log\View.cshtml" />
     <Content Include="Views\Report\_PdfExportView.cshtml" />
+    <Content Include="Views\Report\ЕfficiencyList.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

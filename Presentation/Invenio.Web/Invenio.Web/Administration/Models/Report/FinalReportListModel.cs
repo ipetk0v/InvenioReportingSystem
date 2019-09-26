@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Web.Mvc;
-using Invenio.Web.Framework;
+﻿using Invenio.Web.Framework;
 using Invenio.Web.Framework.Mvc;
+using System.Collections.Generic;
+using System.Web.Mvc;
 
 namespace Invenio.Admin.Models.Report
 {
@@ -11,18 +9,17 @@ namespace Invenio.Admin.Models.Report
     {
         public FinalReportListModel()
         {
+            AvailableSuppliers = new List<SelectListItem>();
+            AvailableOrders = new List<SelectListItem>();
         }
 
-        [NopResourceDisplayName("Admin.Reports.CreatedOnFrom")]
-        [UIHint("DateNullable")]
-        public DateTime? CreatedOnFrom { get; set; }
+        [NopResourceDisplayName("Admin.Reports.SupplierId")]
+        public int SupplierId { get; set; }
 
-        [NopResourceDisplayName("Admin.Reports.CreatedOnTo")]
-        [UIHint("DateNullable")]
-        public DateTime? CreatedOnTo { get; set; }
+        [NopResourceDisplayName("Admin.Reports.OrderId")]
+        public int OrderId { get; set; }
 
-        //[NopResourceDisplayName("Admin.Reports.SearchText")]
-        //[AllowHtml]
-        //public string SearchText { get; set; }
+        public IList<SelectListItem> AvailableSuppliers { get; set; }
+        public IList<SelectListItem> AvailableOrders { get; set; }
     }
 }

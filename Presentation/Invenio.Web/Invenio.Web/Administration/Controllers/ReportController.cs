@@ -22,6 +22,7 @@ using Invenio.Services.Orders;
 using Invenio.Services.Users;
 using Invenio.Web.Framework.Mvc;
 using Invenio.Core.Domain.Orders;
+using Invenio.Core.Domain.Suppliers;
 using Invenio.Services.ChargeNumber;
 using Invenio.Services.Common;
 using Invenio.Services.Criteria;
@@ -33,6 +34,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 using OfficeOpenXml.Style;
 using Image = System.Drawing.Image;
 using Invenio.Core.Domain.Users;
+using Invenio.Services.Customers;
 
 namespace Invenio.Admin.Controllers
 {
@@ -54,6 +56,7 @@ namespace Invenio.Admin.Controllers
         private readonly IDeliveryNumberService _deliveryNumberService;
         private readonly ICriteriaService _criteriaService;
         private readonly IPdfService _pdfService;
+        private readonly ICustomerService _customerService;
 
         public ReportController(
             IPermissionService permissionService,
@@ -70,7 +73,9 @@ namespace Invenio.Admin.Controllers
             IReportDetailService reportDetailService,
             IChargeNumberService chargeNumberService,
             IDeliveryNumberService deliveryNumberService,
-            ICriteriaService criteriaService, IPdfService pdfService)
+            ICriteriaService criteriaService,
+            IPdfService pdfService,
+            ICustomerService customerService)
         {
             _dateTimeHelper = dateTimeHelper;
             _permissionService = permissionService;
@@ -88,6 +93,7 @@ namespace Invenio.Admin.Controllers
             _deliveryNumberService = deliveryNumberService;
             _criteriaService = criteriaService;
             _pdfService = pdfService;
+            _customerService = customerService;
         }
 
         public virtual ActionResult Index()
@@ -107,6 +113,77 @@ namespace Invenio.Admin.Controllers
             model.AvailableApprovedOptions.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Reports.Option.ApprovedOnly"), Value = "1" });
             model.AvailableApprovedOptions.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Reports.Option.DisapprovedOnly"), Value = "2" });
 
+            model.AvailableWorkShifts.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.Work.Shift"), Value = "0" });
+            model.AvailableWorkShifts.Add(
+                new SelectListItem
+                {
+                    Text = WorkShift.FirstShift.GetLocalizedEnum(_localizationService, _workContext),
+                    Value = ((int)WorkShift.FirstShift).ToString()
+                });
+
+            model.AvailableWorkShifts.Add(
+                new SelectListItem
+                {
+                    Text = WorkShift.SecondShift.GetLocalizedEnum(_localizationService, _workContext),
+                    Value = ((int)WorkShift.SecondShift).ToString()
+                });
+
+            model.AvailableWorkShifts.Add(
+                new SelectListItem
+                {
+                    Text = WorkShift.RegularShift.GetLocalizedEnum(_localizationService, _workContext),
+                    Value = ((int)WorkShift.RegularShift).ToString()
+                });
+
+            model.AvailableWorkShifts.Add(
+                new SelectListItem
+                {
+                    Text = WorkShift.NightShift.GetLocalizedEnum(_localizationService, _workContext),
+                    Value = ((int)WorkShift.NightShift).ToString()
+                });
+
+
+            model.AvailableSuppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Reports.Option.All"), Value = "0" });
+            model.AvailableOrders.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Reports.Option.All"), Value = "0" });
+
+            if (_workContext.CurrentUser.IsAdmin())
+            {
+                var suppliers = _supplierService.GetAllSuppliers();
+                suppliers.ToList().ForEach(x =>
+                    model.AvailableSuppliers.Add(new SelectListItem { Text = x.Name, Value = x.Id.ToString() }));
+            }
+            else
+            {
+                var suppliers = _supplierService.GetAllSuppliers();
+
+                var filtredSuppliers = new List<Supplier>();
+                if (_workContext.CurrentUser.CustomerRegions.Any())
+                {
+                    foreach (var region in _workContext.CurrentUser.CustomerRegions)
+                    {
+                        var customers =
+                            _customerService.GetAllCustomers(countryId: region.CountryId, stateId: region.Id);
+
+                        foreach (var customer in customers)
+                        {
+                            filtredSuppliers.AddRange(suppliers.Where(x => x.Customer == customer));
+                        }
+                    }
+                }
+
+                if (_workContext.CurrentUser.Customers.Any())
+                {
+                    foreach (var customer in _workContext.CurrentUser.Customers)
+                    {
+                        filtredSuppliers.AddRange(suppliers.Where(x => x.Customer == customer));
+                    }
+                }
+
+                filtredSuppliers = filtredSuppliers.Distinct().ToList();
+                filtredSuppliers.ForEach(x =>
+                    model.AvailableSuppliers.Add(new SelectListItem { Text = x.Name, Value = x.Id.ToString() }));
+            }
+
             return View(model);
         }
 
@@ -124,7 +201,20 @@ namespace Invenio.Admin.Controllers
                                 .GetAllReports(
                                 isAprroved: model.SearchApprovedId,
                                 fromDate: model.CreatedOnFrom,
-                                toDate: model.CreatedOnTo);
+                                toDate: model.CreatedOnTo)
+                                .ToList();
+
+                if (!string.IsNullOrEmpty(model.UserName))
+                    reports = reports.Where(x => _userService.GetUserById(x.UserId).GetFullName().ToLower().Contains(model.UserName.ToLower())).ToList();
+
+                if (model.WorkShiftId > 0)
+                    reports = reports.Where(x => x.WorkShift == (WorkShift)model.WorkShiftId).ToList();
+
+                if (model.SupplierId > 0)
+                    reports = reports.Where(x => _orderService.GetOrderById(x.OrderId).SupplierId == model.SupplierId).ToList();
+
+                if (model.OrderId > 0)
+                    reports = reports.Where(x => x.OrderId == model.OrderId).ToList();
 
                 if (reports.Any())
                 {
@@ -158,7 +248,21 @@ namespace Invenio.Admin.Controllers
                         regionId: stateProvince.Id,
                         isAprroved: model.SearchApprovedId,
                         fromDate: model.CreatedOnFrom,
-                        toDate: model.CreatedOnTo);
+                        toDate: model.CreatedOnTo)
+                        .ToList();
+
+                    if (!string.IsNullOrEmpty(model.UserName))
+                        reports = reports.Where(x => _userService.GetUserById(x.UserId).GetFullName().ToLower().Contains(model.UserName.ToLower())).ToList();
+
+                    if (model.WorkShiftId > 0)
+                        reports = reports.Where(x => x.WorkShift == (WorkShift)model.WorkShiftId).ToList();
+
+                    if (model.SupplierId > 0)
+                        reports = reports.Where(x => x.Order.SupplierId == model.SupplierId).ToList();
+
+                    if (model.OrderId > 0)
+                        reports = reports.Where(x => x.OrderId == model.OrderId).ToList();
+
                     if (reports.Any())
                     {
                         rm.AddRange(reports.Select(x =>
@@ -182,13 +286,28 @@ namespace Invenio.Admin.Controllers
                         }));
                     }
                 }
+
                 foreach (var man in _workContext.CurrentUser.Customers)
                 {
                     var reports = _reportService
                         .GetAllReports(CustomerId: man.Id,
                         isAprroved: model.SearchApprovedId,
                         fromDate: model.CreatedOnFrom,
-                        toDate: model.CreatedOnTo);
+                        toDate: model.CreatedOnTo)
+                        .ToList();
+
+                    if (!string.IsNullOrEmpty(model.UserName))
+                        reports = reports.Where(x => _userService.GetUserById(x.UserId).GetFullName().ToLower().Contains(model.UserName.ToLower())).ToList();
+
+                    if (model.WorkShiftId > 0)
+                        reports = reports.Where(x => x.WorkShift == (WorkShift)model.WorkShiftId).ToList();
+
+                    if (model.SupplierId > 0)
+                        reports = reports.Where(x => x.Order.SupplierId == model.SupplierId).ToList();
+
+                    if (model.OrderId > 0)
+                        reports = reports.Where(x => x.OrderId == model.OrderId).ToList();
+
                     if (reports.Any())
                     {
                         rm.AddRange(reports.Select(x =>
@@ -252,6 +371,44 @@ namespace Invenio.Admin.Controllers
             };
 
             return Json(gridModel);
+        }
+
+        [AcceptVerbs(HttpVerbs.Get)]
+        public virtual ActionResult GetOrdersBySupplier(string supplierId, bool? addAsterisk)
+        {
+            //permission validation is not required here
+
+
+            // This action method gets called via an ajax request
+            if (string.IsNullOrEmpty(supplierId))
+                throw new ArgumentNullException(nameof(supplierId));
+
+            var supplier = _supplierService.GetSupplierById(Convert.ToInt32(supplierId));
+            var states = supplier != null ? _orderService.GetAllSupplierOrders(supplier.Id).ToList() : new List<Order>();
+            var result = (from s in states
+                          select new { id = s.Id, name = s.Number }).ToList();
+            if (addAsterisk.HasValue && addAsterisk.Value)
+            {
+                //asterisk
+                result.Insert(0, new { id = 0, name = "*" });
+            }
+            else
+            {
+                if (supplier == null)
+                {
+                    //customer is not selected ("choose customer" item)
+                    result.Insert(0, new { id = 0, name = _localizationService.GetResource("Admin.Report.Supplier.All") });
+                }
+                else
+                {
+                    //some country is selected
+                    result.Insert(0,
+                        !result.Any()
+                            ? new { id = 0, name = _localizationService.GetResource("Admin.Report.Supplier.IsEmpty") }
+                            : new { id = 0, name = _localizationService.GetResource("Admin.Report.Supplier.SelectSupplier") });
+                }
+            }
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
@@ -412,6 +569,48 @@ namespace Invenio.Admin.Controllers
                 return AccessDeniedView();
 
             var model = new FinalReportListModel();
+
+            model.AvailableSuppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Reports.Option.All"), Value = "0" });
+            model.AvailableOrders.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Reports.Option.All"), Value = "0" });
+
+            if (_workContext.CurrentUser.IsAdmin())
+            {
+                var suppliers = _supplierService.GetAllSuppliers();
+                suppliers.ToList().ForEach(x =>
+                    model.AvailableSuppliers.Add(new SelectListItem { Text = x.Name, Value = x.Id.ToString() }));
+            }
+            else
+            {
+                var suppliers = _supplierService.GetAllSuppliers();
+
+                var filtredSuppliers = new List<Supplier>();
+                if (_workContext.CurrentUser.CustomerRegions.Any())
+                {
+                    foreach (var region in _workContext.CurrentUser.CustomerRegions)
+                    {
+                        var customers =
+                            _customerService.GetAllCustomers(countryId: region.CountryId, stateId: region.Id);
+
+                        foreach (var customer in customers)
+                        {
+                            filtredSuppliers.AddRange(suppliers.Where(x => x.Customer == customer));
+                        }
+                    }
+                }
+
+                if (_workContext.CurrentUser.Customers.Any())
+                {
+                    foreach (var customer in _workContext.CurrentUser.Customers)
+                    {
+                        filtredSuppliers.AddRange(suppliers.Where(x => x.Customer == customer));
+                    }
+                }
+
+                filtredSuppliers = filtredSuppliers.Distinct().ToList();
+                filtredSuppliers.ForEach(x =>
+                    model.AvailableSuppliers.Add(new SelectListItem { Text = x.Name, Value = x.Id.ToString() }));
+            }
+
             return View(model);
         }
 
@@ -423,49 +622,59 @@ namespace Invenio.Admin.Controllers
 
             var listApprovedReports = new List<Report>();
 
-            foreach (var stateProvince in _workContext.CurrentUser.CustomerRegions)
+            if (_workContext.CurrentUser.IsAdmin())
             {
-                var suppliers =
-                    _supplierService.GetAllSuppliers(countryId: stateProvince.CountryId, stateId: stateProvince.Id);
-
-                foreach (var cus in suppliers)
+                listApprovedReports.AddRange(_reportService.GetAllReports(isAprroved: 1));
+            }
+            else
+            {
+                foreach (var stateProvince in _workContext.CurrentUser.CustomerRegions)
                 {
-                    var orders = _orderService.GetAllSupplierOrders(supplierId: cus.Id);
+                    var suppliers =
+                        _supplierService.GetAllSuppliers(countryId: stateProvince.CountryId, stateId: stateProvince.Id);
 
-                    foreach (var order in orders)
+                    foreach (var cus in suppliers)
                     {
-                        var reports = _reportService
-                            .GetAllReports(
-                                isAprroved: 1,
-                                orderId: order.Id,
-                                fromDate: model.CreatedOnFrom,
-                                toDate: model.CreatedOnTo);
+                        var orders = _orderService.GetAllSupplierOrders(supplierId: cus.Id);
 
-                        listApprovedReports.AddRange(reports);
+                        foreach (var order in orders)
+                        {
+                            var reports = _reportService
+                                .GetAllReports(
+                                    isAprroved: 1,
+                                    orderId: order.Id);
+
+                            listApprovedReports.AddRange(reports);
+                        }
+                    }
+                }
+
+                foreach (var man in _workContext.CurrentUser.Customers)
+                {
+                    var suppliers = _supplierService.GetSuppliersByCustomer(man.Id);
+                    foreach (var cus in suppliers)
+                    {
+                        var orders = _orderService.GetAllSupplierOrders(supplierId: cus.Id);
+
+                        foreach (var order in orders)
+                        {
+                            var reports = _reportService
+                                .GetAllReports(
+                                    isAprroved: 1,
+                                    orderId: order.Id);
+
+                            listApprovedReports.AddRange(reports);
+                        }
                     }
                 }
             }
 
-            foreach (var man in _workContext.CurrentUser.Customers)
-            {
-                var suppliers = _supplierService.GetSuppliersByCustomer(man.Id);
-                foreach (var cus in suppliers)
-                {
-                    var orders = _orderService.GetAllSupplierOrders(supplierId: cus.Id);
+            if (model.SupplierId > 0)
+                listApprovedReports = listApprovedReports.Where(x =>
+                    _orderService.GetOrderById(x.OrderId).SupplierId == model.SupplierId).ToList();
 
-                    foreach (var order in orders)
-                    {
-                        var reports = _reportService
-                            .GetAllReports(
-                                isAprroved: 1,
-                                orderId: order.Id,
-                                fromDate: model.CreatedOnFrom,
-                                toDate: model.CreatedOnTo);
-
-                        listApprovedReports.AddRange(reports);
-                    }
-                }
-            }
+            if (model.OrderId > 0)
+                listApprovedReports = listApprovedReports.Where(x => x.OrderId == model.OrderId).ToList();
 
             var rm = new List<FinalReportModel>();
 
@@ -479,17 +688,18 @@ namespace Invenio.Admin.Controllers
                     if (report == null) continue;
 
                     var parts = _partService.GetAllOrderParts(report.OrderId);
+                    var order = _orderService.GetOrderById(report.OrderId);
                     var frm = new FinalReportModel
                     {
                         Id = report.OrderId,
-                        Supplier = report.Order.Supplier.Name,
-                        OrderNumber = report.Order.Number,
-                        QuantityToCheck = report.Order.TotalPartsQuantity,
+                        Supplier = order.Supplier.Name,
+                        OrderNumber = order.Number,
+                        QuantityToCheck = order.TotalPartsQuantity,
                         TypeOfReport = "Interim Report",
                         TotalOk = reports.Select(x => x.OkPartsQuantity).Sum(),
                         TotalNok = reports.Select(x => x.NokPartsQuantity).Sum(),
                         TotalReworked = reports.Select(x => x.ReworkPartsQuantity).Sum(),
-                        OrderQuantity = report.Order.TotalPartsQuantity
+                        OrderQuantity = order.TotalPartsQuantity
                     };
 
                     frm.TotalBlocked = frm.TotalNok + frm.TotalReworked;
@@ -1266,6 +1476,59 @@ namespace Invenio.Admin.Controllers
                 return File(ms.ToArray(), MimeTypes.ApplicationXlsx, $"Interim-Report-{model.OrderNo}.xlsx");
             }
         }
+        #endregion
+
+        #region Еfficiency
+
+        public virtual ActionResult ЕfficiencyList()
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageЕfficiency))
+                return AccessDeniedView();
+
+            //var model = new ReportListModel();
+            return View();
+        }
+
+        [HttpPost]
+        public virtual ActionResult ЕfficiencyList(DataSourceRequest command, ЕfficiencyListModel model)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageЕfficiency))
+                return AccessDeniedKendoGridJson();
+
+            //var model = new ЕfficiencyModel();
+            var rm = new List<ЕfficiencyModel>();
+
+            var users = _userService.GetAllUsers();
+
+            foreach (var user in users)
+            {
+                var userReports = _reportService.GetAllReports(userId: user.Id);
+
+                var monthlyHors = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month) * 8;
+                var hoursSold = userReports.Sum(x => x.Time);
+                var efficiency = hoursSold.HasValue ? (double)hoursSold.Value / monthlyHors : 0;
+
+
+                rm.Add(new ЕfficiencyModel
+                {
+                    UserName = user.GetFullName(),
+                    MonthlyHours = monthlyHors,
+                    HoursSold = hoursSold ?? 0,
+                    Difference = (hoursSold ?? 0) - monthlyHors,
+                    Efficiency = efficiency
+                });
+            }
+
+            var result = new PagedList<ЕfficiencyModel>(rm, command.Page - 1, command.PageSize);
+            var gridModel = new DataSourceResult
+            {
+                Data = result,
+                Total = result.TotalCount
+            };
+
+            return Json(gridModel);
+        }
+
         #endregion
     }
 }

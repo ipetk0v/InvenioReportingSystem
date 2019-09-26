@@ -43,6 +43,48 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.UserName)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopEditorFor(model => model.UserName)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.WorkShiftId)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopDropDownListFor(model => model.WorkShiftId, Model.AvailableWorkShifts)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.SupplierId)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopDropDownListFor(model => model.SupplierId, Model.AvailableSuppliers, new { onchange = "orderFilterBySupplier()" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    @Html.NopLabelFor(model => model.OrderId)
+                                </div>
+                                <div class="col-md-8">
+                                    @Html.NopDropDownListFor(model => model.OrderId, Model.AvailableOrders)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-8 col-md-offset-4">
+                                    <button type="button" id="search-reports" class="btn btn-primary btn-search">
+                                        <i class="fa fa-search"></i>
+                                        @T("Admin.Common.Search")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <div class="col-md-4">
                                     @Html.NopLabelFor(model => model.CreatedOnFrom)
                                 </div>
                                 <div class="col-md-8">
@@ -57,16 +99,6 @@
                                     @Html.NopEditorFor(model => model.CreatedOnTo)
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <div class="col-md-8 col-md-offset-4">
-                                    <button type="button" id="search-reports" class="btn btn-primary btn-search">
-                                        <i class="fa fa-search"></i>
-                                        @T("Admin.Common.Search")
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
                             <div class="form-group">
                                 <div class="col-md-4">
                                     @Html.NopLabelFor(model => model.SearchApprovedId)
@@ -179,14 +211,14 @@
                                     headerAttributes: { style: "text-align:center" },
                                     attributes: { style: "text-align:center" }
                                 },{
-                                    field: "OrderNumber",
-                                    title: "@T("Admin.Reports.Fields.OrderNumber")",
+                                    field: "SupplierName",
+                                    title: "@T("Admin.Reports.Fields.SupplierName")",
                                     width: 100,
                                     headerAttributes: { style: "text-align:center" },
                                     attributes: { style: "text-align:center" }
                                 },{
-                                    field: "SupplierName",
-                                    title: "@T("Admin.Reports.Fields.SupplierName")",
+                                    field: "OrderNumber",
+                                    title: "@T("Admin.Reports.Fields.OrderNumber")",
                                     width: 100,
                                     headerAttributes: { style: "text-align:center" },
                                     attributes: { style: "text-align:center" }
@@ -315,7 +347,30 @@
                     <script type="text/javascript">
                         var selectedIds = [];
 
-                        $(document).ready(function() {
+                        function orderFilterBySupplier() {
+                            var selectedItem = $("#SupplierId").val();
+                            var ddlOrders = $("#@Html.FieldIdFor(model => model.OrderId)");
+                            $.ajax({
+                                cache: false,
+                                type: "GET",
+                                url: "@(Url.Action("GetOrdersBySupplier", "Report"))",
+                                data: { "supplierId": selectedItem, "addSelectStateItem": "false" },
+                                success: function (data) {
+                                    ddlOrders.html('');
+                                    $.each(data, function (id, option) {
+                                        ddlOrders.append($('<option></option>').val(option.id).html(option.name));
+                                    });
+                                },
+                                error: function (xhr, ajaxOptions, thrownError) {
+                                    alert('Failed to retrieve states.');
+                                }
+                            });
+                        };
+
+                        $(document).ready(function () {
+
+                            orderFilterBySupplier();
+
                             //search button
                             $('#search-reports')
                                 .click(function() {
@@ -461,6 +516,10 @@
                                 CreatedOnFrom: $('#@Html.FieldIdFor(model => model.CreatedOnFrom)').val(),
                                 CreatedOnTo: $('#@Html.FieldIdFor(model => model.CreatedOnTo)').val(),
                                 SearchText: $('#@Html.FieldIdFor(model => model.SearchText)').val(),
+                                UserName: $('#@Html.FieldIdFor(model => model.UserName)').val(),
+                                WorkShiftId: $('#@Html.FieldIdFor(model => model.WorkShiftId)').val(),
+                                SupplierId: $('#@Html.FieldIdFor(model => model.SupplierId)').val(),
+                                OrderId: $('#@Html.FieldIdFor(model => model.OrderId)').val(),
                                 SearchApprovedId: $('#SearchApprovedId').val()
                             };
                             addAntiForgeryToken(data);

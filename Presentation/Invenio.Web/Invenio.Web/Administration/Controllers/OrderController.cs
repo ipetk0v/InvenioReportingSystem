@@ -21,8 +21,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using Invenio.Core.Domain.ChargeNumbers;
+using Invenio.Core.Domain.Customers;
+using Invenio.Core.Domain.Suppliers;
 using Invenio.Core.Domain.Users;
 using Invenio.Services;
+using Invenio.Services.Customers;
 using Invenio.Services.Reports;
 
 namespace Invenio.Admin.Controllers
@@ -39,6 +42,7 @@ namespace Invenio.Admin.Controllers
         private readonly IDeliveryNumberService _delNumberService;
         private readonly IChargeNumberService _chargeNumberService;
         private readonly IReportService _reportService;
+        private readonly ICustomerService _customerService;
 
         public OrderController(
             IPermissionService permissionService,
@@ -50,7 +54,8 @@ namespace Invenio.Admin.Controllers
             IPartService partService,
             IDeliveryNumberService delNumberService,
             IChargeNumberService chargeNumberService,
-            IReportService reportService
+            IReportService reportService,
+            ICustomerService customerService
             )
         {
             _permissionService = permissionService;
@@ -63,6 +68,7 @@ namespace Invenio.Admin.Controllers
             _delNumberService = delNumberService;
             _chargeNumberService = chargeNumberService;
             _reportService = reportService;
+            _customerService = customerService;
         }
 
         public virtual ActionResult Index()
@@ -75,8 +81,7 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedView();
 
-            var model = new OrderListModel();
-            model.AvailableStatus = OrderStatus.Created.ToSelectList(false).ToList();
+            var model = new OrderListModel { AvailableStatus = OrderStatus.Created.ToSelectList(false).ToList() };
             model.AvailableStatus.Insert(0, new SelectListItem { Text = _localizationService.GetResource("Admin.Common.All"), Value = null, Selected = true });
 
             //"published" property
@@ -86,6 +91,35 @@ namespace Invenio.Admin.Controllers
             model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SearchPublished.All"), Value = "0" });
             model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SearchPublished.PublishedOnly"), Value = "1" });
             model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SearchPublished.UnpublishedOnly"), Value = "2" });
+
+            model.AvailableSuppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SupplierId.All"), Value = "0" });
+            model.AvailableCustomers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.CustomerId.All"), Value = "0" });
+
+            //admin
+            if (_workContext.CurrentUser.IsAdmin())
+            {
+                var customers2 = _customerService.GetAllCustomers();
+                customers2.ToList().ForEach(x =>
+                    model.AvailableCustomers.Add(new SelectListItem { Text = x.Name, Value = x.Id.ToString() }));
+
+                return View(model);
+            }
+
+            //customer
+            var customersList = _customerService
+                .GetAllCustomers();
+
+            var crCustomer = new List<Customer>();
+            var rCustomers = new List<Customer>();
+            if (_workContext.CurrentUser.CustomerRegions.Any())
+                crCustomer = customersList.Where(x => _workContext.CurrentUser.CustomerRegions.Contains(x.StateProvince)).ToList();
+
+            if (_workContext.CurrentUser.Customers.Any())
+                rCustomers = customersList.Where(x => _workContext.CurrentUser.Customers.Contains(x)).ToList();
+
+            var customerListResult = crCustomer.Concat(rCustomers).Distinct().ToList();
+            customerListResult.ForEach(x =>
+                model.AvailableCustomers.Add(new SelectListItem { Text = x.Name, Value = x.Id.ToString() }));
 
             return View(model);
         }
@@ -112,14 +146,42 @@ namespace Invenio.Admin.Controllers
                         model.StartDate,
                         model.EndDate,
                         overridePublished,
-                        showHidden: true,
-                        pageIndex: command.Page - 1,
-                        pageSize: command.PageSize);
+                        showHidden: true)
+                        .OrderByDescending(x => x.Published)
+                        .ThenByDescending(x => x.Id)
+                        .ToList();
 
+                if (model.SupplierId > 0)
+                    orders2 = orders2.Where(x => x.SupplierId == model.SupplierId).ToList();
+
+                if (model.CustomerId > 0)
+                    orders2 = orders2.Where(x => x.Supplier.CustomerId == model.CustomerId).ToList();
+
+                if (!string.IsNullOrEmpty(model.SearchByPartName))
+                {
+                    var filtredByPartsOrders = new List<Order>();
+                    foreach (var o2 in orders2)
+                    {
+                        var parts = _partService.GetAllOrderParts(o2.Id);
+                        if (parts.Any(x => x.SerNumber == model.SearchByPartName))
+                            filtredByPartsOrders.Add(o2);
+                    }
+
+                    var filtedByPartOrdersResult = new PagedList<Order>(filtredByPartsOrders, command.Page - 1, command.PageSize);
+                    var gridModelFiltedByPartOrders = new DataSourceResult
+                    {
+                        Data = filtedByPartOrdersResult.Select(PrepareOrderListModel),
+                        Total = filtedByPartOrdersResult.TotalCount
+                    };
+
+                    return Json(gridModelFiltedByPartOrders);
+                }
+
+                var resultOrders = new PagedList<Order>(orders2, command.Page - 1, command.PageSize);
                 var gridModel2 = new DataSourceResult
                 {
-                    Data = orders2.Select(PrepareOrderListModel),
-                    Total = orders2.TotalCount
+                    Data = resultOrders.Select(PrepareOrderListModel),
+                    Total = resultOrders.TotalCount
                 };
 
                 return Json(gridModel2);
@@ -133,7 +195,16 @@ namespace Invenio.Admin.Controllers
                     model.StartDate,
                     model.EndDate,
                     overridePublished,
-                    showHidden: true);
+                    showHidden: true)
+                    .OrderByDescending(x => x.Published)
+                    .ThenByDescending(x => x.Id)
+                    .ToList();
+
+            if (model.SupplierId > 0)
+                orders = orders.Where(x => x.SupplierId == model.SupplierId).ToList();
+
+            if (model.CustomerId > 0)
+                orders = orders.Where(x => x.Supplier.CustomerId == model.CustomerId).ToList();
 
             var crOrders = new List<Order>();
             var cOrders = new List<Order>();
@@ -144,6 +215,26 @@ namespace Invenio.Admin.Controllers
                 cOrders = orders.Where(x => _workContext.CurrentUser.Customers.Contains(x.Supplier.Customer)).ToList();
 
             var result = crOrders.Concat(cOrders).Distinct().ToList();
+
+            if (!string.IsNullOrEmpty(model.SearchByPartName))
+            {
+                var filtredByPartsOrders = new List<Order>();
+                foreach (var o2 in result)
+                {
+                    var parts = _partService.GetAllOrderParts(o2.Id);
+                    if (parts.Any(x => x.SerNumber == model.SearchByPartName))
+                        filtredByPartsOrders.Add(o2);
+                }
+
+                var filtedByPartOrdersResult = new PagedList<Order>(filtredByPartsOrders, command.Page - 1, command.PageSize);
+                var gridModelFiltedByPartOrders = new DataSourceResult
+                {
+                    Data = filtedByPartOrdersResult.Select(PrepareOrderListModel),
+                    Total = filtedByPartOrdersResult.TotalCount
+                };
+
+                return Json(gridModelFiltedByPartOrders);
+            }
 
             var pagedList = new PagedList<Order>(result, command.Page - 1, command.PageSize);
             var gridModel = new DataSourceResult
@@ -178,6 +269,44 @@ namespace Invenio.Admin.Controllers
             //model.CheckedPartsQuantity = _reportService.GetCheckedOrderQuantity(x.Id);
 
             return model;
+        }
+
+        [AcceptVerbs(HttpVerbs.Get)]
+        public virtual ActionResult GetSuppliersByCustomerId(string customerId, bool? addAsterisk)
+        {
+            //permission validation is not required here
+
+
+            // This action method gets called via an ajax request
+            if (string.IsNullOrEmpty(customerId))
+                throw new ArgumentNullException(nameof(customerId));
+
+            var customer = _customerService.GetCustomerById(Convert.ToInt32(customerId));
+            var states = customer != null ? _supplierService.GetSuppliersByCustomer(customer.Id).ToList() : new List<Supplier>();
+            var result = (from s in states
+                          select new { id = s.Id, name = s.Name }).ToList();
+            if (addAsterisk.HasValue && addAsterisk.Value)
+            {
+                //asterisk
+                result.Insert(0, new { id = 0, name = "*" });
+            }
+            else
+            {
+                if (customer == null)
+                {
+                    //customer is not selected ("choose customer" item)
+                    result.Insert(0, new { id = 0, name = _localizationService.GetResource("Admin.Customer.SelectCustomer") });
+                }
+                else
+                {
+                    //some country is selected
+                    result.Insert(0,
+                        !result.Any()
+                            ? new { id = 0, name = _localizationService.GetResource("Admin.Supplier.IsEmpty") }
+                            : new { id = 0, name = _localizationService.GetResource("Admin.Address.SelectSupplier") });
+                }
+            }
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
 
         public virtual ActionResult Create()

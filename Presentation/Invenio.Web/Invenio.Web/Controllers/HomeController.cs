@@ -17,7 +17,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using Invenio.Core.Domain.Reports;
+using Invenio.Core.Domain.Users;
 using Invenio.Services.ChargeNumber;
+using Invenio.Services.Logging;
 using Invenio.Services.Parts;
 using Invenio.Services.Reports;
 
@@ -35,6 +37,7 @@ namespace Invenio.Web.Controllers
         private readonly IReportService _reportService;
         private readonly IReportDetailService _reportDetailService;
         private readonly IPartService _partService;
+        private readonly IUserActivityService _userActivityService;
 
         public HomeController(
             IWorkContext workContext,
@@ -46,7 +49,8 @@ namespace Invenio.Web.Controllers
             IChargeNumberService chargeNumberService,
             IReportService reportService,
             IReportDetailService reportDetailService,
-            IPartService partService)
+            IPartService partService,
+            IUserActivityService userActivityService)
         {
             _workContext = workContext;
             _supplierService = supplierService;
@@ -58,6 +62,7 @@ namespace Invenio.Web.Controllers
             _reportService = reportService;
             _reportDetailService = reportDetailService;
             _partService = partService;
+            _userActivityService = userActivityService;
         }
 
         [NopHttpsRequirement(SslRequirement.No)]
@@ -202,10 +207,12 @@ namespace Invenio.Web.Controllers
                     ApprovedOn = null,
                     PartId = report.PartId,
                     DeliveryNumberId = report.DeliveryNumberId == 0 ? (int?)null : report.DeliveryNumberId,
-                    ChargeNumberId = report.ChargeNumberId == 0 ? (int?)null : report.ChargeNumberId
+                    ChargeNumberId = report.ChargeNumberId == 0 ? (int?)null : report.ChargeNumberId,
+                    Time = report.InputTime
                 };
 
                 _reportService.InsertReport(entity);
+                _userActivityService.InsertActivity("InsertReport", _localizationService.GetResource("ActivityLog.InsertReport"), entity.Id);
 
                 foreach (var nokCriteria in report.NokCriteria)
                 {
@@ -278,35 +285,56 @@ namespace Invenio.Web.Controllers
                 });
 
             var suppliers = new List<Supplier>();
-            if (_workContext.CurrentUser.CustomerRegions.Any())
-            {
-                foreach (var region in _workContext.CurrentUser.CustomerRegions)
-                {
-                    suppliers.AddRange(_supplierService.GetAllSuppliers(countryId: region.CountryId, stateId: region.Id));
-                }
-            }
 
-            if (_workContext.CurrentUser.Customers.Any())
+            if (_workContext.CurrentUser.IsAdmin())
             {
-                foreach (var customer in _workContext.CurrentUser.Customers)
+                model.Suppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.Supplier"), Value = "0" });
+                foreach (var supplier in _supplierService.GetAllSuppliers())
                 {
-                    suppliers.AddRange(_supplierService.GetSuppliersByCustomer(customer.Id));
-                }
-            }
-
-            model.Suppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.Supplier"), Value = "0" });
-            foreach (var supplier in suppliers)
-            {
-                var orders = _orderService.GetAllSupplierOrders(supplier.Id);
-                if (orders.Any())
-                {
-                    model.Suppliers.Add(new SelectListItem
+                    var orders = _orderService.GetAllSupplierOrders(supplier.Id);
+                    if (orders.Any())
                     {
-                        Text = supplier.Name,
-                        Value = supplier.Id.ToString()
-                    });
+                        model.Suppliers.Add(new SelectListItem
+                        {
+                            Text = supplier.Name,
+                            Value = supplier.Id.ToString()
+                        });
+                    }
                 }
             }
+            else
+            {
+                if (_workContext.CurrentUser.CustomerRegions.Any())
+                {
+                    foreach (var region in _workContext.CurrentUser.CustomerRegions)
+                    {
+                        suppliers.AddRange(_supplierService.GetAllSuppliers(countryId: region.CountryId, stateId: region.Id));
+                    }
+                }
+
+                if (_workContext.CurrentUser.Customers.Any())
+                {
+                    foreach (var customer in _workContext.CurrentUser.Customers)
+                    {
+                        suppliers.AddRange(_supplierService.GetSuppliersByCustomer(customer.Id));
+                    }
+                }
+
+                model.Suppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.Supplier"), Value = "0" });
+                foreach (var supplier in suppliers)
+                {
+                    var orders = _orderService.GetAllSupplierOrders(supplier.Id);
+                    if (orders.Any())
+                    {
+                        model.Suppliers.Add(new SelectListItem
+                        {
+                            Text = supplier.Name,
+                            Value = supplier.Id.ToString()
+                        });
+                    }
+                }
+            }
+
 
             model.Orders.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.Order"), Value = "0" });
             model.Parts.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.Parts"), Value = "0" });

@@ -30,7 +30,7 @@ namespace Invenio.Services.Customers
             int stateId = 0,
             int pageIndex = 0,
             int pageSize = int.MaxValue,
-            bool showHidden = false);
+            bool? showHidden = null);
 
         /// <summary>
         /// Gets a Customer

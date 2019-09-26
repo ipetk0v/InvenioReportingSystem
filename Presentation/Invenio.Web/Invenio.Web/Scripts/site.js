@@ -39,8 +39,10 @@ function addNewReport() {
     el.find('#reworked-parts-list').children().find('input').val(0);
     el.find('#reworked-parts-list').children().find('option').not(':first').remove();
     el.find('#CheckedQuantity').val(0);
+    el.find('#input-time').val(0);
     el.find('#input-ok').val(0);
     el.find('#CheckedQuantity').attr("disabled", "disabled");
+    el.find('#input-time').attr("disabled", "disabled");
     el.find('#input-nok').val(0);
     el.find('#input-reworked').val(0);
 }
@@ -217,6 +219,9 @@ function RemoveDisabledQuantityAndCriteria(element) {
     var inputChecked = element.parent().parent().find('input[name^="CheckedQuantity"]');
     inputChecked.attr("disabled", false);
 
+    var inputTime = element.parent().parent().find('#input-time');
+    inputTime.attr("disabled", false);
+
     var blockedPartsDropDown = element.parent().parent().parent().find('select[name^="BlockedPart"]').parent().parent();
     blockedPartsDropDown.removeAttr("hidden");
 
@@ -308,12 +313,14 @@ function submitReports(errorMessage, returnUrl) {
         object.DeliveryNumberId = $(element.find('[name^="DeliveryNumber"]')[0]).val();
         object.ChargeNumberId = $(element.find('[name^="ChargeNumber"]')[0]).val();
         object.CheckedQuantity = $(element.find("#CheckedQuantity")[0]).val();
+        object.InputTime = $(element.find("#input-time")[0]).val();
 
         object.WorkShiftId = $('#WorkShiftId').val();
         object.ReportDate = $("#DateId").val();
 
         if (object.WorkShiftId < 1
             || object.CheckedQuantity < 1
+            || object.InputTime < 1
             || object.supplierId < 1
             || object.OrderId < 1
             || object.PartId < 1

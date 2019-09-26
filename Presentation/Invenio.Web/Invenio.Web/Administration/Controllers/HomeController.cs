@@ -167,7 +167,7 @@ namespace Invenio.Admin.Controllers
 
             if (_workContext.CurrentUser.IsAdmin())
             {
-                numberOfUsers = _UserService.GetAllUsers().ToList();
+                numberOfUsers = _UserService.GetAllUsers(UserRoleIds: new[] { _UserService.GetUserRoleBySystemName(SystemUserRoleNames.Registered).Id }).ToList();
                 numberOfSuppliers = _supplierService.GetAllSuppliers().ToList().Count;
 
                 model.NumberOfUsers = numberOfUsers.Distinct().Count();
@@ -187,7 +187,7 @@ namespace Invenio.Admin.Controllers
                         numberOfUsers.AddRange(allUsers.Where(x => x.Active == true && x.Customers.Contains(man)));
                         numberNotApprovedReports.AddRange(_reportService.GetAllReports(CustomerId: man.Id, isAprroved: 2));
 
-                        foreach (var cus in _supplierService.GetAllSuppliers(CustomerId: man.Id))
+                        foreach (var cus in _supplierService.GetAllSuppliers(customerId: man.Id))
                         {
                             numberOfSuppliers++;
                             model.NumberOfOrders += _orderService.GetAllSupplierOrders(supplierId: cus.Id).TotalCount;
@@ -200,7 +200,7 @@ namespace Invenio.Admin.Controllers
                     numberOfUsers.AddRange(allUsers.Where(x => x.Active == true && x.Customers.Contains(man)));
                     numberNotApprovedReports.AddRange(_reportService.GetAllReports(CustomerId: man.Id, isAprroved: 2));
 
-                    foreach (var cus in _supplierService.GetAllSuppliers(CustomerId: man.Id))
+                    foreach (var cus in _supplierService.GetAllSuppliers(customerId: man.Id))
                     {
                         numberOfSuppliers++;
                         model.NumberOfOrders += _orderService.GetAllSupplierOrders(supplierId: cus.Id).TotalCount;

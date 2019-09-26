@@ -53,6 +53,8 @@ namespace Invenio.Web.Models.Home
 
         public int CheckedQuantity { get; set; }
 
+        public int InputTime { get; set; }
+
         public int BlockedPartId { get; set; }
         public IList<SelectListItem> BlockedParts { get; set; }
 

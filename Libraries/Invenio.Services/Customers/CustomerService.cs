@@ -111,7 +111,7 @@ namespace Invenio.Services.Customers
         {
             if (Customer == null)
                 throw new ArgumentNullException("Customer");
-            
+
             Customer.Deleted = true;
             UpdateCustomer(Customer);
 
@@ -122,23 +122,25 @@ namespace Invenio.Services.Customers
         /// <summary>
         /// Gets all Customers
         /// </summary>
-        /// <param name="CustomerName">Customer name</param>
+        /// <param name="customerName">Customer name</param>
+        /// <param name="stateId"></param>
         /// <param name="pageIndex">Page index</param>
         /// <param name="pageSize">Page size</param>
         /// <param name="showHidden">A value indicating whether to show hidden records</param>
+        /// <param name="countryId"></param>
         /// <returns>Customers</returns>
-        public virtual IPagedList<Customer> GetAllCustomers(string CustomerName = "",
+        public virtual IPagedList<Customer> GetAllCustomers(string customerName = "",
             int countryId = 0,
             int stateId = 0,
             int pageIndex = 0,
-            int pageSize = int.MaxValue, 
-            bool showHidden = false)
+            int pageSize = int.MaxValue,
+            bool? showHidden = null)
         {
             var query = _CustomerRepository.Table;
-            if (!showHidden)
-                query = query.Where(m => m.Published);
-            if (!string.IsNullOrWhiteSpace(CustomerName))
-                query = query.Where(m => m.Name.Contains(CustomerName));
+            if (showHidden.HasValue)
+                query = query.Where(m => m.Published == showHidden);
+            if (!string.IsNullOrWhiteSpace(customerName))
+                query = query.Where(m => m.Name.Contains(customerName));
             if (countryId > 0)
                 query = query.Where(m => m.CountryId == countryId);
             if (stateId > 0)
@@ -158,7 +160,7 @@ namespace Invenio.Services.Customers
         {
             if (CustomerId == 0)
                 return null;
-            
+
             string key = string.Format(CustomerS_BY_ID_KEY, CustomerId);
             return _cacheManager.Get(key, () => _CustomerRepository.GetById(CustomerId));
         }

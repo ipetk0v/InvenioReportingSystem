@@ -26,21 +26,21 @@
             <div class="panel panel-default panel-search">
                 <div class="panel-body">
                     <div class="row">
-                        @*<div class="col-md-6">
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <div class="col-md-4">
-                                    @Html.NopLabelFor(model => model.CreatedOnFrom)
+                                    @Html.NopLabelFor(model => model.SupplierId)
                                 </div>
                                 <div class="col-md-8">
-                                    @Html.NopEditorFor(model => model.CreatedOnFrom)
+                                    @Html.NopDropDownListFor(model => model.SupplierId, Model.AvailableSuppliers, new { onchange = "orderFilterBySupplier()" })
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-md-4">
-                                    @Html.NopLabelFor(model => model.CreatedOnTo)
+                                    @Html.NopLabelFor(model => model.OrderId)
                                 </div>
                                 <div class="col-md-8">
-                                    @Html.NopEditorFor(model => model.CreatedOnTo)
+                                    @Html.NopDropDownListFor(model => model.OrderId, Model.AvailableOrders)
                                 </div>
                             </div>
                             <div class="form-group">
@@ -51,7 +51,7 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>*@
+                        </div>
                     </div>
                 </div>
             </div>
@@ -99,13 +99,14 @@
                                 scrollable: false,
                                 columns: [
                                 {
+                                    field: "Supplier",
+                                    title: "@T("Admin.Report.FinalReport.Supplier")"
+                                },
+                                {
                                     field: "OrderNumber",
                                     title: "@T("Admin.Report.FinalReport.OrderNumber")"
                                 },
                                 {
-                                    field: "Supplier",
-                                    title: "@T("Admin.Report.FinalReport.Supplier")"
-                                },{
                                     field: "OrderQuantity",
                                     title: "@T("Admin.Report.FinalReport.OrderQuantity")"
                                 },{
@@ -143,7 +144,30 @@
                     <script type="text/javascript">
                         var selectedIds = [];
 
-                        $(document).ready(function() {
+                        function orderFilterBySupplier() {
+                            var selectedItem = $("#SupplierId").val();
+                            var ddlOrders = $("#@Html.FieldIdFor(model => model.OrderId)");
+                            $.ajax({
+                                cache: false,
+                                type: "GET",
+                                url: "@(Url.Action("GetOrdersBySupplier", "Report"))",
+                                data: { "supplierId": selectedItem, "addSelectStateItem": "false" },
+                                success: function (data) {
+                                    ddlOrders.html('');
+                                    $.each(data, function (id, option) {
+                                        ddlOrders.append($('<option></option>').val(option.id).html(option.name));
+                                    });
+                                },
+                                error: function (xhr, ajaxOptions, thrownError) {
+                                    alert('Failed to retrieve states.');
+                                }
+                            });
+                        };
+
+                        $(document).ready(function () {
+
+                            orderFilterBySupplier();
+
                             //search button
                             $('#search-reports')
                                 .click(function() {
@@ -160,9 +184,8 @@
 
                         function additionalData() {
                             var data = {
-                                CreatedOnFrom: $('#@Html.FieldIdFor(model => model.CreatedOnFrom)').val(),
-                                CreatedOnTo: $('#@Html.FieldIdFor(model => model.CreatedOnTo)').val(),
-                                SearchApprovedId: $('#SearchApprovedId').val()
+                                OrderId: $('#@Html.FieldIdFor(model => model.OrderId)').val(),
+                                SupplierId: $('#@Html.FieldIdFor(model => model.SupplierId)').val()
                             };
                             addAntiForgeryToken(data);
                             return data;

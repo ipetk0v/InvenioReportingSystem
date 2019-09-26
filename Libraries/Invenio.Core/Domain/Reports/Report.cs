@@ -23,6 +23,8 @@ namespace Invenio.Core.Domain.Reports
         public DateTime? DateOfInspection { get; set; }
         public DateTime? ApprovedOn { get; set; }
 
+        public int? Time { get; set; }
+
         public int UserId { get; set; }
         public User User { get; set; }
 
