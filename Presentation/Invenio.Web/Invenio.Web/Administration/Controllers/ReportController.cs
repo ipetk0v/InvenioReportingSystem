@@ -1498,23 +1498,48 @@ namespace Invenio.Admin.Controllers
             //var model = new ЕfficiencyModel();
             var rm = new List<ЕfficiencyModel>();
 
-            var users = _userService.GetAllUsers();
+            var users = _userService
+                .GetAllUsers(UserRoleIds: new[] { _userService.GetUserRoleBySystemName(SystemUserRoleNames.Registered).Id })
+                .ToList();
 
             foreach (var user in users)
             {
-                var userReports = _reportService.GetAllReports(userId: user.Id);
+                var userReports = _reportService
+                    .GetAllReports(userId: user.Id, fromDate: model.DateFrom, toDate: model.DateTo, isAprroved: 1);
 
-                var monthlyHors = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month) * 8;
+                //var monthlyHors = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month) * 8;
+                var workDays = userReports.Select(x => x.DateOfInspection.Value.Date).ToList().Distinct().ToList().Count;
+                var workHours = workDays * 8;
+
                 var hoursSold = userReports.Sum(x => x.Time);
-                var efficiency = hoursSold.HasValue ? (double)hoursSold.Value / monthlyHors : 0;
 
+                var listOfReports = userReports
+                    .GroupBy(x => x.DateOfInspection.Value.Date)
+                    .Select(x => x.ToList());
+
+                var hoursSoldEf = 0;
+
+                foreach (var reports in listOfReports)
+                {
+                    var tt = reports.GroupBy(x => x.OrderId).Select(x => x.ToList());
+                    foreach (var reportsTt in tt)
+                    {
+                        var quantity = reportsTt.Sum(x => x.CheckedPartsQuantity);
+                        var pph = _orderService.GetOrderById(reportsTt.First().OrderId)?.PartsPerHour;
+
+                        hoursSoldEf += pph.HasValue ? (int)Math.Ceiling((decimal)quantity / pph.Value) : 0;
+                    }
+                }
+
+                var efficiency = hoursSold.HasValue ? (double)hoursSold.Value / workHours : 0;
 
                 rm.Add(new ЕfficiencyModel
                 {
                     UserName = user.GetFullName(),
-                    MonthlyHours = monthlyHors,
+                    MonthlyHours = workHours,
                     HoursSold = hoursSold ?? 0,
-                    Difference = (hoursSold ?? 0) - monthlyHors,
+                    HoursSoldEf = hoursSoldEf,
+                    Difference = (hoursSold ?? 0) - workHours,
                     Efficiency = efficiency
                 });
             }

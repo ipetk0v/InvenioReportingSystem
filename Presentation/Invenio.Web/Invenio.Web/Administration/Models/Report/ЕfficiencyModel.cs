@@ -8,6 +8,8 @@ namespace Invenio.Admin.Models.Report
 
         public int MonthlyHours { get; set; }
 
+        public int HoursSoldEf { get; set; }
+
         public int HoursSold { get; set; }
 
         public int Difference { get; set; }
