@@ -1,40 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using Invenio.Admin.Extensions;
 using Invenio.Admin.Models.Report;
-using Invenio.Services.Security;
-using Invenio.Web.Framework.Kendoui;
-using System.Web.Mvc;
-using Invenio.Services.Helpers;
-using Invenio.Services.Reports;
-using System.Linq;
-using System.Reflection;
-using System.Web.Hosting;
-using Invenio.Admin.Extensions;
 using Invenio.Core;
 using Invenio.Core.Domain.Criterias;
-using Invenio.Core.Domain.Reports;
-using Invenio.Services.Supplier;
-using Invenio.Services.Events;
-using Invenio.Services.Localization;
-using Invenio.Services.Logging;
-using Invenio.Services.Orders;
-using Invenio.Services.Users;
-using Invenio.Web.Framework.Mvc;
 using Invenio.Core.Domain.Orders;
+using Invenio.Core.Domain.Reports;
 using Invenio.Core.Domain.Suppliers;
+using Invenio.Core.Domain.Users;
 using Invenio.Services.ChargeNumber;
 using Invenio.Services.Common;
 using Invenio.Services.Criteria;
-using Invenio.Services.Parts;
-using Invenio.Services.DeliveryNumber;
-using Invenio.Web.Framework.Controllers;
-using OfficeOpenXml;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
-using OfficeOpenXml.Style;
-using Image = System.Drawing.Image;
-using Invenio.Core.Domain.Users;
 using Invenio.Services.Customers;
+using Invenio.Services.DeliveryNumber;
+using Invenio.Services.Events;
+using Invenio.Services.Helpers;
+using Invenio.Services.Localization;
+using Invenio.Services.Logging;
+using Invenio.Services.Orders;
+using Invenio.Services.Parts;
+using Invenio.Services.Reports;
+using Invenio.Services.Security;
+using Invenio.Services.Supplier;
+using Invenio.Services.Users;
+using Invenio.Web.Framework.Kendoui;
+using Invenio.Web.Framework.Mvc;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Web.Hosting;
+using System.Web.Mvc;
+using Image = System.Drawing.Image;
 
 namespace Invenio.Admin.Controllers
 {
@@ -1485,8 +1483,72 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageЕfficiency))
                 return AccessDeniedView();
 
-            //var model = new ReportListModel();
-            return View();
+            var model = new ЕfficiencyListModel();
+
+            var date = DateTime.Now;
+            var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
+            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+            model.DateFrom = firstDayOfMonth;
+            model.DateTo = lastDayOfMonth;
+
+            model.OrderBy.Add(new SelectListItem { Text = "Потребителско име", Value = "0" });
+            model.OrderBy.Add(new SelectListItem { Text = "Работни часове", Value = "1" });
+            model.OrderBy.Add(new SelectListItem { Text = "Продадени часове", Value = "2" });
+            model.OrderBy.Add(new SelectListItem { Text = "Разлика", Value = "3" });
+            model.OrderBy.Add(new SelectListItem { Text = "Ефикасност", Value = "4" });
+
+            return View(model);
+        }
+
+        private IEnumerable<User> GetFiltredUsers(ЕfficiencyListModel model)
+        {
+            if (_workContext.CurrentUser.IsAdmin())
+            {
+                if (!string.IsNullOrEmpty(model.Name))
+                {
+                    return _userService.GetAllUsers(
+                            UserRoleIds: new[] { _userService.GetUserRoleBySystemName(SystemUserRoleNames.Registered).Id })
+                        .Where(x => x.GetFullName().Contains(model.Name));
+                }
+
+                return _userService.GetAllUsers(
+                    UserRoleIds: new[] { _userService.GetUserRoleBySystemName(SystemUserRoleNames.Registered).Id });
+            }
+
+            var users = _userService.GetAllUsers(
+                UserRoleIds: new[] { _userService.GetUserRoleBySystemName(SystemUserRoleNames.Registered).Id });
+
+            if (!string.IsNullOrEmpty(model.Name))
+            {
+                users = new PagedList<User>(users.Where(x => x.GetFullName().Contains(model.Name)).ToList(), 0, int.MaxValue);
+            }
+
+            var filtretUsers = new List<User>();
+            if (_workContext.CurrentUser.CustomerRegions.Any())
+            {
+                foreach (var region in _workContext.CurrentUser.CustomerRegions)
+                {
+                    filtretUsers.AddRange(users.Where(x => x.CustomerRegions.Contains(region)));
+
+                    foreach (var user in users)
+                    {
+                        foreach (var customer in user.Customers)
+                        {
+                            if (customer.StateProvinceId == region.Id)
+                            {
+                                filtretUsers.Add(user);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (_workContext.CurrentUser.Customers.Any())
+                filtretUsers.AddRange(from user in users from c in _workContext.CurrentUser.Customers where user.Customers.Contains(c) select user);
+
+            var topRoleId = _workContext.CurrentUser.GetUserRoleIds().Max();
+            return filtretUsers.Distinct().Where(x => x.UserRoles.Select(ur => ur.Id).Max() < topRoleId).ToList();
         }
 
         [HttpPost]
@@ -1498,22 +1560,24 @@ namespace Invenio.Admin.Controllers
             //var model = new ЕfficiencyModel();
             var rm = new List<ЕfficiencyModel>();
 
-            var users = _userService
-                .GetAllUsers(UserRoleIds: new[] { _userService.GetUserRoleBySystemName(SystemUserRoleNames.Registered).Id })
-                .ToList();
+            //var users = _userService
+            //    .GetAllUsers(UserRoleIds: new[] { _userService.GetUserRoleBySystemName(SystemUserRoleNames.Registered).Id })
+            //    .ToList();
+
+            var users = GetFiltredUsers(model);
 
             foreach (var user in users)
             {
                 var userReports = _reportService
                     .GetAllReports(userId: user.Id, fromDate: model.DateFrom, toDate: model.DateTo, isAprroved: 1);
 
-                //var monthlyHors = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month) * 8;
-                var workDays = userReports.Select(x => x.DateOfInspection.Value.Date).ToList().Distinct().ToList().Count;
+                var workDays = userReports.Where(x => x.DateOfInspection.HasValue).Select(x => x.DateOfInspection.Value.Date).ToList().Distinct().ToList().Count;
                 var workHours = workDays * 8;
 
                 var hoursSold = userReports.Sum(x => x.Time);
 
                 var listOfReports = userReports
+                    .Where(x => x.DateOfInspection.HasValue)
                     .GroupBy(x => x.DateOfInspection.Value.Date)
                     .Select(x => x.ToList());
 
@@ -1527,7 +1591,7 @@ namespace Invenio.Admin.Controllers
                         var quantity = reportsTt.Sum(x => x.CheckedPartsQuantity);
                         var pph = _orderService.GetOrderById(reportsTt.First().OrderId)?.PartsPerHour;
 
-                        hoursSoldEf += pph.HasValue ? (int)Math.Ceiling((decimal)quantity / pph.Value) : 0;
+                        hoursSoldEf += pph.HasValue && pph.Value > 0 ? (int)Math.Ceiling((decimal)quantity / pph.Value) : 0;
                     }
                 }
 
@@ -1544,7 +1608,32 @@ namespace Invenio.Admin.Controllers
                 });
             }
 
+            switch (model.OrderById)
+            {
+                case 0:
+                    rm = rm.OrderBy(x => x.UserName).ToList();
+                    break;
+
+                case 1:
+                    rm = rm.OrderByDescending(x => x.MonthlyHours).ToList();
+                    break;
+
+                case 2:
+                    rm = rm.OrderByDescending(x => x.HoursSoldEf).ToList();
+                    break;
+
+                case 3:
+                    rm = rm.OrderByDescending(x => x.Difference).ToList();
+                    break;
+
+                case 4:
+                    rm = rm.OrderByDescending(x => x.Efficiency).ToList();
+                    break;
+            }
+
             var result = new PagedList<ЕfficiencyModel>(rm, command.Page - 1, command.PageSize);
+
+
             var gridModel = new DataSourceResult
             {
                 Data = result,
