@@ -10,8 +10,8 @@ namespace Invenio.Services.Orders
 {
     public class OrderService : IOrderService
     {
-        private const string ORDERS_BY_ID_KEY = "Nop.order.id-{0}";
-        private const string ORDERS_PATTERN_KEY = "Nop.order.";
+        private const string ORDERS_BY_ID_KEY = "Invenio.order.id-{0}";
+        private const string ORDERS_PATTERN_KEY = "Invenio.order.";
 
 
         private readonly IRepository<Order> _orderRepository;
@@ -141,6 +141,18 @@ namespace Invenio.Services.Orders
 
             //event notification
             _eventPublisher.EntityUpdated(order);
+        }
+
+        public virtual IPagedList<Order> GetOrdersByOrderAtributeId(int orderAttributeId,
+            int pageIndex = 0, int pageSize = int.MaxValue)
+        {
+            var query = _orderRepository.Table;
+            query = query.Where(x => x.OrderAttributeMappings.Any(y => y.OrderAttributeId == orderAttributeId));
+            query = query.Where(x => !x.Deleted);
+            query = query.OrderBy(x => x.Name);
+
+            var order = new PagedList<Order>(query, pageIndex, pageSize);
+            return order;
         }
     }
 }

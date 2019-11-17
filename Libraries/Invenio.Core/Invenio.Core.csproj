@@ -144,7 +144,7 @@
     <Compile Include="ComponentModel\GenericDictionaryTypeConverter.cs" />
     <Compile Include="ComponentModel\GenericListTypeConverter.cs" />
     <Compile Include="ComponentModel\WriteLockDisposable.cs" />
-    <Compile Include="Domain\ChargeNumbers\ChargeNumber.cs" />
+    <Compile Include="Domain\Catalog\PredefinedOrderAttributeValue.cs" />
     <Compile Include="Domain\Common\Address.cs" />
     <Compile Include="Domain\Common\AddressAttribute.cs" />
     <Compile Include="Domain\Common\AddressAttributeValue.cs" />
@@ -169,8 +169,11 @@
     <Compile Include="Domain\Configuration\Setting.cs" />
     <Compile Include="Domain\Criterias\Criteria.cs" />
     <Compile Include="Domain\Criterias\CriteriaType.cs" />
+    <Compile Include="Domain\Orders\OrderAttribute.cs" />
+    <Compile Include="Domain\Orders\OrderAttributeMapping.cs" />
+    <Compile Include="Domain\Orders\OrderAttributeValue.cs" />
+    <Compile Include="Domain\Reports\ReportOrderAttribute.cs" />
     <Compile Include="Domain\Suppliers\Supplier.cs" />
-    <Compile Include="Domain\DeliveryNumbers\DeliveryNumber.cs" />
     <Compile Include="Domain\Directory\Country.cs" />
     <Compile Include="Domain\Directory\Currency.cs" />
     <Compile Include="Domain\Directory\CurrencySettings.cs" />
@@ -211,7 +214,6 @@
     <Compile Include="Domain\Messages\QueuedEmail.cs" />
     <Compile Include="Domain\Messages\QueuedEmailPriority.cs" />
     <Compile Include="Domain\Orders\Order.cs" />
-    <Compile Include="Domain\Parts\Part.cs" />
     <Compile Include="Domain\Reports\Report.cs" />
     <Compile Include="Domain\Reports\ReportDetail.cs" />
     <Compile Include="Domain\Reports\WorkShift.cs" />

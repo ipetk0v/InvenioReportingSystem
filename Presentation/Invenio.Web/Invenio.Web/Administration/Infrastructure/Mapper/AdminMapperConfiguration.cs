@@ -581,11 +581,11 @@ namespace Invenio.Admin.Infrastructure.Mapper
 
                 cfg.CreateMap<OrderModel, Order>();
 
-                ////product attributes
-                //cfg.CreateMap<ProductAttribute, ProductAttributeModel>()
-                //    .ForMember(dest => dest.Locales, mo => mo.Ignore())
-                //    .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());
-                //cfg.CreateMap<ProductAttributeModel, ProductAttribute>();
+                //order attributes
+                cfg.CreateMap<OrderAttribute, OrderAttributeModel>()
+                    .ForMember(dest => dest.Locales, mo => mo.Ignore())
+                    .ForMember(dest => dest.CustomProperties, mo => mo.Ignore());
+                cfg.CreateMap<OrderAttributeModel, OrderAttribute>();
                 ////specification attributes
                 //cfg.CreateMap<SpecificationAttribute, SpecificationAttributeModel>()
                 //    .ForMember(dest => dest.Locales, mo => mo.Ignore())

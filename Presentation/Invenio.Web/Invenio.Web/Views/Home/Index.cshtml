@@ -1,6 +1,4 @@
-﻿@using Invenio.Core.Infrastructure
-@using Invenio.Services.Security
-@model Invenio.Web.Models.Home.ReportModel
+﻿@model Invenio.Web.Models.Home.ReportModel
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -38,9 +36,10 @@
                             @Html.DropDownListFor(x => x.supplierId, Model.Suppliers, new { @class = "custom-select", onChange = "orderFiltred(this)" })
                         </div>
                         <div class="mt-3">
-                            @Html.DropDownListFor(x => x.OrderId, Model.Orders, new { @class = "custom-select hidden", onChange = "GetPartsByOrder(this)" })
+                            @Html.DropDownListFor(x => x.OrderId, Model.Orders, new { @class = "custom-select hidden", onChange = "GetOrderAttribute(this)" })
                         </div>
-                        <div class="mt-3">
+                        <div class="attribute-div"></div>
+                        @*<div class="mt-3">
                             @Html.DropDownListFor(x => x.PartId, Model.Parts, new { @class = "custom-select hidden", onChange = "GetDeliveryNumber(this)" })
                         </div>
                         <div class="mt-3">
@@ -48,7 +47,7 @@
                         </div>
                         <div class="mt-3">
                             @Html.DropDownListFor(x => x.ChargeNumberId, Model.ChargeNumbers, new { @class = "custom-select hidden", onChange = "RemoveDisabledQuantityAndCriteria(this)" })
-                        </div>
+                        </div>*@
                         <div class="row">
                             <div class="mt-3 col-md-3">
                                 <label style="color:white;text-align:center; width: 95px;">@T("home.common.checked.parts")</label>

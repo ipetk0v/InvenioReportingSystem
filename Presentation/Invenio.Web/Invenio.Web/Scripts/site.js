@@ -108,124 +108,58 @@ function orderFiltred(element) {
     });
 }
 
-function GetChargeNumbers(element) {
-    element = $(element);
-    var data = element.val();
-
-    var chargeNumberDropDown = element.parent().parent().find('select[name^="ChargeNumber"]');
+function filterChildDropdown(el) {
+    var orderAttributeId = $(el).find(":selected").attr('data-orderAttributeId');
+    var selectedValueId = el.value;
+    var orderId = $("#OrderId").val();
 
     $.ajax({
         type: "POST",
-        //url: "@(Url.Action("GetChargeNumbers"))",
-        url: "/Home/GetChargeNumbers",
-        data: { "delNumberId": data },
-        beforeSend: function () {
-            chargeNumberDropDown.attr("disabled", true);
-        },
+        url: "/Home/GetChildrenOrderAttribute",
+        data: { orderAttributeId, selectedValueId, orderId },
         success: function (result) {
-            chargeNumberDropDown.find('option').not(':first').remove();
-
-            if (result !== null && result !== undefined) {
-                $.each(result.viewModel,
-                    function (text, value) {
-                        chargeNumberDropDown.append(
-                            $('<option></option>').val(value.Value).html(value.Text)
-                        );
-                    });
-                if (result.viewModel.length > 0) {
-                    chargeNumberDropDown.show();
-                } else {
-                    RemoveDisabledQuantityAndCriteria(element);
-                }
+            if (result === "") {
+                RemoveDisabledQuantityAndCriteria(el);
             }
-            chargeNumberDropDown.attr("disabled", false);
+
+            if ($(el).parent().hasClass(`order-attribute-${orderAttributeId}`)) {
+                $(el).parent().find('div[class^="order-attribute"]').remove();
+                $(el).parent().append(result);
+            } else {
+                $(el).parent().append(result);
+            }
         }
     });
 }
 
-function GetPartsByOrder(element) {
+function GetOrderAttribute(element) {
     element = $(element);
     var data = element.val();
 
-    var partsDropDown = element.parent().parent().find('select[name^="Part"]');
-
     $.ajax({
         type: "POST",
-        //url: "@(Url.Action("GetDeliveryNumbers"))",
-        url: "/Home/GetOrderParts",
+        url: "/Home/GetOrderAttribute",
         data: { "orderId": data },
-        beforeSend: function () {
-            partsDropDown.attr("disabled", true);
-        },
-        success: function (result) {
-            partsDropDown.find('option').not(':first').remove();
-
-            if (result !== null && result !== undefined) {
-                $.each(result.viewModel,
-                    function (text, value) {
-                        partsDropDown.append(
-                            $('<option></option>').val(value.Value).html(value.Text)
-                        );
-                    });
-                if (result.viewModel.length > 0) {
-                    partsDropDown.show();
-                }
-            }
-            partsDropDown.attr("disabled", false);
-        }
-    });
-
-    GetDataByOrder(element);
-}
-
-function GetDeliveryNumber(element) {
-    element = $(element);
-    var data = element.val();
-    var deliveryNumberDropDown = element.parent().parent().find('select[name^="DeliveryNumber"]');
-
-    $.ajax({
-        type: "POST",
-        //url: "@(Url.Action("GetDeliveryNumbers"))",
-        url: "/Home/GetDeliveryNumbers",
-        data: { "partId": data },
-        beforeSend: function () {
-            deliveryNumberDropDown.attr("disabled", true);
-        },
-        success: function (result) {
-            var delNumberDropDown = deliveryNumberDropDown;
-            delNumberDropDown.find('option').not(':first').remove();
-
-            if (result !== null && result !== undefined) {
-                $.each(result.viewModel,
-                    function(text, value) {
-                        delNumberDropDown.append(
-                            $('<option></option>').val(value.Value).html(value.Text)
-                        );
-                    });
-                if (result.viewModel.length > 0) {
-                    delNumberDropDown.show();
-                } else {
-                    RemoveDisabledQuantityAndCriteria(element);
-                }
-            }
-            
-            deliveryNumberDropDown.attr("disabled", false);
+        success: function (html) {
+            var attrDiv = $('.attribute-div');
+            attrDiv.empty();
+            attrDiv.append(html);
         }
     });
 }
 
 function RemoveDisabledQuantityAndCriteria(element) {
     element = $(element);
-    var inputChecked = element.parent().parent().find('input[name^="CheckedQuantity"]');
+    var inputChecked = element.closest(".attribute-div").parent().find('input[name^="CheckedQuantity"]');
     inputChecked.attr("disabled", false);
 
-    var inputTime = element.parent().parent().find('#input-time');
+    var inputTime = element.closest(".attribute-div").parent().find('#input-time');
     inputTime.attr("disabled", false);
 
-    var blockedPartsDropDown = element.parent().parent().parent().find('select[name^="BlockedPart"]').parent().parent();
+    var blockedPartsDropDown = element.closest(".attribute-div").parent().parent().find('select[name^="BlockedPart"]').parent().parent();
     blockedPartsDropDown.removeAttr("hidden");
 
-    var reworkedPartsDropDown = element.parent().parent().parent().find('select[name^="ReworkedPart"]').parent().parent();
+    var reworkedPartsDropDown = element.closest(".attribute-div").parent().parent().find('select[name^="ReworkedPart"]').parent().parent();
     reworkedPartsDropDown.removeAttr("hidden");
 }
 
@@ -294,7 +228,7 @@ function GetDataByOrder(element) {
 
 function removeRow(element) {
     $(element).parent().parent().parent().parent().remove();
-    var a = $("#reports").children('.row.mt-5').last().attr("id","last-report");
+    var a = $("#reports").children('.row.mt-5').last().attr("id", "last-report");
 }
 
 function submitReports(errorMessage, returnUrl) {
@@ -305,15 +239,29 @@ function submitReports(errorMessage, returnUrl) {
 
     reports.each(function () {
         var object = new Object();
+        var attributeArray = new Array();
         var element = $(this);
 
         object.supplierId = $(element.find('[name^="Supplier"]')[0]).val();
         object.OrderId = $(element.find('[name^="Order"]')[0]).val();
-        object.PartId = $(element.find('[name^="Part"]')[0]).val();
-        object.DeliveryNumberId = $(element.find('[name^="DeliveryNumber"]')[0]).val();
-        object.ChargeNumberId = $(element.find('[name^="ChargeNumber"]')[0]).val();
         object.CheckedQuantity = $(element.find("#CheckedQuantity")[0]).val();
         object.InputTime = $(element.find("#input-time")[0]).val();
+
+        var attributes = $(element.find('div[class^="order-attribute"]'));
+        attributes.each(function () {
+            var attributeClassName = $(this).attr('class');
+            var attributeId = attributeClassName.slice(attributeClassName.length - 1);
+
+            var select = $(this).children('select');
+            var attributeValueId = select.find(":selected").val();
+
+            var objectAttribute = new Object();
+            objectAttribute.AttributeId = attributeId;
+            objectAttribute.AttributeValueId = attributeValueId;
+            attributeArray.push(objectAttribute);
+        });
+
+        object.PostedAttributes = attributeArray;
 
         object.WorkShiftId = $('#WorkShiftId').val();
         object.ReportDate = $("#DateId").val();
@@ -323,17 +271,8 @@ function submitReports(errorMessage, returnUrl) {
             || object.InputTime < 1
             || object.supplierId < 1
             || object.OrderId < 1
-            || object.PartId < 1
             || object.ReportDate === "") {
 
-            errors = true;
-        }
-
-        if ($(element.find('[name^="DeliveryNumber"]'))[0].options.length > 1 && object.DeliveryNumberId < 1) {
-            errors = true;
-        }
-
-        if ($(element.find('[name^="ChargeNumber"]'))[0].options.length > 1 && object.ChargeNumberId < 1) {
             errors = true;
         }
 
@@ -357,9 +296,9 @@ function submitReports(errorMessage, returnUrl) {
         });
         object.NokCriteria = nokCriteria;
         object.ReworkedCriteria = reworkedCriteria;
-
         models.push(object);
     });
+
 
     if (errors === true) {
         alert(errorMessage);

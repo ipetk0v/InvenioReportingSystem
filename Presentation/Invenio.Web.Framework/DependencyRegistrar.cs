@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Web;
 using Autofac;
 using Autofac.Builder;
 using Autofac.Core;
@@ -17,14 +12,10 @@ using Invenio.Core.Infrastructure.DependencyManagement;
 using Invenio.Data;
 using Invenio.Services.Authentication;
 using Invenio.Services.Authentication.External;
-using Invenio.Services.Catalog;
-using Invenio.Services.ChargeNumber;
 using Invenio.Services.Common;
 using Invenio.Services.Configuration;
 using Invenio.Services.Criteria;
 using Invenio.Services.Customers;
-using Invenio.Services.Supplier;
-using Invenio.Services.DeliveryNumber;
 using Invenio.Services.Directory;
 using Invenio.Services.Events;
 using Invenio.Services.ExportImport;
@@ -36,15 +27,20 @@ using Invenio.Services.Logging;
 using Invenio.Services.Media;
 using Invenio.Services.Messages;
 using Invenio.Services.Orders;
-using Invenio.Services.Parts;
 using Invenio.Services.Reports;
 using Invenio.Services.Security;
 using Invenio.Services.Stores;
+using Invenio.Services.Supplier;
 using Invenio.Services.Tasks;
 using Invenio.Services.Users;
 using Invenio.Web.Framework.Mvc.Routes;
 using Invenio.Web.Framework.Themes;
 using Invenio.Web.Framework.UI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Web;
 
 namespace Invenio.Web.Framework
 {
@@ -160,7 +156,7 @@ namespace Invenio.Web.Framework
             //builder.RegisterType<PriceFormatter>().As<IPriceFormatter>().InstancePerLifetimeScope();
             //builder.RegisterType<ProductAttributeFormatter>().As<IProductAttributeFormatter>().InstancePerLifetimeScope();
             //builder.RegisterType<ProductAttributeParser>().As<IProductAttributeParser>().InstancePerLifetimeScope();
-            //builder.RegisterType<ProductAttributeService>().As<IProductAttributeService>().InstancePerLifetimeScope();
+            builder.RegisterType<OrderAttributeService>().As<IOrderAttributeService>().InstancePerLifetimeScope();
             //builder.RegisterType<ProductService>().As<IProductService>().InstancePerLifetimeScope();
             //builder.RegisterType<CopyProductService>().As<ICopyProductService>().InstancePerLifetimeScope();
             //builder.RegisterType<SpecificationAttributeService>().As<ISpecificationAttributeService>().InstancePerLifetimeScope();
@@ -249,31 +245,15 @@ namespace Invenio.Web.Framework
 
             builder.RegisterType<MessageTemplateService>().As<IMessageTemplateService>().InstancePerLifetimeScope();
             builder.RegisterType<QueuedEmailService>().As<IQueuedEmailService>().InstancePerLifetimeScope();
-            //builder.RegisterType<NewsLetterSubscriptionService>().As<INewsLetterSubscriptionService>().InstancePerLifetimeScope();
-            //builder.RegisterType<CampaignService>().As<ICampaignService>().InstancePerLifetimeScope();
             builder.RegisterType<CriteriaService>().As<ICriteriaService>().InstancePerLifetimeScope();
             builder.RegisterType<EmailAccountService>().As<IEmailAccountService>().InstancePerLifetimeScope();
             builder.RegisterType<WorkflowMessageService>().As<IWorkflowMessageService>().InstancePerLifetimeScope();
             builder.RegisterType<MessageTokenProvider>().As<IMessageTokenProvider>().InstancePerLifetimeScope();
             builder.RegisterType<Tokenizer>().As<ITokenizer>().InstancePerLifetimeScope();
             builder.RegisterType<EmailSender>().As<IEmailSender>().InstancePerLifetimeScope();
-
-            //builder.RegisterType<CheckoutAttributeFormatter>().As<ICheckoutAttributeFormatter>().InstancePerLifetimeScope();
-            //builder.RegisterType<CheckoutAttributeParser>().As<ICheckoutAttributeParser>().InstancePerLifetimeScope();
-            //builder.RegisterType<CheckoutAttributeService>().As<ICheckoutAttributeService>().InstancePerLifetimeScope();
-            //builder.RegisterType<GiftCardService>().As<IGiftCardService>().InstancePerLifetimeScope();
             builder.RegisterType<OrderService>().As<IOrderService>().InstancePerLifetimeScope();
-            builder.RegisterType<PartService>().As<IPartService>().InstancePerLifetimeScope();
-            builder.RegisterType<DeliveryNumberService>().As<IDeliveryNumberService>().InstancePerLifetimeScope();
-            builder.RegisterType<ChargeNumberService>().As<IChargeNumberService>().InstancePerLifetimeScope();
             builder.RegisterType<ReportService>().As<IReportService>().InstancePerLifetimeScope();
             builder.RegisterType<ReportDetailService>().As<IReportDetailService>().InstancePerLifetimeScope();
-            //builder.RegisterType<OrderReportService>().As<IOrderReportService>().InstancePerLifetimeScope();
-            //builder.RegisterType<OrderProcessingService>().As<IOrderProcessingService>().InstancePerLifetimeScope();
-            //builder.RegisterType<OrderTotalCalculationService>().As<IOrderTotalCalculationService>().InstancePerLifetimeScope();
-            //builder.RegisterType<ReturnRequestService>().As<IReturnRequestService>().InstancePerLifetimeScope();
-            //builder.RegisterType<RewardPointService>().As<IRewardPointService>().InstancePerLifetimeScope();
-            //builder.RegisterType<ShoppingCartService>().As<IShoppingCartService>().InstancePerLifetimeScope();
             //builder.RegisterType<CustomNumberFormatter>().As<ICustomNumberFormatter>().InstancePerLifetimeScope();
 
             //builder.RegisterType<PaymentService>().As<IPaymentService>().InstancePerLifetimeScope();

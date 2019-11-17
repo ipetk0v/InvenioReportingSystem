@@ -6,17 +6,14 @@ using Invenio.Core.Domain.Orders;
 using Invenio.Core.Domain.Reports;
 using Invenio.Core.Domain.Suppliers;
 using Invenio.Core.Domain.Users;
-using Invenio.Services.ChargeNumber;
 using Invenio.Services.Common;
 using Invenio.Services.Criteria;
 using Invenio.Services.Customers;
-using Invenio.Services.DeliveryNumber;
 using Invenio.Services.Events;
 using Invenio.Services.Helpers;
 using Invenio.Services.Localization;
 using Invenio.Services.Logging;
 using Invenio.Services.Orders;
-using Invenio.Services.Parts;
 using Invenio.Services.Reports;
 using Invenio.Services.Security;
 using Invenio.Services.Supplier;
@@ -32,6 +29,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web.Hosting;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
 using Image = System.Drawing.Image;
 
 namespace Invenio.Admin.Controllers
@@ -48,10 +46,7 @@ namespace Invenio.Admin.Controllers
         private readonly IUserActivityService _userActivityService;
         private readonly IEventPublisher _eventPublisher;
         private readonly ISupplierService _supplierService;
-        private readonly IPartService _partService;
         private readonly IReportDetailService _reportDetailService;
-        private readonly IChargeNumberService _chargeNumberService;
-        private readonly IDeliveryNumberService _deliveryNumberService;
         private readonly ICriteriaService _criteriaService;
         private readonly IPdfService _pdfService;
         private readonly ICustomerService _customerService;
@@ -67,10 +62,7 @@ namespace Invenio.Admin.Controllers
             IUserActivityService userActivityService,
             IEventPublisher eventPublisher,
             ISupplierService supplierService,
-            IPartService partService,
             IReportDetailService reportDetailService,
-            IChargeNumberService chargeNumberService,
-            IDeliveryNumberService deliveryNumberService,
             ICriteriaService criteriaService,
             IPdfService pdfService,
             ICustomerService customerService)
@@ -85,10 +77,7 @@ namespace Invenio.Admin.Controllers
             _userActivityService = userActivityService;
             _eventPublisher = eventPublisher;
             _supplierService = supplierService;
-            _partService = partService;
             _reportDetailService = reportDetailService;
-            _chargeNumberService = chargeNumberService;
-            _deliveryNumberService = deliveryNumberService;
             _criteriaService = criteriaService;
             _pdfService = pdfService;
             _customerService = customerService;
@@ -685,7 +674,6 @@ namespace Invenio.Admin.Controllers
                     var report = reports.FirstOrDefault();
                     if (report == null) continue;
 
-                    var parts = _partService.GetAllOrderParts(report.OrderId);
                     var order = _orderService.GetOrderById(report.OrderId);
                     var frm = new FinalReportModel
                     {
@@ -703,12 +691,6 @@ namespace Invenio.Admin.Controllers
                     frm.TotalBlocked = frm.TotalNok + frm.TotalReworked;
                     frm.TotalChecked = frm.TotalOk + frm.TotalBlocked;
                     frm.NokPercentage = Math.Round((decimal)frm.TotalNok / frm.TotalChecked, 5) * 100;
-
-                    foreach (var part in parts)
-                    {
-                        frm.PartNumber += $"{part.SerNumber} ";
-                        frm.PartDescription += $"{part.Name} ";
-                    }
 
                     rm.Add(frm);
                 }
@@ -733,7 +715,6 @@ namespace Invenio.Admin.Controllers
             {
                 OrderId = Id
             };
-
             return View(model);
         }
 
@@ -743,7 +724,7 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageReports))
                 return AccessDeniedKendoGridJson();
 
-            var dfrs = GetDailyReportData(model.OrderId);
+            var dfrs = TestGetDailyReportData(model.OrderId);
 
             var result = new PagedList<DailyReportModel>(dfrs, command.Page - 1, command.PageSize);
             var gridModel = new DataSourceResult
@@ -837,39 +818,24 @@ namespace Invenio.Admin.Controllers
             return Json(gridModel);
         }
 
-
-        private List<DailyReportModel> GetDailyReportData(int orderId)
+        private IList<DailyReportModel> TestGetDailyReportData(int orderId)
         {
             var reports = _reportService.GetAllReports(orderId: orderId, isAprroved: 1);
 
             var dfrs = reports.GroupBy(c => new
             {
-                c.DateOfInspection?.Date,
-                Part = _partService.GetPartById(c.PartId ?? 0)?.SerNumber,
-                ChargeNumber = c.ChargeNumberId.HasValue
-                ? _chargeNumberService.GetChargeNumberById(c.ChargeNumberId.Value)
-                : null,
-                DeliveryNumber = c.DeliveryNumberId.HasValue
-                    ? _deliveryNumberService.GetDeliveryNumberById(c.DeliveryNumberId.Value)
-                    : null,
+                c.DateOfInspection?.Date
             })
             .Select(x => new DailyReportModel
             {
-                DateOfInspection = x.Key.Date?.Date,
-                ChargeNumber = x.Key.ChargeNumber?.Number,
-                DeliveryNumber = x.Key.DeliveryNumber?.Number,
-                PartNumber = x.Key.Part,
-
+                DateOfInspection = x.Key.Date?.Date
             })
             .OrderBy(x => x.Id)
             .ToList();
 
             foreach (var dfr in dfrs)
             {
-                var newTest = reports.Where(x => x.DateOfInspection?.Date == dfr.DateOfInspection?.Date
-                                                 && x.ChargeNumber?.Number == dfr.ChargeNumber
-                                                 && x.DeliveryNumber?.Number == dfr.DeliveryNumber
-                                                 && x.Part?.SerNumber == dfr.PartNumber).ToList();
+                var newTest = reports.Where(x => x.DateOfInspection?.Date == dfr.DateOfInspection?.Date);
 
                 dfr.NokParts = newTest.Sum(x => x.NokPartsQuantity);
                 dfr.ReworkedParts = newTest.Sum(x => x.ReworkPartsQuantity);
@@ -889,18 +855,14 @@ namespace Invenio.Admin.Controllers
                 {
                     DateOfInspection = x.Report.DateOfInspection,
                     Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
-                    Quantity = x.Quantity,
-                    ChargeNumber = x.Report.ChargeNumber?.Number,
-                    DeliveryNumber = x.Report.DeliveryNumber?.Number
+                    Quantity = x.Quantity
                 })
                 .Select(x => new ReportDetailsModel
                 {
                     CriteriaId = x.Key.Criteria.Id,
                     Quantity = x.Key.Quantity,
                     CriteriaType = x.Key.Criteria.CriteriaType,
-                    DateOfInspection = x.Key.DateOfInspection,
-                    ChargeNumber = x.Key.ChargeNumber,
-                    DeliveryNumber = x.Key.DeliveryNumber
+                    DateOfInspection = x.Key.DateOfInspection
                 })
                 .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.BlockedParts).ToList();
 
@@ -918,19 +880,19 @@ namespace Invenio.Admin.Controllers
                 {
                     var quantity = blokedRepDetails
                         .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
-                                    && x.CriteriaId == criteria.Id
-                                    && x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                                    && x.ChargeNumber == dailyReportModel.ChargeNumber)
+                                    && x.CriteriaId == criteria.Id)
+                                    //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                                    //&& x.ChargeNumber == dailyReportModel.ChargeNumber)
                         .Sum(x => x.Quantity);
 
                     if (quantity == 0)
                         continue;
 
                     var entity = dfrs
-                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection
-                             && x.PartNumber == dailyReportModel.PartNumber
-                             && x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                             && x.ChargeNumber == dailyReportModel.ChargeNumber);
+                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection);
+                             //&& x.PartNumber == dailyReportModel.PartNumber
+                             //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                             //&& x.ChargeNumber == dailyReportModel.ChargeNumber);
 
                     if (entity == null)
                         continue;
@@ -948,18 +910,14 @@ namespace Invenio.Admin.Controllers
                 {
                     DateOfInspection = x.Report.DateOfInspection,
                     Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
-                    Quantity = x.Quantity,
-                    ChargeNumber = x.Report.ChargeNumber?.Number,
-                    DeliveryNumber = x.Report.DeliveryNumber?.Number
+                    Quantity = x.Quantity
                 })
                 .Select(x => new ReportDetailsModel
                 {
                     CriteriaId = x.Key.Criteria.Id,
                     Quantity = x.Key.Quantity,
                     CriteriaType = x.Key.Criteria.CriteriaType,
-                    DateOfInspection = x.Key.DateOfInspection,
-                    ChargeNumber = x.Key.ChargeNumber,
-                    DeliveryNumber = x.Key.DeliveryNumber
+                    DateOfInspection = x.Key.DateOfInspection
                 })
                 .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.ReworkParts).ToList();
 
@@ -972,19 +930,159 @@ namespace Invenio.Admin.Controllers
                 {
                     var quantity = reworkedRepDetails
                         .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
-                                    && x.CriteriaId == criteria.Id
-                                    && x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                                    && x.ChargeNumber == dailyReportModel.ChargeNumber)
+                                    && x.CriteriaId == criteria.Id)
+                                    //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                                    //&& x.ChargeNumber == dailyReportModel.ChargeNumber)
                         .Sum(x => x.Quantity);
 
                     if (quantity == 0)
                         continue;
 
                     var entity = dfrs
-                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection
-                                             && x.PartNumber == dailyReportModel.PartNumber
-                                             && x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                                             && x.ChargeNumber == dailyReportModel.ChargeNumber);
+                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection);
+                                             //&& x.PartNumber == dailyReportModel.PartNumber
+                                             //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                                             //&& x.ChargeNumber == dailyReportModel.ChargeNumber);
+
+                    if (entity == null)
+                        continue;
+
+                    var fieldIndex = y;
+                    var field = entity.GetType().GetFields(bindingFlags).FirstOrDefault(x => x.Name.Contains("Dor" + fieldIndex.ToString()));
+                    if (field == null) continue;
+                    field.SetValue(entity, quantity);
+                }
+                y++;
+            }
+
+            return dfrs;
+        }
+
+        private List<DailyReportModel> GetDailyReportData(int orderId)
+        {
+            var reports = _reportService.GetAllReports(orderId: orderId, isAprroved: 1);
+
+            var dfrs = reports.GroupBy(c => new
+            {
+                c.DateOfInspection?.Date
+            })
+            .Select(x => new DailyReportModel
+            {
+                DateOfInspection = x.Key.Date?.Date
+            })
+            .OrderBy(x => x.Id)
+            .ToList();
+
+            foreach (var dfr in dfrs)
+            {
+                var newTest = reports.Where(x => x.DateOfInspection?.Date == dfr.DateOfInspection?.Date);
+
+                dfr.NokParts = newTest.Sum(x => x.NokPartsQuantity);
+                dfr.ReworkedParts = newTest.Sum(x => x.ReworkPartsQuantity);
+                dfr.FirstRunOkParts = newTest.Sum(x => x.OkPartsQuantity);
+                dfr.BlockedParts = newTest.Sum(x => x.ReworkPartsQuantity) + newTest.Sum(x => x.NokPartsQuantity);
+                dfr.Quantity = newTest.Sum(x => x.OkPartsQuantity) + newTest.Sum(x => x.NokPartsQuantity) + newTest.Sum(x => x.ReworkPartsQuantity);
+            }
+
+            dfrs.ForEach(x => x.NokPercentage = Math.Round((decimal)x.NokParts / x.Quantity, 5) * 100);
+            dfrs.ForEach(x => x.ReworkedPercentage = Math.Round((decimal)x.ReworkedParts / x.Quantity, 5) * 100);
+
+            //blocked
+            var repDetails = _reportDetailService.GetReportDetailsByOrderId(orderId, true);
+
+            var blokedRepDetails = repDetails
+                .GroupBy(x => new
+                {
+                    DateOfInspection = x.Report.DateOfInspection,
+                    Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
+                    Quantity = x.Quantity
+                })
+                .Select(x => new ReportDetailsModel
+                {
+                    CriteriaId = x.Key.Criteria.Id,
+                    Quantity = x.Key.Quantity,
+                    CriteriaType = x.Key.Criteria.CriteriaType,
+                    DateOfInspection = x.Key.DateOfInspection
+                })
+                .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.BlockedParts).ToList();
+
+            var criteriaBlocked = _criteriaService.GetAllCriteriaValues(orderId).Where(x => x.CriteriaType == CriteriaType.BlockedParts).OrderBy(x => x.Id).ToList();
+
+            BindingFlags bindingFlags = BindingFlags.Public |
+                                        BindingFlags.NonPublic |
+                                        BindingFlags.Instance |
+                                        BindingFlags.Static;
+
+            var t = 1;
+            foreach (var criteria in criteriaBlocked)
+            {
+                foreach (var dailyReportModel in dfrs)
+                {
+                    var quantity = blokedRepDetails
+                        .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
+                                    && x.CriteriaId == criteria.Id)
+                                    //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                                    //&& x.ChargeNumber == dailyReportModel.ChargeNumber)
+                        .Sum(x => x.Quantity);
+
+                    if (quantity == 0)
+                        continue;
+
+                    var entity = dfrs
+                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection);
+                             //&& x.PartNumber == dailyReportModel.PartNumber
+                             //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                             //&& x.ChargeNumber == dailyReportModel.ChargeNumber);
+
+                    if (entity == null)
+                        continue;
+
+                    var fieldIndex = t;
+                    var field = entity.GetType().GetFields(bindingFlags).FirstOrDefault(x => x.Name.Contains("Dod" + fieldIndex.ToString()));
+                    if (field == null) continue;
+                    field.SetValue(entity, quantity);
+                }
+                t++;
+            }
+
+            var reworkedRepDetails = repDetails
+                .GroupBy(x => new
+                {
+                    DateOfInspection = x.Report.DateOfInspection,
+                    Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
+                    Quantity = x.Quantity
+                })
+                .Select(x => new ReportDetailsModel
+                {
+                    CriteriaId = x.Key.Criteria.Id,
+                    Quantity = x.Key.Quantity,
+                    CriteriaType = x.Key.Criteria.CriteriaType,
+                    DateOfInspection = x.Key.DateOfInspection
+                })
+                .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.ReworkParts).ToList();
+
+            var criteriaReworked = _criteriaService.GetAllCriteriaValues(orderId).Where(x => x.CriteriaType == CriteriaType.ReworkParts).OrderBy(x => x.Id).ToList();
+
+            var y = 1;
+            foreach (var criteria in criteriaReworked)
+            {
+                foreach (var dailyReportModel in dfrs)
+                {
+                    var quantity = reworkedRepDetails
+                        .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
+                                    && x.CriteriaId == criteria.Id)
+                                    //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                                    //&& x.ChargeNumber == dailyReportModel.ChargeNumber)
+                        .Sum(x => x.Quantity);
+
+                    if (quantity == 0)
+                        continue;
+
+                    var entity = dfrs
+                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection);
+                                             //&& x.PartNumber == dailyReportModel.PartNumber
+                                             //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+                                             //&& x.ChargeNumber == dailyReportModel.ChargeNumber);
 
                     if (entity == null)
                         continue;
@@ -1274,9 +1372,9 @@ namespace Invenio.Admin.Controllers
                     ws.Cells["A" + num].Value = num;
                     ws.Cells["B" + num].Value = item.DateOfInspection?.Date;
                     ws.Cells["B" + num].Style.Numberformat.Format = "[$-409]DD.MMM.YY;@";
-                    ws.Cells["C" + num].Value = item.PartNumber;
-                    ws.Cells["D" + num].Value = item.DeliveryNumber;
-                    ws.Cells["E" + num].Value = item.ChargeNumber;
+                    //ws.Cells["C" + num].Value = item.PartNumber;
+                    //ws.Cells["D" + num].Value = item.DeliveryNumber;
+                    //ws.Cells["E" + num].Value = item.ChargeNumber;
                     ws.Cells["F" + num].Value = item.Quantity;
                     ws.Cells["G" + num].Value = item.FirstRunOkParts;
                     ws.Cells["H" + num].Value = item.BlockedParts;
@@ -1432,11 +1530,11 @@ namespace Invenio.Admin.Controllers
                 {
                     rng.Value = model.SupplierName;
                 }
-                ws.Cells["H7:Q7"].Merge = true;
-                using (var rng = ws.Cells["H7:Q7"])
-                {
-                    rng.Value = model.PartNumber;
-                }
+                //ws.Cells["H7:Q7"].Merge = true;
+                //using (var rng = ws.Cells["H7:Q7"])
+                //{
+                //    rng.Value = model.PartNumber;
+                //}
                 ws.Cells["H8:Q8"].Merge = true;
                 using (var rng = ws.Cells["H8:Q8"])
                 {

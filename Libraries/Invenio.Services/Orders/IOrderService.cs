@@ -27,5 +27,8 @@ namespace Invenio.Services.Orders
         void InsertOrder(Order order);
 
         void UpdateOrder(Order order);
+
+        IPagedList<Order> GetOrdersByOrderAtributeId(int orderAttributeId,
+            int pageIndex = 0, int pageSize = int.MaxValue);
     }
 }

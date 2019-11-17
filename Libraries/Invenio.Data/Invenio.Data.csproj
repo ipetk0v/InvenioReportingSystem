@@ -67,7 +67,6 @@
     <Compile Include="Initializers\DropCreateCeDatabaseAlways.cs" />
     <Compile Include="Initializers\DropCreateCeDatabaseIfModelChanges.cs" />
     <Compile Include="Initializers\SqlCeInitializer.cs" />
-    <Compile Include="Mapping\ChargeNumbers\ChargeNumberMap.cs" />
     <Compile Include="Mapping\Common\AddressAttributeMap.cs" />
     <Compile Include="Mapping\Common\AddressAttributeValueMap.cs" />
     <Compile Include="Mapping\Common\AddressMap.cs" />
@@ -75,8 +74,12 @@
     <Compile Include="Mapping\Common\SearchTermMap.cs" />
     <Compile Include="Mapping\Configuration\SettingMap.cs" />
     <Compile Include="Mapping\Criterias\CriteriaMap.cs" />
+    <Compile Include="Mapping\Orders\OrderAttributeMap.cs" />
+    <Compile Include="Mapping\Orders\OrderAttributeMappingMap.cs" />
+    <Compile Include="Mapping\Orders\OrderAttributeValueMap.cs" />
+    <Compile Include="Mapping\Orders\PredefinedOrderAttributeValueMap.cs" />
+    <Compile Include="Mapping\Reports\ReportOrderAttributeMap.cs" />
     <Compile Include="Mapping\Supplier\SupplierMap.cs" />
-    <Compile Include="Mapping\DeliveryNumbers\DeliveryNumberMap.cs" />
     <Compile Include="Mapping\Directory\CountryMap.cs" />
     <Compile Include="Mapping\Directory\CurrencyMap.cs" />
     <Compile Include="Mapping\Directory\MeasureDimensionMap.cs" />
@@ -95,7 +98,6 @@
     <Compile Include="Mapping\Messages\QueuedEmailMap.cs" />
     <Compile Include="Mapping\NopEntityTypeConfiguration.cs" />
     <Compile Include="Mapping\Orders\OrderMap.cs" />
-    <Compile Include="Mapping\Parts\PartMap.cs" />
     <Compile Include="Mapping\Reports\ReportDetailMap.cs" />
     <Compile Include="Mapping\Reports\ReportMap.cs" />
     <Compile Include="Mapping\Security\AclRecordMap.cs" />

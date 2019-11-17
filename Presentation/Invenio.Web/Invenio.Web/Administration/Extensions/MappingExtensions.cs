@@ -42,25 +42,6 @@ namespace Invenio.Admin.Extensions
             return AutoMapperConfiguration.Mapper.Map(source, destination);
         }
 
-        //#region Category
-
-        //public static CategoryModel ToModel(this Category entity)
-        //{
-        //    return entity.MapTo<Category, CategoryModel>();
-        //}
-
-        //public static Category ToEntity(this CategoryModel model)
-        //{
-        //    return model.MapTo<CategoryModel, Category>();
-        //}
-
-        //public static Category ToEntity(this CategoryModel model, Category destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
         #region Supplier
 
         public static SupplierModel ToModel(this Supplier entity)
@@ -100,117 +81,24 @@ namespace Invenio.Admin.Extensions
 
         #endregion
 
-        //#region Vendor
+        #region Order attributes
 
-        //public static VendorModel ToModel(this Vendor entity)
-        //{
-        //    return entity.MapTo<Vendor, VendorModel>();
-        //}
+        public static OrderAttributeModel ToModel(this OrderAttribute entity)
+        {
+            return entity.MapTo<OrderAttribute, OrderAttributeModel>();
+        }
 
-        //public static Vendor ToEntity(this VendorModel model)
-        //{
-        //    return model.MapTo<VendorModel, Vendor>();
-        //}
+        public static OrderAttribute ToEntity(this OrderAttributeModel model)
+        {
+            return model.MapTo<OrderAttributeModel, OrderAttribute>();
+        }
 
-        //public static Vendor ToEntity(this VendorModel model, Vendor destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
+        public static OrderAttribute ToEntity(this OrderAttributeModel model, OrderAttribute destination)
+        {
+            return model.MapTo(destination);
+        }
 
-        //#endregion
-
-        //#region Products
-
-        //public static ProductModel ToModel(this Product entity)
-        //{
-        //    return entity.MapTo<Product, ProductModel>();
-        //}
-
-        //public static Product ToEntity(this ProductModel model)
-        //{
-        //    return model.MapTo<ProductModel, Product>();
-        //}
-
-        //public static Product ToEntity(this ProductModel model, Product destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Product attributes
-
-        //public static ProductAttributeModel ToModel(this ProductAttribute entity)
-        //{
-        //    return entity.MapTo<ProductAttribute, ProductAttributeModel>();
-        //}
-
-        //public static ProductAttribute ToEntity(this ProductAttributeModel model)
-        //{
-        //    return model.MapTo<ProductAttributeModel, ProductAttribute>();
-        //}
-
-        //public static ProductAttribute ToEntity(this ProductAttributeModel model, ProductAttribute destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Specification attributes
-
-        ////attributes
-        //public static SpecificationAttributeModel ToModel(this SpecificationAttribute entity)
-        //{
-        //    return entity.MapTo<SpecificationAttribute, SpecificationAttributeModel>();
-        //}
-
-        //public static SpecificationAttribute ToEntity(this SpecificationAttributeModel model)
-        //{
-        //    return model.MapTo<SpecificationAttributeModel, SpecificationAttribute>();
-        //}
-
-        //public static SpecificationAttribute ToEntity(this SpecificationAttributeModel model, SpecificationAttribute destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        ////attribute options
-        //public static SpecificationAttributeOptionModel ToModel(this SpecificationAttributeOption entity)
-        //{
-        //    return entity.MapTo<SpecificationAttributeOption, SpecificationAttributeOptionModel>();
-        //}
-
-        //public static SpecificationAttributeOption ToEntity(this SpecificationAttributeOptionModel model)
-        //{
-        //    return model.MapTo<SpecificationAttributeOptionModel, SpecificationAttributeOption>();
-        //}
-
-        //public static SpecificationAttributeOption ToEntity(this SpecificationAttributeOptionModel model, SpecificationAttributeOption destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-        //#endregion
-
-        //#region Checkout attributes
-
-        ////attributes
-        //public static CheckoutAttributeModel ToModel(this CheckoutAttribute entity)
-        //{
-        //    return entity.MapTo<CheckoutAttribute, CheckoutAttributeModel>();
-        //}
-
-        //public static CheckoutAttribute ToEntity(this CheckoutAttributeModel model)
-        //{
-        //    return model.MapTo<CheckoutAttributeModel, CheckoutAttribute>();
-        //}
-
-        //public static CheckoutAttribute ToEntity(this CheckoutAttributeModel model, CheckoutAttribute destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
+        #endregion
 
         #region User attributes
 
@@ -328,44 +216,6 @@ namespace Invenio.Admin.Extensions
 
         #endregion
 
-        //#region Campaigns
-
-        //public static CampaignModel ToModel(this Campaign entity)
-        //{
-        //    return entity.MapTo<Campaign, CampaignModel>();
-        //}
-
-        //public static Campaign ToEntity(this CampaignModel model)
-        //{
-        //    return model.MapTo<CampaignModel, Campaign>();
-        //}
-
-        //public static Campaign ToEntity(this CampaignModel model, Campaign destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Topics
-
-        //public static TopicModel ToModel(this Topic entity)
-        //{
-        //    return entity.MapTo<Topic, TopicModel>();
-        //}
-
-        //public static Topic ToEntity(this TopicModel model)
-        //{
-        //    return model.MapTo<TopicModel, Topic>();
-        //}
-
-        //public static Topic ToEntity(this TopicModel model, Topic destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
         #region Log
 
         public static LogModel ToModel(this Log entity)
@@ -429,174 +279,6 @@ namespace Invenio.Admin.Extensions
             return model.MapTo(destination);
         }
         #endregion
-
-        //#region Measure weights
-
-        //public static MeasureWeightModel ToModel(this MeasureWeight entity)
-        //{
-        //    return entity.MapTo<MeasureWeight, MeasureWeightModel>();
-        //}
-
-        //public static MeasureWeight ToEntity(this MeasureWeightModel model)
-        //{
-        //    return model.MapTo<MeasureWeightModel, MeasureWeight>();
-        //}
-
-        //public static MeasureWeight ToEntity(this MeasureWeightModel model, MeasureWeight destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Measure dimension
-
-        //public static MeasureDimensionModel ToModel(this MeasureDimension entity)
-        //{
-        //    return entity.MapTo<MeasureDimension, MeasureDimensionModel>();
-        //}
-
-        //public static MeasureDimension ToEntity(this MeasureDimensionModel model)
-        //{
-        //    return model.MapTo<MeasureDimensionModel, MeasureDimension>();
-        //}
-
-        //public static MeasureDimension ToEntity(this MeasureDimensionModel model, MeasureDimension destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Tax providers
-
-        //public static TaxProviderModel ToModel(this ITaxProvider entity)
-        //{
-        //    return entity.MapTo<ITaxProvider, TaxProviderModel>();
-        //}
-
-        //#endregion
-
-        //#region Tax categories
-
-        //public static TaxCategoryModel ToModel(this TaxCategory entity)
-        //{
-        //    return entity.MapTo<TaxCategory, TaxCategoryModel>();
-        //}
-
-        //public static TaxCategory ToEntity(this TaxCategoryModel model)
-        //{
-        //    return model.MapTo<TaxCategoryModel, TaxCategory>();
-        //}
-
-        //public static TaxCategory ToEntity(this TaxCategoryModel model, TaxCategory destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Shipping rate computation method
-
-        //public static ShippingRateComputationMethodModel ToModel(this IShippingRateComputationMethod entity)
-        //{
-        //    return entity.MapTo<IShippingRateComputationMethod, ShippingRateComputationMethodModel>();
-        //}
-
-        //#endregion
-
-        //#region Pickup point providers
-
-        //public static PickupPointProviderModel ToModel(this IPickupPointProvider entity)
-        //{
-        //    return entity.MapTo<IPickupPointProvider, PickupPointProviderModel>();
-        //}
-
-        //#endregion
-
-        //#region Shipping methods
-
-        //public static ShippingMethodModel ToModel(this ShippingMethod entity)
-        //{
-        //    return entity.MapTo<ShippingMethod, ShippingMethodModel>();
-        //}
-
-        //public static ShippingMethod ToEntity(this ShippingMethodModel model)
-        //{
-        //    return model.MapTo<ShippingMethodModel, ShippingMethod>();
-        //}
-
-        //public static ShippingMethod ToEntity(this ShippingMethodModel model, ShippingMethod destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Delivery dates
-
-        //public static DeliveryDateModel ToModel(this DeliveryDate entity)
-        //{
-        //    return entity.MapTo<DeliveryDate, DeliveryDateModel>();
-        //}
-
-        //public static DeliveryDate ToEntity(this DeliveryDateModel model)
-        //{
-        //    return model.MapTo<DeliveryDateModel, DeliveryDate>();
-        //}
-
-        //public static DeliveryDate ToEntity(this DeliveryDateModel model, DeliveryDate destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Product availability ranges
-
-        //public static ProductAvailabilityRangeModel ToModel(this ProductAvailabilityRange entity)
-        //{
-        //    return entity.MapTo<ProductAvailabilityRange, ProductAvailabilityRangeModel>();
-        //}
-
-        //public static ProductAvailabilityRange ToEntity(this ProductAvailabilityRangeModel model)
-        //{
-        //    return model.MapTo<ProductAvailabilityRangeModel, ProductAvailabilityRange>();
-        //}
-
-        //public static ProductAvailabilityRange ToEntity(this ProductAvailabilityRangeModel model, ProductAvailabilityRange destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Payment methods
-
-        //public static PaymentMethodModel ToModel(this IPaymentMethod entity)
-        //{
-        //    return entity.MapTo<IPaymentMethod, PaymentMethodModel>();
-        //}
-
-        //#endregion
-
-        //#region External authentication methods
-
-        //public static AuthenticationMethodModel ToModel(this IExternalAuthenticationMethod entity)
-        //{
-        //    return entity.MapTo<IExternalAuthenticationMethod, AuthenticationMethodModel>();
-        //}
-
-        //#endregion
-
-        //#region Widgets
-
-        //public static WidgetModel ToModel(this IWidgetPlugin entity)
-        //{
-        //    return entity.MapTo<IWidgetPlugin, WidgetModel>();
-        //}
-
-        //#endregion
 
         #region Address
 
@@ -723,138 +405,6 @@ namespace Invenio.Admin.Extensions
 
         #endregion
 
-        //#region NewsLetter subscriptions
-
-        //public static NewsLetterSubscriptionModel ToModel(this NewsLetterSubscription entity)
-        //{
-        //    return entity.MapTo<NewsLetterSubscription, NewsLetterSubscriptionModel>();
-        //}
-
-        //public static NewsLetterSubscription ToEntity(this NewsLetterSubscriptionModel model)
-        //{
-        //    return model.MapTo<NewsLetterSubscriptionModel, NewsLetterSubscription>();
-        //}
-
-        //public static NewsLetterSubscription ToEntity(this NewsLetterSubscriptionModel model, NewsLetterSubscription destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Discounts
-
-        //public static DiscountModel ToModel(this Discount entity)
-        //{
-        //    return entity.MapTo<Discount, DiscountModel>();
-        //}
-
-        //public static Discount ToEntity(this DiscountModel model)
-        //{
-        //    return model.MapTo<DiscountModel, Discount>();
-        //}
-
-        //public static Discount ToEntity(this DiscountModel model, Discount destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Forums
-
-        ////forum groups
-        //public static ForumGroupModel ToModel(this ForumGroup entity)
-        //{
-        //    return entity.MapTo<ForumGroup, ForumGroupModel>();
-        //}
-
-        //public static ForumGroup ToEntity(this ForumGroupModel model)
-        //{
-        //    return model.MapTo<ForumGroupModel, ForumGroup>();
-        //}
-
-        //public static ForumGroup ToEntity(this ForumGroupModel model, ForumGroup destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-        ////forums
-        //public static ForumModel ToModel(this Forum entity)
-        //{
-        //    return entity.MapTo<Forum, ForumModel>();
-        //}
-
-        //public static Forum ToEntity(this ForumModel model)
-        //{
-        //    return model.MapTo<ForumModel, Forum>();
-        //}
-
-        //public static Forum ToEntity(this ForumModel model, Forum destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-        //#endregion
-
-        //#region Blog
-
-        ////blog posts
-        //public static BlogPostModel ToModel(this BlogPost entity)
-        //{
-        //    return entity.MapTo<BlogPost, BlogPostModel>();
-        //}
-
-        //public static BlogPost ToEntity(this BlogPostModel model)
-        //{
-        //    return model.MapTo<BlogPostModel, BlogPost>();
-        //}
-
-        //public static BlogPost ToEntity(this BlogPostModel model, BlogPost destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region News
-
-        ////news items
-        //public static NewsItemModel ToModel(this NewsItem entity)
-        //{
-        //    return entity.MapTo<NewsItem, NewsItemModel>();
-        //}
-
-        //public static NewsItem ToEntity(this NewsItemModel model)
-        //{
-        //    return model.MapTo<NewsItemModel, NewsItem>();
-        //}
-
-        //public static NewsItem ToEntity(this NewsItemModel model, NewsItem destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Polls
-
-        ////news items
-        //public static PollModel ToModel(this Poll entity)
-        //{
-        //    return entity.MapTo<Poll, PollModel>();
-        //}
-
-        //public static Poll ToEntity(this PollModel model)
-        //{
-        //    return model.MapTo<PollModel, Poll>();
-        //}
-
-        //public static Poll ToEntity(this PollModel model, Poll destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
         #region User roles
 
         //User roles
@@ -874,25 +424,6 @@ namespace Invenio.Admin.Extensions
         }
 
         #endregion
-
-        //#region Gift Cards
-
-        //public static GiftCardModel ToModel(this GiftCard entity)
-        //{
-        //    return entity.MapTo<GiftCard, GiftCardModel>();
-        //}
-
-        //public static GiftCard ToEntity(this GiftCardModel model)
-        //{
-        //    return model.MapTo<GiftCardModel, GiftCard>();
-        //}
-
-        //public static GiftCard ToEntity(this GiftCardModel model, GiftCard destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
 
         #region Countries / states
 
@@ -930,116 +461,6 @@ namespace Invenio.Admin.Extensions
         #endregion
 
         #region Settings
-
-        //public static TaxSettingsModel ToModel(this TaxSettings entity)
-        //{
-        //    return entity.MapTo<TaxSettings, TaxSettingsModel>();
-        //}
-        //public static TaxSettings ToEntity(this TaxSettingsModel model, TaxSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static ShippingSettingsModel ToModel(this ShippingSettings entity)
-        //{
-        //    return entity.MapTo<ShippingSettings, ShippingSettingsModel>();
-        //}
-        //public static ShippingSettings ToEntity(this ShippingSettingsModel model, ShippingSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static ForumSettingsModel ToModel(this ForumSettings entity)
-        //{
-        //    return entity.MapTo<ForumSettings, ForumSettingsModel>();
-        //}
-        //public static ForumSettings ToEntity(this ForumSettingsModel model, ForumSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static BlogSettingsModel ToModel(this BlogSettings entity)
-        //{
-        //    return entity.MapTo<BlogSettings, BlogSettingsModel>();
-        //}
-        //public static BlogSettings ToEntity(this BlogSettingsModel model, BlogSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static VendorSettingsModel ToModel(this VendorSettings entity)
-        //{
-        //    return entity.MapTo<VendorSettings, VendorSettingsModel>();
-        //}
-        //public static VendorSettings ToEntity(this VendorSettingsModel model, VendorSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static NewsSettingsModel ToModel(this NewsSettings entity)
-        //{
-        //    return entity.MapTo<NewsSettings, NewsSettingsModel>();
-        //}
-        //public static NewsSettings ToEntity(this NewsSettingsModel model, NewsSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static CatalogSettingsModel ToModel(this CatalogSettings entity)
-        //{
-        //    return entity.MapTo<CatalogSettings, CatalogSettingsModel>();
-        //}
-        //public static CatalogSettings ToEntity(this CatalogSettingsModel model, CatalogSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static RewardPointsSettingsModel ToModel(this RewardPointsSettings entity)
-        //{
-        //    return entity.MapTo<RewardPointsSettings, RewardPointsSettingsModel>();
-        //}
-        //public static RewardPointsSettings ToEntity(this RewardPointsSettingsModel model, RewardPointsSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static OrderSettingsModel ToModel(this OrderSettings entity)
-        //{
-        //    return entity.MapTo<OrderSettings, OrderSettingsModel>();
-        //}
-        //public static OrderSettings ToEntity(this OrderSettingsModel model, OrderSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static ShoppingCartSettingsModel ToModel(this ShoppingCartSettings entity)
-        //{
-        //    return entity.MapTo<ShoppingCartSettings, ShoppingCartSettingsModel>();
-        //}
-        //public static ShoppingCartSettings ToEntity(this ShoppingCartSettingsModel model, ShoppingCartSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static MediaSettingsModel ToModel(this MediaSettings entity)
-        //{
-        //    return entity.MapTo<MediaSettings, MediaSettingsModel>();
-        //}
-        //public static MediaSettings ToEntity(this MediaSettingsModel model, MediaSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
         //User/user settings
         public static SupplierUserSettingsModel.UserSettingsModel ToModel(this UserSettings entity)
         {
@@ -1069,28 +490,7 @@ namespace Invenio.Admin.Extensions
         {
             return model.MapTo(destination);
         }
-
-
-
-        //product editor settings
-        //public static ProductEditorSettingsModel ToModel(this ProductEditorSettings entity)
-        //{
-        //    return entity.MapTo<ProductEditorSettings, ProductEditorSettingsModel>();
-        //}
-        //public static ProductEditorSettings ToEntity(this ProductEditorSettingsModel model, ProductEditorSettings destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
         #endregion
-
-        //#region Plugins
-
-        //public static PluginModel ToModel(this PluginDescriptor entity)
-        //{
-        //    return entity.MapTo<PluginDescriptor, PluginModel>();
-        //}
-
-        //#endregion
 
         #region Stores
 
@@ -1110,112 +510,6 @@ namespace Invenio.Admin.Extensions
         }
 
         #endregion
-
-        //#region Templates
-
-        //public static CategoryTemplateModel ToModel(this CategoryTemplate entity)
-        //{
-        //    return entity.MapTo<CategoryTemplate, CategoryTemplateModel>();
-        //}
-
-        //public static CategoryTemplate ToEntity(this CategoryTemplateModel model)
-        //{
-        //    return model.MapTo<CategoryTemplateModel, CategoryTemplate>();
-        //}
-
-        //public static CategoryTemplate ToEntity(this CategoryTemplateModel model, CategoryTemplate destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static CustomerTemplateModel ToModel(this CustomerTemplate entity)
-        //{
-        //    return entity.MapTo<CustomerTemplate, CustomerTemplateModel>();
-        //}
-
-        //public static CustomerTemplate ToEntity(this CustomerTemplateModel model)
-        //{
-        //    return model.MapTo<CustomerTemplateModel, CustomerTemplate>();
-        //}
-
-        //public static CustomerTemplate ToEntity(this CustomerTemplateModel model, CustomerTemplate destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-        //public static ProductTemplateModel ToModel(this ProductTemplate entity)
-        //{
-        //    return entity.MapTo<ProductTemplate, ProductTemplateModel>();
-        //}
-
-        //public static ProductTemplate ToEntity(this ProductTemplateModel model)
-        //{
-        //    return model.MapTo<ProductTemplateModel, ProductTemplate>();
-        //}
-
-        //public static ProductTemplate ToEntity(this ProductTemplateModel model, ProductTemplate destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-
-
-        //public static TopicTemplateModel ToModel(this TopicTemplate entity)
-        //{
-        //    return entity.MapTo<TopicTemplate, TopicTemplateModel>();
-        //}
-
-        //public static TopicTemplate ToEntity(this TopicTemplateModel model)
-        //{
-        //    return model.MapTo<TopicTemplateModel, TopicTemplate>();
-        //}
-
-        //public static TopicTemplate ToEntity(this TopicTemplateModel model, TopicTemplate destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Return request reason
-
-        //public static ReturnRequestReasonModel ToModel(this ReturnRequestReason entity)
-        //{
-        //    return entity.MapTo<ReturnRequestReason, ReturnRequestReasonModel>();
-        //}
-
-        //public static ReturnRequestReason ToEntity(this ReturnRequestReasonModel model)
-        //{
-        //    return model.MapTo<ReturnRequestReasonModel, ReturnRequestReason>();
-        //}
-
-        //public static ReturnRequestReason ToEntity(this ReturnRequestReasonModel model, ReturnRequestReason destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
-        //#region Return request action
-
-        //public static ReturnRequestActionModel ToModel(this ReturnRequestAction entity)
-        //{
-        //    return entity.MapTo<ReturnRequestAction, ReturnRequestActionModel>();
-        //}
-
-        //public static ReturnRequestAction ToEntity(this ReturnRequestActionModel model)
-        //{
-        //    return model.MapTo<ReturnRequestActionModel, ReturnRequestAction>();
-        //}
-
-        //public static ReturnRequestAction ToEntity(this ReturnRequestActionModel model, ReturnRequestAction destination)
-        //{
-        //    return model.MapTo(destination);
-        //}
-
-        //#endregion
-
     }
+
 }

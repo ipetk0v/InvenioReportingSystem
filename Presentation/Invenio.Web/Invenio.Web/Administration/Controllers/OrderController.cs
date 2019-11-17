@@ -1,16 +1,11 @@
 ﻿using Invenio.Admin.Extensions;
 using Invenio.Admin.Models.Orders;
 using Invenio.Core;
-using Invenio.Core.Domain.DeliveryNumbers;
 using Invenio.Core.Domain.Orders;
-using Invenio.Core.Domain.Parts;
-using Invenio.Services.ChargeNumber;
 using Invenio.Services.Supplier;
-using Invenio.Services.DeliveryNumber;
 using Invenio.Services.Localization;
 using Invenio.Services.Logging;
 using Invenio.Services.Orders;
-using Invenio.Services.Parts;
 using Invenio.Services.Security;
 using Invenio.Web.Framework;
 using Invenio.Web.Framework.Controllers;
@@ -20,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
-using Invenio.Core.Domain.ChargeNumbers;
 using Invenio.Core.Domain.Customers;
 using Invenio.Core.Domain.Suppliers;
 using Invenio.Core.Domain.Users;
@@ -38,11 +32,11 @@ namespace Invenio.Admin.Controllers
         private readonly ILocalizationService _localizationService;
         private readonly ISupplierService _supplierService;
         private readonly IWorkContext _workContext;
-        private readonly IPartService _partService;
-        private readonly IDeliveryNumberService _delNumberService;
-        private readonly IChargeNumberService _chargeNumberService;
         private readonly IReportService _reportService;
         private readonly ICustomerService _customerService;
+        private readonly IOrderAttributeService _orderAttributeService;
+        private readonly ILanguageService _languageService;
+        private readonly ILocalizedEntityService _localizedEntityService;
 
         public OrderController(
             IPermissionService permissionService,
@@ -51,11 +45,11 @@ namespace Invenio.Admin.Controllers
             ILocalizationService localizationService,
             ISupplierService supplierService,
             IWorkContext workContext,
-            IPartService partService,
-            IDeliveryNumberService delNumberService,
-            IChargeNumberService chargeNumberService,
             IReportService reportService,
-            ICustomerService customerService
+            ICustomerService customerService,
+            IOrderAttributeService orderAttributeService,
+            ILanguageService languageService,
+            ILocalizedEntityService localizedEntityService
             )
         {
             _permissionService = permissionService;
@@ -64,11 +58,11 @@ namespace Invenio.Admin.Controllers
             _localizationService = localizationService;
             _supplierService = supplierService;
             _workContext = workContext;
-            _partService = partService;
-            _delNumberService = delNumberService;
-            _chargeNumberService = chargeNumberService;
             _reportService = reportService;
             _customerService = customerService;
+            _orderAttributeService = orderAttributeService;
+            _languageService = languageService;
+            _localizedEntityService = localizedEntityService;
         }
 
         public virtual ActionResult Index()
@@ -88,12 +82,12 @@ namespace Invenio.Admin.Controllers
             //0 - all (according to "ShowHidden" parameter)
             //1 - published only
             //2 - unpublished only
-            model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SearchPublished.All"), Value = "0" });
-            model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SearchPublished.PublishedOnly"), Value = "1" });
-            model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SearchPublished.UnpublishedOnly"), Value = "2" });
+            model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Orders.List.SearchPublished.All"), Value = "0" });
+            model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Orders.List.SearchPublished.PublishedOnly"), Value = "1" });
+            model.AvailablePublished.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Orders.List.SearchPublished.UnpublishedOnly"), Value = "2" });
 
-            model.AvailableSuppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.SupplierId.All"), Value = "0" });
-            model.AvailableCustomers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Products.List.CustomerId.All"), Value = "0" });
+            model.AvailableSuppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Orders.List.SupplierId.All"), Value = "0" });
+            model.AvailableCustomers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Catalog.Orders.List.CustomerId.All"), Value = "0" });
 
             //admin
             if (_workContext.CurrentUser.IsAdmin())
@@ -157,26 +151,6 @@ namespace Invenio.Admin.Controllers
                 if (model.CustomerId > 0)
                     orders2 = orders2.Where(x => x.Supplier.CustomerId == model.CustomerId).ToList();
 
-                if (!string.IsNullOrEmpty(model.SearchByPartName))
-                {
-                    var filtredByPartsOrders = new List<Order>();
-                    foreach (var o2 in orders2)
-                    {
-                        var parts = _partService.GetAllOrderParts(o2.Id);
-                        if (parts.Any(x => x.SerNumber == model.SearchByPartName))
-                            filtredByPartsOrders.Add(o2);
-                    }
-
-                    var filtedByPartOrdersResult = new PagedList<Order>(filtredByPartsOrders, command.Page - 1, command.PageSize);
-                    var gridModelFiltedByPartOrders = new DataSourceResult
-                    {
-                        Data = filtedByPartOrdersResult.Select(PrepareOrderListModel),
-                        Total = filtedByPartOrdersResult.TotalCount
-                    };
-
-                    return Json(gridModelFiltedByPartOrders);
-                }
-
                 var resultOrders = new PagedList<Order>(orders2, command.Page - 1, command.PageSize);
                 var gridModel2 = new DataSourceResult
                 {
@@ -215,26 +189,6 @@ namespace Invenio.Admin.Controllers
                 cOrders = orders.Where(x => _workContext.CurrentUser.Customers.Contains(x.Supplier.Customer)).ToList();
 
             var result = crOrders.Concat(cOrders).Distinct().ToList();
-
-            if (!string.IsNullOrEmpty(model.SearchByPartName))
-            {
-                var filtredByPartsOrders = new List<Order>();
-                foreach (var o2 in result)
-                {
-                    var parts = _partService.GetAllOrderParts(o2.Id);
-                    if (parts.Any(x => x.SerNumber == model.SearchByPartName))
-                        filtredByPartsOrders.Add(o2);
-                }
-
-                var filtedByPartOrdersResult = new PagedList<Order>(filtredByPartsOrders, command.Page - 1, command.PageSize);
-                var gridModelFiltedByPartOrders = new DataSourceResult
-                {
-                    Data = filtedByPartOrdersResult.Select(PrepareOrderListModel),
-                    Total = filtedByPartOrdersResult.TotalCount
-                };
-
-                return Json(gridModelFiltedByPartOrders);
-            }
 
             var pagedList = new PagedList<Order>(result, command.Page - 1, command.PageSize);
             var gridModel = new DataSourceResult
@@ -360,6 +314,16 @@ namespace Invenio.Admin.Controllers
             model.EndDate = model.EndDate ?? new DateTime?();
             model.Published = model.Published != false;
 
+            var avOrderAttributes = _orderAttributeService.GetAllOrderAttributes();
+            foreach (var oa in avOrderAttributes)
+            {
+                model.AvailableOrderAttributes.Add(new OrderAttributeModel
+                {
+                    Name = oa.Name,
+                    Id = oa.Id,
+                });
+            }
+
             model.AvailableSuppliers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Suppliers.Order.Select.Supplier"), Value = "0" });
             if (_workContext.CurrentUser.IsAdmin())
             {
@@ -400,50 +364,6 @@ namespace Invenio.Admin.Controllers
                     }
                 }
             }
-
-            model.AvailablePartNumbers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Suppliers.Order.Select.PartNumber"), Value = "0" });
-            model.AvailableDeliveryNumbers.Add(new SelectListItem { Text = _localizationService.GetResource("Admin.Suppliers.Order.Select.DeliveryNumber"), Value = "0" });
-
-            var parts = _partService.GetAllOrderParts(model.Id);
-            if (parts == null) return;
-            foreach (var part in parts)
-            {
-                model.AvailablePartNumbers.Add(new SelectListItem
-                {
-                    Text = part.SerNumber,
-                    Value = part.Id.ToString()
-                });
-            }
-
-            var delNumbers = new List<DeliveryNumber>();
-            foreach (var part in parts)
-            {
-                delNumbers.AddRange(_delNumberService.GetAllPartDeliveryNumbers(part.Id));
-            }
-            foreach (var delNumber in delNumbers)
-            {
-                model.AvailableDeliveryNumbers.Add(new SelectListItem
-                {
-                    Text = delNumber.Number,
-                    Value = delNumber.Id.ToString()
-                });
-            }
-
-            var chargeNumbers = new List<ChargeNumber>();
-            if (delNumbers.Any())
-            {
-                foreach (var delNumber in delNumbers)
-                {
-                    chargeNumbers.AddRange(_chargeNumberService.GetAllDeliveryChargeNumbers(delNumber.Id));
-                }
-            }
-
-            model.IsChargeNumberQuantityAvailable = false;
-            if (chargeNumbers.Any())
-            {
-                model.TotalPartsQuantity = chargeNumbers.Select(x => x.Quantity ?? 0).Sum();
-                model.IsChargeNumberQuantityAvailable = true;
-            }
         }
 
         public virtual ActionResult Edit(int id, string tab)
@@ -476,17 +396,6 @@ namespace Invenio.Admin.Controllers
 
             if (ModelState.IsValid)
             {
-                var part = _partService.GetPartById(model.PartId);
-
-                if (part != null && (part.Name != model.PartName || part.SerNumber != model.PartSerNumer))
-                {
-                    part.Name = model.PartName;
-                    part.SerNumber = model.PartSerNumer;
-
-                    _partService.UpdatePart(part);
-                    _userActivityService.InsertActivity("AddNewPart", _localizationService.GetResource("ActivityLog.AddNewPart"), part.Name);
-                }
-
                 if (order.CheckedPartsQuantity != 0)
                 {
                     model.CheckedPartsQuantity = order.CheckedPartsQuantity;
@@ -495,7 +404,6 @@ namespace Invenio.Admin.Controllers
                 order = model.ToEntity(order);
 
                 order.UpdatedOnUtc = DateTime.UtcNow;
-                //order.PartId = part.Id;
                 _orderService.UpdateOrder(order);
 
                 //activity log
@@ -543,258 +451,450 @@ namespace Invenio.Admin.Controllers
             return RedirectToAction("List");
         }
 
-        #region AddParts
-        public virtual ActionResult GetAllOrderParts(int orderId, DataSourceRequest command)
+        #region OrderAttribute
+        [HttpPost]
+        public virtual ActionResult OrderAttributeMappingList(DataSourceRequest command, int orderId)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedKendoGridJson();
-
-            if (orderId == 0)
-                return Json(new { Result = false }, JsonRequestBehavior.AllowGet);
-
-            var query = _partService
-                .GetAllOrderParts(orderId);
-
-            var resources = query
-                .Select(x => new OrderPartsModel
-                {
-                    OrderId = orderId,
-                    Id = x.Id,
-                    SerNumber = x.SerNumber
-                }).ToList();
-
-            var gridModel = new DataSourceResult
-            {
-                Data = resources.PagedForCommand(command),
-                Total = resources.Count()
-            };
-
-            return Json(gridModel);
-        }
-
-        public virtual ActionResult DeleteOrderParts(int id)
-        {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
-                return AccessDeniedView();
-
-            var part = _partService.GetPartById(id);
-            if (part == null)
-                throw new ArgumentException("No part found with the specified id");
-
-            _partService.DeletePart(part);
-
-            return new NullJsonResult();
-        }
-
-        [ValidateInput(false)]
-        public virtual ActionResult AddOrderParts(int orderId, string serNumber)
-        {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
-                return AccessDeniedView();
-
-            if (string.IsNullOrEmpty(serNumber))
-                return Json(new { Result = false }, JsonRequestBehavior.AllowGet);
 
             var order = _orderService.GetOrderById(orderId);
             if (order == null)
-                return Json(new { Result = false }, JsonRequestBehavior.AllowGet);
+                throw new ArgumentException("No order found with the specified id");
 
-            var part = new Part()
-            {
-                OrderId = orderId,
-                SerNumber = serNumber.Trim(),
-            };
-
-            _partService.InsertPart(part);
-
-            return Json(new { Result = true }, JsonRequestBehavior.AllowGet);
-        }
-        #endregion
-
-        #region DeliveryNumber
-        public virtual ActionResult GetAllDeliveryNumbers(int orderId, DataSourceRequest command)
-        {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
-                return AccessDeniedKendoGridJson();
-
-            if (orderId == 0)
-                return Json(new { Result = false }, JsonRequestBehavior.AllowGet);
-
-            var parts = _partService.GetAllOrderParts(orderId);
-            var query = new List<DeliveryNumber>();
-            foreach (var part in parts)
-            {
-                query.AddRange(_delNumberService.GetAllPartDeliveryNumbers(part.Id));
-            }
-
-            var resources = query
-                .Select(x => new OrderDeliveryNumberModel
+            var attributes = _orderAttributeService.GetOrderAttributeMappingsByOrderId(orderId);
+            var attributesModel = attributes
+                .Select(x =>
                 {
-                    OrderId = orderId,
-                    Id = x.Id,
-                    DeliveryNumber = x.Number,
-                    PartNumber = x.Part.SerNumber
-                }).ToList();
+                    var attributeModel = new OrderModel.OrderAttributeMappingModel
+                    {
+                        Id = x.Id,
+                        OrderId = x.OrderId,
+                        OrderAttribute = _orderAttributeService.GetOrderAttributeById(x.OrderAttributeId).Name,
+                        OrderAttributeId = x.OrderAttributeId,
+                        TextPrompt = x.TextPrompt,
+                        //IsRequired = x.IsRequired,
+                        //AttributeControlType = x.AttributeControlType.GetLocalizedEnum(_localizationService, _workContext),
+                        //AttributeControlTypeId = x.AttributeControlTypeId,
+                        //DisplayOrder = x.DisplayOrder
+                    };
+
+                    attributeModel.ShouldHaveValues = true;
+                    attributeModel.TotalValues = x.OrderAttributeValues.Count;
+
+                    //if (x.ValidationRulesAllowed())
+                    //{
+                    //    var validationRules = new StringBuilder(string.Empty);
+                    //    attributeModel.ValidationRulesAllowed = true;
+                    //    if (x.ValidationMinLength != null)
+                    //        validationRules.AppendFormat("{0}: {1}<br />",
+                    //            _localizationService.GetResource("Admin.Catalog.Orders.OrderAttributes.Attributes.ValidationRules.MinLength"),
+                    //            x.ValidationMinLength);
+                    //    if (x.ValidationMaxLength != null)
+                    //        validationRules.AppendFormat("{0}: {1}<br />",
+                    //            _localizationService.GetResource("Admin.Catalog.Orders.OrderAttributes.Attributes.ValidationRules.MaxLength"),
+                    //            x.ValidationMaxLength);
+                    //    if (!string.IsNullOrEmpty(x.ValidationFileAllowedExtensions))
+                    //        validationRules.AppendFormat("{0}: {1}<br />",
+                    //            _localizationService.GetResource("Admin.Catalog.Orders.OrderAttributes.Attributes.ValidationRules.FileAllowedExtensions"),
+                    //            HttpUtility.HtmlEncode(x.ValidationFileAllowedExtensions));
+                    //    if (x.ValidationFileMaximumSize != null)
+                    //        validationRules.AppendFormat("{0}: {1}<br />",
+                    //            _localizationService.GetResource("Admin.Catalog.Orders.OrderAttributes.Attributes.ValidationRules.FileMaximumSize"),
+                    //            x.ValidationFileMaximumSize);
+                    //    if (!string.IsNullOrEmpty(x.DefaultValue))
+                    //        validationRules.AppendFormat("{0}: {1}<br />",
+                    //            _localizationService.GetResource("Admin.Catalog.Orders.OrderAttributes.Attributes.ValidationRules.DefaultValue"),
+                    //            HttpUtility.HtmlEncode(x.DefaultValue));
+                    //    attributeModel.ValidationRulesString = validationRules.ToString();
+                    //}
+
+
+                    //currenty any attribute can have condition. why not?
+                    attributeModel.ConditionAllowed = true;
+                    //var conditionAttribute = _orderAttributeParser.ParseOrderAttributeMappings(x.ConditionAttributeXml).FirstOrDefault();
+                    //var conditionValue = _orderAttributeParser.ParseOrderAttributeValues(x.ConditionAttributeXml).FirstOrDefault();
+                    //if (conditionAttribute != null && conditionValue != null)
+                    //    attributeModel.ConditionString = string.Format("{0}: {1}",
+                    //        HttpUtility.HtmlEncode(conditionAttribute.OrderAttribute.Name),
+                    //        HttpUtility.HtmlEncode(conditionValue.Name));
+                    //else
+                    //    attributeModel.ConditionString = string.Empty;
+                    return attributeModel;
+                })
+                .ToList();
 
             var gridModel = new DataSourceResult
             {
-                Data = resources.PagedForCommand(command),
-                Total = resources.Count
+                Data = attributesModel,
+                Total = attributesModel.Count
             };
 
             return Json(gridModel);
         }
 
-        public virtual ActionResult DeliveryNumberDelete(int id)
+        [HttpPost]
+        public virtual ActionResult OrderAttributeMappingInsert(OrderModel.OrderAttributeMappingModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedView();
 
-            var deliveryNumber = _delNumberService.GetDeliveryNumberById(id);
-            if (deliveryNumber == null)
-                throw new ArgumentException("No delivery number found with the specified id");
+            var order = _orderService.GetOrderById(model.OrderId);
+            if (order == null)
+                throw new ArgumentException("No order found with the specified id");
 
-            var reports = _reportService.GetAllReports().Where(x => x.DeliveryNumberId == id);
-            foreach (var report in reports)
+            //a vendor should have access only to his orders
+            //if (_workContext.CurrentVendor != null && order.VendorId != _workContext.CurrentVendor.Id)
+            //{
+            //    return Content("This is not your order");
+            //}
+
+            //ensure this attribute is not mapped yet
+            //if (_orderAttributeService.GetOrderAttributeMappingsByOrderId(order.Id).Any(x => x.OrderAttributeId == model.OrderAttributeId))
+            //{
+            //    return Json(new DataSourceResult { Errors = _localizationService.GetResource("Admin.Catalog.Orders.OrderAttributes.Attributes.AlreadyExists") });
+            //}
+
+            //insert mapping
+            var orderAttributeMapping = new OrderAttributeMapping
             {
-                _reportService.DeleteReport(report);
-            }
+                OrderId = model.OrderId,
+                OrderAttributeId = model.OrderAttributeId,
+                TextPrompt = model.TextPrompt,
+                //IsRequired = model.IsRequired,
+                //AttributeControlTypeId = model.AttributeControlTypeId,
+                //DisplayOrder = model.DisplayOrder
+            };
+            _orderAttributeService.InsertOrderAttributeMapping(orderAttributeMapping);
 
-            var chargeNumbers = _chargeNumberService.GetAllDeliveryChargeNumbers(id);
-            foreach (var chargeNumber in chargeNumbers)
+            //predefined values
+            var predefinedValues = _orderAttributeService.GetPredefinedOrderAttributeValues(model.OrderAttributeId);
+            foreach (var predefinedValue in predefinedValues)
             {
-                _chargeNumberService.DeleteChargeNumber(chargeNumber);
+                var pav = new OrderAttributeValue
+                {
+                    OrderAttributeMappingId = orderAttributeMapping.Id,
+                    //AttributeValueType = AttributeValueType.Simple,
+                    Name = predefinedValue.Name,
+                    //PriceAdjustment = predefinedValue.PriceAdjustment,
+                    //WeightAdjustment = predefinedValue.WeightAdjustment,
+                    //Cost = predefinedValue.Cost,
+                    //IsPreSelected = predefinedValue.IsPreSelected,
+                    //DisplayOrder = predefinedValue.DisplayOrder
+                };
+                _orderAttributeService.InsertOrderAttributeValue(pav);
+                //locales
+                var languages = _languageService.GetAllLanguages(true);
+                //localization
+                foreach (var lang in languages)
+                {
+                    var name = predefinedValue.GetLocalized(x => x.Name, lang.Id, false, false);
+                    if (!string.IsNullOrEmpty(name))
+                        _localizedEntityService.SaveLocalizedValue(pav, x => x.Name, name, lang.Id);
+                }
             }
-
-            _delNumberService.DeleteDeliveryNumber(deliveryNumber);
 
             return new NullJsonResult();
         }
 
-        [ValidateInput(false)]
-        public virtual ActionResult DeliveryNumberAdd(int partId, string delNumber)
+        [HttpPost]
+        public virtual ActionResult OrderAttributeMappingUpdate(OrderModel.OrderAttributeMappingModel model)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedView();
 
-            if (string.IsNullOrEmpty(delNumber))
-                return Json(new { Result = false }, JsonRequestBehavior.AllowGet);
+            var orderAttributeMapping = _orderAttributeService.GetOrderAttributeMappingById(model.Id);
+            if (orderAttributeMapping == null)
+                throw new ArgumentException("No order attribute mapping found with the specified id");
 
-            var part = _partService.GetPartById(partId);
-            if (part == null)
-                return Json(new { Result = false }, JsonRequestBehavior.AllowGet);
+            var order = _orderService.GetOrderById(orderAttributeMapping.OrderId);
+            if (order == null)
+                throw new ArgumentException("No order found with the specified id");
 
-            var deliveryNumber = new DeliveryNumber
-            {
-                //OrderId = orderId,
-                PartId = part.Id,
-                Number = delNumber.Trim()
-            };
+            //a vendor should have access only to his orders
+            //if (_workContext.CurrentVendor != null && order.VendorId != _workContext.CurrentVendor.Id)
+            //    return Content("This is not your order");
 
-            _delNumberService.InsertDeliveryNumber(deliveryNumber);
+            orderAttributeMapping.OrderAttributeId = model.OrderAttributeId;
+            orderAttributeMapping.TextPrompt = model.TextPrompt;
+            //orderAttributeMapping.IsRequired = model.IsRequired;
+            //orderAttributeMapping.AttributeControlTypeId = model.AttributeControlTypeId;
+            //orderAttributeMapping.DisplayOrder = model.DisplayOrder;
+            _orderAttributeService.UpdateOrderAttributeMapping(orderAttributeMapping);
 
-            return Json(new { Result = true }, JsonRequestBehavior.AllowGet);
+            return new NullJsonResult();
         }
+
+        [HttpPost]
+        public virtual ActionResult OrderAttributeMappingDelete(int id)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
+                return AccessDeniedView();
+
+            var orderAttributeMapping = _orderAttributeService.GetOrderAttributeMappingById(id);
+            if (orderAttributeMapping == null)
+                throw new ArgumentException("No order attribute mapping found with the specified id");
+
+            var orderId = orderAttributeMapping.OrderId;
+            var order = _orderService.GetOrderById(orderId);
+            if (order == null)
+                throw new ArgumentException("No order found with the specified id");
+
+            _orderAttributeService.DeleteOrderAttributeMapping(orderAttributeMapping);
+
+            return new NullJsonResult();
+        }
+
+
         #endregion
 
-        #region ChargeNumber
-        public virtual ActionResult GetAllChargeNumbers(int orderId, DataSourceRequest command)
+        #region Order attribute values
+
+        //list
+        public virtual ActionResult EditAttributeValues(int orderAttributeMappingId)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
+                return AccessDeniedView();
+
+            var orderAttributeMapping = _orderAttributeService.GetOrderAttributeMappingById(orderAttributeMappingId);
+            if (orderAttributeMapping == null)
+                throw new ArgumentException("No order attribute mapping found with the specified id");
+
+            var order = _orderService.GetOrderById(orderAttributeMapping.OrderId);
+            if (order == null)
+                throw new ArgumentException("No order found with the specified id");
+
+            var model = new OrderModel.OrderAttributeValueListModel
+            {
+                OrderName = order.Name,
+                OrderId = orderAttributeMapping.OrderId,
+                OrderAttributeName = orderAttributeMapping.OrderAttribute.Name,
+                OrderAttributeMappingId = orderAttributeMapping.Id,
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public virtual ActionResult OrderAttributeValueList(int orderAttributeMappingId, DataSourceRequest command)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedKendoGridJson();
 
-            if (orderId == 0)
-                return Json(new { Result = false }, JsonRequestBehavior.AllowGet);
+            var orderAttributeMapping = _orderAttributeService.GetOrderAttributeMappingById(orderAttributeMappingId);
+            if (orderAttributeMapping == null)
+                throw new ArgumentException("No order attribute mapping found with the specified id");
 
-            var parts = _partService.GetAllOrderParts(orderId);
+            var order = _orderService.GetOrderById(orderAttributeMapping.OrderId);
+            if (order == null)
+                throw new ArgumentException("No order found with the specified id");
 
-            var delNumbers = new List<DeliveryNumber>();
-            foreach (var part in parts)
-            {
-                delNumbers.AddRange(_delNumberService.GetAllPartDeliveryNumbers(part.Id));
-            }
-
-            var queries = new List<ChargeNumber>();
-
-            foreach (var delNumber in delNumbers)
-            {
-                queries.AddRange(_chargeNumberService.GetAllDeliveryChargeNumbers(delNumber.Id));
-            }
-
-            var resources = queries
-                .Select(x => new OrderChargeNumberModel
-                {
-                    DeliverNumber = x.DeliveryNumber.Number,
-                    Id = x.Id,
-                    ChargeNumber = x.Number,
-                    ChargeNumberQuantity = x.Quantity ?? 0
-                }).ToList();
-
+            var values = _orderAttributeService.GetOrderAttributeValues(orderAttributeMappingId);
             var gridModel = new DataSourceResult
             {
-                Data = resources.PagedForCommand(command),
-                Total = resources.Count
+                Data = values.Select(x =>
+                {
+                    return new OrderModel.OrderAttributeValueModel
+                    {
+                        Id = x.Id,
+                        OrderAttributeMappingId = x.OrderAttributeMappingId,
+                        Name = x.Name,
+                        ParentAttributeName = x.ParentAttributeValueId.HasValue
+                            ? _orderAttributeService.GetOrderAttributeValueById(x.ParentAttributeValue.Id).Name
+                            : string.Empty
+                    };
+                }),
+                Total = values.Count()
             };
 
             return Json(gridModel);
         }
 
-        public virtual ActionResult ChargeNumberDelete(int id, int orderId)
+        //create
+        public virtual ActionResult OrderAttributeValueCreatePopup(int orderAttributeMappingId)
         {
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
                 return AccessDeniedView();
 
-            var chargeNumber = _chargeNumberService.GetChargeNumberById(id);
-            if (chargeNumber == null)
-                throw new ArgumentException("No charge number found with the specified id");
+            var orderAttributeMapping = _orderAttributeService.GetOrderAttributeMappingById(orderAttributeMappingId);
+            if (orderAttributeMapping == null)
+                throw new ArgumentException("No order attribute mapping found with the specified id");
 
-            var reports = _reportService.GetAllReports().Where(x => x.ChargeNumberId == id);
-            foreach (var report in reports)
+            var order = _orderService.GetOrderById(orderAttributeMapping.OrderId);
+            if (order == null)
+                throw new ArgumentException("No order found with the specified id");
+
+            var parentSelectList = PrepareParentAttributeValues(orderAttributeMapping, order);
+
+            var model = new OrderModel.OrderAttributeValueModel
             {
-                _reportService.DeleteReport(report);
-            }
-
-            if (orderId > 0)
-            {
-                var order = _orderService.GetOrderById(orderId);
-                order.TotalPartsQuantity -= chargeNumber.Quantity ?? 0;
-                _orderService.UpdateOrder(order);
-            }
-
-            _chargeNumberService.DeleteChargeNumber(chargeNumber);
-            return new NullJsonResult();
-        }
-
-        [ValidateInput(false)]
-        public virtual ActionResult ChargeNumberAdd(int deliveryNumberId, string charNumber, int quantity, int orderId)
-        {
-            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
-                return AccessDeniedView();
-
-            if (string.IsNullOrEmpty(charNumber))
-                return Json(new { Result = false }, JsonRequestBehavior.AllowGet);
-
-            var deliveryNumber = _delNumberService.GetDeliveryNumberById(deliveryNumberId);
-            if (deliveryNumber == null)
-                return Json(new { Result = false }, JsonRequestBehavior.AllowGet);
-
-            var chargeNumber = new ChargeNumber
-            {
-                DeliveryNumberId = deliveryNumber.Id,
-                Number = charNumber.Trim(),
-                Quantity = quantity
+                OrderAttributeMappingId = orderAttributeMappingId,
+                ParentAttributeValues = parentSelectList
             };
 
-            _chargeNumberService.InsertChargeNumber(chargeNumber);
 
-            if (orderId > 0)
+            //locales
+            AddLocales(_languageService, model.Locales);
+            return View(model);
+        }
+
+        [HttpPost]
+        public virtual ActionResult OrderAttributeValueCreatePopup(string btnId, string formId, OrderModel.OrderAttributeValueModel model)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
+                return AccessDeniedView();
+
+            var orderAttributeMapping = _orderAttributeService.GetOrderAttributeMappingById(model.OrderAttributeMappingId);
+            if (orderAttributeMapping == null)
+                //No order attribute found with the specified id
+                return RedirectToAction("List", "Order");
+
+            var order = _orderService.GetOrderById(orderAttributeMapping.OrderId);
+            if (order == null)
+                throw new ArgumentException("No order found with the specified id");
+
+            if (ModelState.IsValid)
             {
-                var order = _orderService.GetOrderById(orderId);
-                order.TotalPartsQuantity = _chargeNumberService.GetAllDeliveryChargeNumbers(deliveryNumberId).Select(x => x.Quantity ?? 0).Sum();
-                _orderService.UpdateOrder(order);
+                var pav = new OrderAttributeValue
+                {
+                    OrderAttributeMappingId = model.OrderAttributeMappingId,
+                    ParentAttributeValueId = model.ParentAttributeValueId == 0 ? null : model.ParentAttributeValueId,
+                    Name = model.Name,
+                };
+
+                _orderAttributeService.InsertOrderAttributeValue(pav);
+                //UpdateLocales(pav, model);
+
+                ViewBag.RefreshPage = true;
+                ViewBag.btnId = btnId;
+                ViewBag.formId = formId;
+                return View(model);
             }
 
-            return Json(new { Result = true }, JsonRequestBehavior.AllowGet);
+            return View(model);
+        }
+
+        //edit
+        public virtual ActionResult OrderAttributeValueEditPopup(int id)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
+                return AccessDeniedView();
+
+            var oav = _orderAttributeService.GetOrderAttributeValueById(id);
+            if (oav == null)
+                //No attribute value found with the specified id
+                return RedirectToAction("List", "Order");
+
+            var order = _orderService.GetOrderById(oav.OrderAttributeMapping.OrderId);
+            if (order == null)
+                throw new ArgumentException("No order found with the specified id");
+
+            var parentAttributeValues = PrepareParentAttributeValues(oav.OrderAttributeMapping, order);
+
+            var model = new OrderModel.OrderAttributeValueModel
+            {
+                OrderAttributeMappingId = oav.OrderAttributeMappingId,
+                ParentAttributeValueId = oav.ParentAttributeValueId == 0 ? null : oav.ParentAttributeValueId,
+                Name = oav.Name,
+                ParentAttributeValues = parentAttributeValues
+            };
+
+            //locales
+            AddLocales(_languageService, model.Locales, (locale, languageId) =>
+            {
+                locale.Name = oav.GetLocalized(x => x.Name, languageId, false, false);
+            });
+
+            return View(model);
+        }
+
+        private IList<SelectListItem> PrepareParentAttributeValues(OrderAttributeMapping orderAttributeMapping, Order order)
+        {
+            if (orderAttributeMapping == null)
+                return new List<SelectListItem>();
+
+            if (order == null)
+                return new List<SelectListItem>();
+
+            var parentOrderAttributeId = _orderAttributeService
+                                             .GetOrderAttributeById(orderAttributeMapping.OrderAttributeId).ParentOrderAttributeId ?? 0;
+
+            var parentAttribute = _orderAttributeService.GetOrderAttributeById(parentOrderAttributeId);
+
+            var parentSelectList = new List<SelectListItem> { new SelectListItem { Text = "...", Value = "0" } };
+            if (parentAttribute != null)
+            {
+                //moga da napravq service da vzima i attribute i order id
+                var parentOrderAttributeMapping = _orderAttributeService
+                    .GetOrderAttributeMappingsByOrderAttributeId(parentAttribute.Id)
+                    .Where(x => x.OrderId == order.Id)
+                    .FirstOrDefault();
+
+                if (parentOrderAttributeMapping != null)
+                {
+                    var parentAttributeValues = _orderAttributeService.GetOrderAttributeValues(parentOrderAttributeMapping.Id);
+
+                    foreach (var item in parentAttributeValues)
+                    {
+                        parentSelectList.Add(new SelectListItem { Text = item.Name, Value = item.Id.ToString() });
+                    }
+                }
+            }
+
+            return parentSelectList;
+        }
+
+        [HttpPost]
+        public virtual ActionResult OrderAttributeValueEditPopup(string btnId, string formId, OrderModel.OrderAttributeValueModel model)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
+                return AccessDeniedView();
+
+            var pav = _orderAttributeService.GetOrderAttributeValueById(model.Id);
+            if (pav == null)
+                //No attribute value found with the specified id
+                return RedirectToAction("List", "Order");
+
+            var order = _orderService.GetOrderById(pav.OrderAttributeMapping.OrderId);
+            if (order == null)
+                throw new ArgumentException("No order found with the specified id");
+
+            if (ModelState.IsValid)
+            {
+                pav.Name = model.Name;
+                pav.ParentAttributeValueId = model.ParentAttributeValueId == 0 ? null : model.ParentAttributeValueId;
+
+                _orderAttributeService.UpdateOrderAttributeValue(pav);
+
+                //UpdateLocales(pav, model);
+
+                ViewBag.RefreshPage = true;
+                ViewBag.btnId = btnId;
+                ViewBag.formId = formId;
+                return View(model);
+            }
+
+            return View(model);
+        }
+
+        //delete
+        [HttpPost]
+        public virtual ActionResult OrderAttributeValueDelete(int id)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageOrders))
+                return AccessDeniedView();
+
+            var pav = _orderAttributeService.GetOrderAttributeValueById(id);
+            if (pav == null)
+                throw new ArgumentException("No order attribute value found with the specified id");
+
+            var order = _orderService.GetOrderById(pav.OrderAttributeMapping.OrderId);
+            if (order == null)
+                throw new ArgumentException("No order found with the specified id");
+
+            _orderAttributeService.DeleteOrderAttributeValue(pav);
+
+            return new NullJsonResult();
         }
         #endregion
     }

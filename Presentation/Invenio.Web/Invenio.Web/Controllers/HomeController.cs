@@ -6,7 +6,6 @@ using Invenio.Core.Infrastructure;
 using Invenio.Services.Authentication;
 using Invenio.Services.Criteria;
 using Invenio.Services.Supplier;
-using Invenio.Services.DeliveryNumber;
 using Invenio.Services.Localization;
 using Invenio.Services.Orders;
 using Invenio.Web.Framework.Mvc;
@@ -18,9 +17,7 @@ using System.Linq;
 using System.Web.Mvc;
 using Invenio.Core.Domain.Reports;
 using Invenio.Core.Domain.Users;
-using Invenio.Services.ChargeNumber;
 using Invenio.Services.Logging;
-using Invenio.Services.Parts;
 using Invenio.Services.Reports;
 
 namespace Invenio.Web.Controllers
@@ -32,12 +29,10 @@ namespace Invenio.Web.Controllers
         private readonly IOrderService _orderService;
         private readonly ICriteriaService _criteriaService;
         private readonly ILocalizationService _localizationService;
-        private readonly IDeliveryNumberService _deliveryNumberService;
-        private readonly IChargeNumberService _chargeNumberService;
         private readonly IReportService _reportService;
         private readonly IReportDetailService _reportDetailService;
-        private readonly IPartService _partService;
         private readonly IUserActivityService _userActivityService;
+        private readonly IOrderAttributeService _orderAttributeService;
 
         public HomeController(
             IWorkContext workContext,
@@ -45,24 +40,20 @@ namespace Invenio.Web.Controllers
             IOrderService orderService,
             ICriteriaService criteriaService,
             ILocalizationService localizationService,
-            IDeliveryNumberService deliveryNumberService,
-            IChargeNumberService chargeNumberService,
             IReportService reportService,
             IReportDetailService reportDetailService,
-            IPartService partService,
-            IUserActivityService userActivityService)
+            IUserActivityService userActivityService,
+            IOrderAttributeService orderAttributeService)
         {
             _workContext = workContext;
             _supplierService = supplierService;
             _orderService = orderService;
             _criteriaService = criteriaService;
             _localizationService = localizationService;
-            _deliveryNumberService = deliveryNumberService;
-            _chargeNumberService = chargeNumberService;
             _reportService = reportService;
             _reportDetailService = reportDetailService;
-            _partService = partService;
             _userActivityService = userActivityService;
+            _orderAttributeService = orderAttributeService;
         }
 
         [NopHttpsRequirement(SslRequirement.No)]
@@ -94,51 +85,67 @@ namespace Invenio.Web.Controllers
         }
 
         [HttpPost]
-        public virtual ActionResult GetOrderParts(int orderId)
+        public virtual ActionResult GetOrderAttribute(int orderId)
         {
             if (orderId == 0)
                 return new NullJsonResult();
 
-            var result = _partService.GetAllOrderParts(orderId);
-            var viewModel = result.Select(x => new
-            {
-                Text = x.SerNumber,
-                Value = x.Id.ToString()
-            });
+            var orderAttributeMappings = _orderAttributeService
+                                            .GetOrderAttributeMappingsByOrderId(orderId)
+                                            .Where(x => !x.OrderAttribute.ParentOrderAttributeId.HasValue);
 
-            return Json(new { viewModel });
+            var model = new OrderAttributeMappingModel();
+            foreach (var oam in orderAttributeMappings)
+            {
+                var oAmodel = new OrderAttributeModel();
+
+                oAmodel.OrderAttributeId = oam.OrderAttributeId;
+                oAmodel.OrderAttribute = oam.OrderAttribute.Name;
+                foreach (var oav in oam.OrderAttributeValues)
+                    oAmodel.OrderAttributeValues.Add(oav);
+
+                model.OrderAttributes.Add(oAmodel);
+            }
+
+            return PartialView("_OrderAttributes", model);
         }
 
         [HttpPost]
-        public virtual ActionResult GetDeliveryNumbers(int partId)
+        public virtual ActionResult GetChildrenOrderAttribute(int orderAttributeId, int selectedValueId, int orderId)
         {
-            if (partId == 0)
-                return new NullJsonResult();
+            var model = new OrderAttributeMappingModel();
 
-            var result = _deliveryNumberService.GetAllPartDeliveryNumbers(partId);
-            var viewModel = result.Select(x => new
+            if (orderAttributeId != 0)
             {
-                Text = x.Number,
-                Value = x.Id.ToString()
-            });
+                var parentOrderAttribute = _orderAttributeService
+                                        .GetAllOrderAttributes()
+                                        .FirstOrDefault(x => x.ParentOrderAttributeId == orderAttributeId);
 
-            return Json(new { viewModel });
-        }
+                if (parentOrderAttribute != null)
+                {
+                    var oam = _orderAttributeService
+                        .GetOrderAttributeMappingsByOrderAttributeId(parentOrderAttribute.Id)
+                        .FirstOrDefault(x => x.OrderId == orderId);
 
-        [HttpPost]
-        public virtual ActionResult GetChargeNumbers(int delNumberId)
-        {
-            if (delNumberId == 0)
-                return new NullJsonResult();
+                    if (oam != null)
+                    {
+                        var oAmodel = new OrderAttributeModel();
+                        oAmodel.OrderAttributeId = oam.OrderAttributeId;
+                        oAmodel.OrderAttribute = oam.OrderAttribute.Name;
+                        foreach (var oav in oam.OrderAttributeValues.Where(x => x.ParentAttributeValueId == selectedValueId))
+                            oAmodel.OrderAttributeValues.Add(oav);
 
-            var result = _chargeNumberService.GetAllDeliveryChargeNumbers(delNumberId);
-            var viewModel = result.Select(x => new
-            {
-                Text = x.Number,
-                Value = x.Id.ToString()
-            });
+                        if (!oAmodel.OrderAttributeValues.Any())
+                            return null;
 
-            return Json(new { viewModel });
+                        model.OrderAttributes.Add(oAmodel);
+                    }
+
+                    return PartialView("_OrderAttributes", model);
+                }
+            }
+
+            return null;
         }
 
         [HttpPost]
@@ -205,14 +212,22 @@ namespace Invenio.Web.Controllers
                     CreatedOn = DateTime.Now,
                     DateOfInspection = report.ReportDate,
                     ApprovedOn = null,
-                    PartId = report.PartId,
-                    DeliveryNumberId = report.DeliveryNumberId == 0 ? (int?)null : report.DeliveryNumberId,
-                    ChargeNumberId = report.ChargeNumberId == 0 ? (int?)null : report.ChargeNumberId,
                     Time = report.InputTime
                 };
 
                 _reportService.InsertReport(entity);
                 _userActivityService.InsertActivity("InsertReport", _localizationService.GetResource("ActivityLog.InsertReport"), entity.Id);
+
+                foreach (var attribute in report.PostedAttributes)
+                {
+                    var roa = new ReportOrderAttribute
+                    {
+                        AttributeId = attribute.AttributeId,
+                        AttributeValueId = attribute.AttributeValueId,
+                        ReportId = entity.Id
+                    };
+                    entity.ReportOrderAttributes.Add(roa);
+                }
 
                 foreach (var nokCriteria in report.NokCriteria)
                 {
@@ -228,7 +243,6 @@ namespace Invenio.Web.Controllers
 
                     _reportDetailService.InsertReport(reportDetails);
                 }
-
                 foreach (var reworkedCriteria in report.ReworkedCriteria)
                 {
                     if (reworkedCriteria.CriteriaId == 0)
@@ -335,11 +349,7 @@ namespace Invenio.Web.Controllers
                 }
             }
 
-
             model.Orders.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.Order"), Value = "0" });
-            model.Parts.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.Parts"), Value = "0" });
-            model.DeliveryNumbers.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.DeliveryNumers"), Value = "0" });
-            model.ChargeNumbers.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.ChargeNumber"), Value = "0" });
             model.BlockedParts.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.BlockedParts"), Value = "0" });
             model.ReworkedParts.Add(new SelectListItem { Text = _localizationService.GetResource("Home.Index.Select.ReworkedParts"), Value = "0" });
             return model;
@@ -365,9 +375,6 @@ namespace Invenio.Web.Controllers
             foreach (var report in reports)
             {
                 var order = _orderService.GetOrderById(report.OrderId);
-                var part = _partService.GetPartById(report.PartId ?? 0);
-                var delNumber = _deliveryNumberService.GetDeliveryNumberById(report.DeliveryNumberId ?? 0);
-                var chNumber = _chargeNumberService.GetChargeNumberById(report.ChargeNumberId ?? 0);
 
                 model.ReportHistoryList.Add(new HistoryModel
                 {
@@ -375,9 +382,6 @@ namespace Invenio.Web.Controllers
                     DateOfInspection = report.DateOfInspection?.Date.ToShortDateString(),
                     Order = report.Order?.Number,
                     Supplier = order?.Supplier?.Name,
-                    PartName = part?.SerNumber,
-                    DeliveryNumber = delNumber?.Number,
-                    ChargeNumber = chNumber?.Number,
                     OkQuantity = report.OkPartsQuantity,
                     NokQuantity = report.NokPartsQuantity,
                     ReworkedQuantity = report.ReworkPartsQuantity,

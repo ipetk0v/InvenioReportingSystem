@@ -1,0 +1,299 @@
+﻿@model OrderAttributeModel
+@using Invenio.Admin.Models.Orders;
+
+@Html.ValidationSummary(false)
+@Html.HiddenFor(model => model.Id)
+
+<script>
+    $(document).ready(function () {
+        bindBootstrapTabSelectEvent('order-attribute-edit');
+    });
+</script>
+
+<div class="content">
+    <div class="form-horizontal">
+        <div id="order-attribute-edit" class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+                @Html.RenderBootstrapTabHeader("tab-info", @T("Admin.Catalog.Attributes.OrderAttributes.Info"), true)
+                @if (Model.Id > 0)
+                {
+                    @Html.RenderBootstrapTabHeader("tab-used-by-orders", @T("Admin.Catalog.Attributes.OrderAttributes.UsedByOrders"))
+                }
+                @Html.RenderBootstrapTabHeader("tab-predefined-values", @T("Admin.Catalog.Attributes.OrderAttributes.PredefinedValues"))
+            </ul>
+            <div class="tab-content">
+                @Html.RenderBootstrapTabContent("tab-info", @TabInfo(), true)
+                @Html.RenderBootstrapTabContent("tab-predefined-values", @TabPredefinedValues())
+                @if (Model.Id > 0)
+                {
+                    @Html.RenderBootstrapTabContent("tab-used-by-orders", @TabUsedByOrders())
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    //custom tabs
+    var eventMessage = new AdminTabStripCreated(this.Html, "order-attribute-edit");
+    EngineContext.Current.Resolve<IEventPublisher>().Publish(eventMessage);
+    foreach (var eventBlock in eventMessage.BlocksToRender)
+    {
+        @eventBlock
+    }
+}
+
+@*save selected tab name*@
+<input type="hidden" id="selected-tab-name" name="selected-tab-name" value="@(Html.GetSelectedTabName())">
+
+@helper TabInfo()
+{
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                @(Html.LocalizedEditor<OrderAttributeModel, OrderAttributeLocalizedModel>("orderattribute-localized",
+                        @<div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.NopLabelFor(model => model.Locales[item].Name)
+                                </div>
+                                <div class="col-md-9">
+                                    @Html.NopEditorFor(model => model.Locales[item].Name)
+                                    @Html.ValidationMessageFor(model => model.Locales[item].Name)
+                                </div>
+                            </div>
+                            @*<div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.NopLabelFor(model => model.Locales[item].Description)
+                                </div>
+                                <div class="col-md-9">
+                                    @Html.EditorFor(model => model.Locales[item].Description, "RichEditor")
+                                    @Html.ValidationMessageFor(model => model.Locales[item].Description)
+                                </div>
+                            </div>*@
+                            @Html.HiddenFor(model => model.Locales[item].LanguageId)
+                        </div>
+        ,
+                        @<div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.NopLabelFor(model => model.Name)
+                                </div>
+                                <div class="col-md-9">
+                                    @Html.NopEditorFor(model => model.Name, required: true)
+                                    @Html.ValidationMessageFor(model => model.Name)
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.NopLabelFor(model => model.ParentOrderAttributeId)
+                                </div>
+                                <div class="col-md-9">
+                                    @Html.NopDropDownListFor(model => model.ParentOrderAttributeId, Model.ParentOrderAttributeList)
+                                    @Html.ValidationMessageFor(model => model.ParentOrderAttributeId)
+                                </div>
+                            </div>
+                        </div>
+        ))
+            </div>
+        </div>
+    </div>
+}
+
+@helper TabPredefinedValues()
+{
+    <div class="panel-group">
+        <div class="panel panel-default">
+            @if (Model.Id > 0)
+            {
+                <div class="panel-body">
+                    <p>
+                        @T("Admin.Catalog.Attributes.OrderAttributes.PredefinedValues.Hint")
+                    </p>
+                    <div id="orderattributevalues-grid"></div>
+
+                    <script>
+                        $(document).ready(function() {
+                            $("#orderattributevalues-grid").kendoGrid({
+                                dataSource: {
+                                    type: "json",
+                                    transport: {
+                                        read: {
+                                            url: "@Html.Raw(Url.Action("PredefinedOrderAttributeValueList", "OrderAttribute", new {orderAttributeId = Model.Id}))",
+                                            type: "POST",
+                                            dataType: "json",
+                                            data: addAntiForgeryToken
+                                        },
+                                        destroy: {
+                                            url: "@Html.Raw(Url.Action("PredefinedOrderAttributeValueDelete", "OrderAttribute"))",
+                                            type: "POST",
+                                            dataType: "json",
+                                            data: addAntiForgeryToken
+                                        }
+                                    },
+                                    schema: {
+                                        data: "Data",
+                                        total: "Total",
+                                        errors: "Errors",
+                                        model: {
+                                            id: "Id",
+                                            fields: {
+                                                Order2Name: { editable: false, type: "string" },
+                                                OrderId2: { editable: false, type: "number" }
+                                            }
+                                        }
+                                    },
+                                    error: function(e) {
+                                        display_kendoui_grid_error(e);
+                                        // Cancel the changes
+                                        this.cancelChanges();
+                                    },
+                                    serverPaging: true,
+                                    serverFiltering: true,
+                                    serverSorting: true
+                                },
+                                pageable: {
+                                    refresh: true,
+                                    numeric: false,
+                                    previousNext: false,
+                                    info: false,
+                                    @Html.Partial("_GridPagerMessages")
+                                },
+                                editable: {
+                                    confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                    mode: "inline"
+                                },
+                                scrollable: false,
+                                columns: [
+                                    {
+                                        field: "Name",
+                                        title: "@T("Admin.Catalog.Attributes.OrderAttributes.PredefinedValues.Fields.Name")",
+                                        width: 200
+                                    }, {
+                                        field: "DisplayOrder",
+                                        title: "@T("Admin.Catalog.Attributes.OrderAttributes.PredefinedValues.Fields.DisplayOrder")",
+                                        width: 100
+                                    }, {
+                                        field: "Id",
+                                        title: "@T("Admin.Common.Edit")",
+                                        width: 100,
+                                        headerAttributes: { style: "text-align:center" },
+                                        attributes: { style: "text-align:center" },
+                                        template: "<button onclick=\"javascript:OpenWindow('@Url.Content("~/Admin/OrderAttribute/PredefinedOrderAttributeValueEditPopup/")#=Id#?btnId=btnRefresh&formId=orderattribute-form', 800, 550, true); return false;\" class='btn btn-default'><i class=\"fa fa-pencil\"></i>@T("Admin.Common.Edit")</button>"
+                                    }, {
+                                        command: { name: "destroy", text: "@T("Admin.Common.Delete")" },
+                                        title: "@T("Admin.Common.Delete")",
+                                        width: 200
+                                    }
+                                ]
+                            });
+                        });
+                    </script>
+                </div>
+                <div class="panel-footer">
+                    <button type="submit" id="btnAddNewValue" onclick="javascript:OpenWindow('@(Url.Action("PredefinedOrderAttributeValueCreatePopup", "OrderAttribute", new {orderAttributeId = Model.Id, btnId = "btnRefresh", formId = "orderattribute-form"}))', 800, 550, true); return false;" class="btn btn-primary">
+                        @T("Admin.Catalog.Attributes.OrderAttributes.PredefinedValues.AddNew")
+                    </button>
+                    <input type="submit" id="btnRefresh" style="display:none" />
+                    <script type="text/javascript">
+                        $(document).ready(function () {
+                            $('#btnRefresh').click(function () {
+                                //refresh grid
+                                var grid = $("#orderattributevalues-grid").data('kendoGrid');
+                                grid.dataSource.read();
+
+                                //return false to don't reload a page
+                                return false;
+                            });
+                        });
+                    </script>
+                </div>
+            }
+            else
+            {
+                <div class="panel-body">
+                    @T("Admin.Catalog.Attributes.OrderAttributes.PredefinedValues.SaveBeforeEdit")
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@helper TabUsedByOrders()
+{
+    var defaultGridPageSize = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().DefaultGridPageSize;
+    var gridPageSizes = EngineContext.Current.Resolve<Invenio.Core.Domain.Common.AdminAreaSettings>().GridPageSizes;
+
+    <div class="panel-group">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <p>
+                    @T("Admin.Catalog.Attributes.OrderAttributes.UsedByOrders.Hint")
+                </p>
+                <div id="used-by-orders-grid"></div>
+
+                <script>
+                    $(document).ready(function () {
+                        $("#used-by-orders-grid").kendoGrid({
+                            dataSource: {
+                                type: "json",
+                                transport: {
+                                    read: {
+                                        url: "@Html.Raw(Url.Action("UsedByOrders", "OrderAttribute", new { orderAttributeId = Model.Id }))",
+                                        type: "POST",
+                                        dataType: "json",
+                                        data: addAntiForgeryToken
+                                    }
+                                },
+                                schema: {
+                                    data: "Data",
+                                    total: "Total",
+                                    errors: "Errors"
+                                },
+                                error: function(e) {
+                                    display_kendoui_grid_error(e);
+                                    // Cancel the changes
+                                    this.cancelChanges();
+                                },
+                                pageSize: @(defaultGridPageSize),
+                                serverPaging: true,
+                                serverFiltering: true,
+                                serverSorting: true
+                            },
+                            pageable: {
+                                refresh: true,
+                                pageSizes: [@(gridPageSizes)],
+                                @Html.Partial("_GridPagerMessages")
+                            },
+                            editable: {
+                                confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                mode: "inline"
+                            },
+                            scrollable: false,
+                            columns: [{
+                                field: "OrderName",
+                                title: "@T("Admin.Catalog.Attributes.OrderAttributes.UsedByOrders.Order")",
+                                width: 400
+                            }, {
+                                field: "Published",
+                                title: "@T("Admin.Catalog.Attributes.OrderAttributes.UsedByOrders.Published")",
+                                width: 100,
+                                headerAttributes: { style: "text-align:center" },
+                                attributes: { style: "text-align:center" },
+                                template: '# if(Published) {# <i class="fa fa-check true-icon"></i> #} else {# <i class="fa fa-close false-icon"></i> #} #'
+                            },
+                            {
+                                field: "Id",
+                                title: "@T("Admin.Common.View")",
+                                width: 100,
+                                headerAttributes: { style: "text-align:center" },
+                                attributes: { style: "text-align:center" },
+                                template: '<a class="btn btn-default" href="@Url.Content("~/Admin/Order/Edit/")#=Id#"><i class="fa fa-eye"></i>@T("Admin.Common.View")</a>'
+                            }]
+                        });
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+}

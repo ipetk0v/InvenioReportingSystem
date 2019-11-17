@@ -118,8 +118,6 @@
     <Compile Include="Authentication\FormsAuthenticationService.cs" />
     <Compile Include="Authentication\IAuthenticationService.cs" />
     <Compile Include="Catalog\RoundingHelper.cs" />
-    <Compile Include="ChargeNumber\ChargeNumberService.cs" />
-    <Compile Include="ChargeNumber\IChargeNumberService.cs" />
     <Compile Include="Common\AddressAttributeExtensions.cs" />
     <Compile Include="Common\AddressAttributeFormatter.cs" />
     <Compile Include="Common\AddressAttributeParser.cs" />
@@ -147,10 +145,10 @@
     <Compile Include="Configuration\SettingService.cs" />
     <Compile Include="Criteria\CriteriaService.cs" />
     <Compile Include="Criteria\ICriteriaService.cs" />
+    <Compile Include="Orders\IOrderAttributeService.cs" />
+    <Compile Include="Orders\OrderAttributeService.cs" />
     <Compile Include="Supplier\SupplierService.cs" />
     <Compile Include="Supplier\ISupplierService.cs" />
-    <Compile Include="DeliveryNumber\DeliveryNumberService.cs" />
-    <Compile Include="DeliveryNumber\IDeliveryNumberService.cs" />
     <Compile Include="Directory\CountryService.cs" />
     <Compile Include="Directory\CurrencyService.cs" />
     <Compile Include="Directory\GeoLookupService.cs" />
@@ -234,8 +232,6 @@
     <Compile Include="Messages\WorkflowMessageService.cs" />
     <Compile Include="Orders\IOrderService.cs" />
     <Compile Include="Orders\OrderService.cs" />
-    <Compile Include="Parts\IPartService.cs" />
-    <Compile Include="Parts\PartService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reports\IReportDetailService.cs" />
     <Compile Include="Reports\IReportService.cs" />

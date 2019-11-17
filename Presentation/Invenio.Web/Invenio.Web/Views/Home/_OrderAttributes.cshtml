@@ -1,0 +1,16 @@
+﻿@model Invenio.Web.Models.Home.OrderAttributeMappingModel
+
+@foreach (var orderAttribute in Model.OrderAttributes)
+{
+    <div class="order-attribute-@orderAttribute.OrderAttributeId">
+        <select class="custom-select mt-3" onchange="filterChildDropdown(this)">
+            <option>Please select...</option>
+            @foreach (var value in orderAttribute.OrderAttributeValues)
+            {
+                <option data-orderAttributeId="@value.OrderAttributeMapping.OrderAttributeId" value="@value.Id">
+                    @value.Name
+                </option>
+            }
+        </select>
+    </div>
+}

@@ -1,6 +1,4 @@
-﻿using Invenio.Core.Domain.Parts;
-
-namespace Invenio.Core.Domain.Reports
+﻿namespace Invenio.Core.Domain.Reports
 {
     public class ReportDetail : BaseEntity
     {

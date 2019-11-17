@@ -1,14 +1,17 @@
 ﻿using Invenio.Core.Domain.Suppliers;
 using System;
+using System.Collections.Generic;
 
 namespace Invenio.Core.Domain.Orders
 {
     public class Order : BaseEntity
     {
+        private ICollection<OrderAttributeMapping> _orderAttributeMappings;
+
         public string Name { get; set; }
 
         public string Number { get; set; }
-        
+
         public int PartsPerHour { get; set; }
 
         public int TotalPartsQuantity { get; set; }
@@ -29,5 +32,11 @@ namespace Invenio.Core.Domain.Orders
 
         public int SupplierId { get; set; }
         public virtual Supplier Supplier { get; set; }
+
+        public virtual ICollection<OrderAttributeMapping> OrderAttributeMappings
+        {
+            get { return _orderAttributeMappings ?? (_orderAttributeMappings = new List<OrderAttributeMapping>()); }
+            protected set { _orderAttributeMappings = value; }
+        }
     }
 }

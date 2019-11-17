@@ -1,0 +1,240 @@
+﻿@model OrderModel
+@using Invenio.Admin.Models.Orders;
+
+@using Invenio.Core.Domain.Catalog
+@using Invenio.Services
+
+@if (Model.Id > 0)
+{
+    if (Model.AvailableOrderAttributes.Count > 0)
+    {
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="orderattributemappings-grid"></div>
+                <script>
+                $(document).ready(function() {
+                    $("#orderattributemappings-grid").kendoGrid({
+                        dataSource: {
+                            type: "json",
+                            transport: {
+                                read: {
+                                    url: "@Html.Raw(Url.Action("OrderAttributeMappingList", "Order", new { orderId = Model.Id }))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                },
+                                create: {
+                                    url: "@Html.Raw(Url.Action("OrderAttributeMappingInsert", "Order", new { orderId = Model.Id }))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                },
+                                update: {
+                                    url: "@Html.Raw(Url.Action("OrderAttributeMappingUpdate", "Order"))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                },
+                                destroy: {
+                                    url: "@Html.Raw(Url.Action("OrderAttributeMappingDelete", "Order"))",
+                                    type: "POST",
+                                    dataType: "json",
+                                    data: addAntiForgeryToken
+                                }
+                            },
+                            schema: {
+                                data: "Data",
+                                total: "Total",
+                                errors: "Errors",
+                                model: {
+                                    id: "Id",
+                                    fields: {
+                                        OrderAttribute: { editable: false, type: "string" },
+                                        OrderAttributeId: { editable: true, type: "number" },
+                                        //TextPrompt: { editable: true, type: "string" },
+                                        //IsRequired: { editable: true, type: "boolean" },
+                                        //AttributeControlType: { editable: true, type: "string" },
+                                        //AttributeControlTypeId: { editable: true, type: "number" },
+                                        //OrderId: { editable: false, type: "number" },
+                                        DisplayOrder: { editable: true, type: "number" },
+                                        ShouldHaveValues: { editable: false, type: "boolean" },
+                                        TotalValues: { editable: false, type: "number" },
+                                        //ValidationRulesAllowed: { editable: false, type: "boolean" },
+                                        //ConditionAllowed: { editable: false, type: "boolean" },
+                                        Id: { editable: false, type: "number" }
+                                    }
+                                }
+                            },
+                            requestEnd: function(e) {
+                                if (e.type == "create" || e.type == "update") {
+                                    this.read();
+                                }
+                            },
+                            error: function(e) {
+                                display_kendoui_grid_error(e);
+                                // Cancel the changes
+                                this.cancelChanges();
+                            },
+                            serverPaging: true,
+                            serverFiltering: true,
+                            serverSorting: true
+                        },
+                        pageable: {
+                            refresh: true,
+                            numeric: false,
+                            previousNext: false,
+                            info: false,
+                            @Html.Partial("_GridPagerMessages")
+                        },
+                        toolbar: [{ name: "create", text: "@T("Admin.Common.AddNewRecord")" }],
+                        edit: function(e) {
+                            if (e.model.isNew()) {
+                                //little hack here
+                                //pre-select the first value of kendoui dropdownlist datasource
+                                //for some reasons (maybe, bug) it always sends 0
+                                //if no value has been selected (changed) in the dropdownlist
+                                if (allOrderAttributes.length > 0) {
+                                    e.model.OrderAttributeId = allOrderAttributes[0].Id;
+                                }
+                                if (allAttributeControlTypes.length > 0) {
+                                    e.model.AttributeControlTypeId = allAttributeControlTypes[0].Id;
+                                }
+                            }
+                        },
+                        editable: {
+                            confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                            mode: "inline"
+                        },
+                        scrollable: false,
+                        columns: [
+                            {
+                                field: "OrderAttributeId",
+                                title: "@T("Admin.Catalog.Orders.OrderAttributes.Attributes.Fields.Attribute")",
+                                width: 200,
+                                editor: orderAttributeDropDownEditor,
+                                template: "#:OrderAttribute#"
+                            },
+                            {
+                                field: "DisplayOrder",
+                                title: "@T("Admin.Catalog.Orders.OrderAttributes.Attributes.Fields.DisplayOrder")",
+                                width: 150,
+                                //integer format
+                                format: "{0:0}"
+                            }, {
+                                field: "ShouldHaveValues",
+                                title: "@T("Admin.Catalog.Orders.OrderAttributes.Attributes.Values")",
+                                width: 150,
+                                headerAttributes: { style: "text-align:center" },
+                                attributes: { style: "text-align:center" },
+                                template: '# if(ShouldHaveValues) {# <a class="btn btn-default" href="@Url.Content("~/Admin/Order/EditAttributeValues/")?orderAttributeMappingId=#=Id#">@T("Admin.Catalog.Orders.OrderAttributes.Attributes.Values.ViewLink")</a> <div>@T("Admin.Catalog.Orders.OrderAttributes.Attributes.Values.TotalValues") #=TotalValues#</div>#}  #'
+                            },
+                            {
+                                command: [
+                                    {
+                                        name: "edit",
+                                        text: {
+                                            edit: "@T("Admin.Common.Edit")",
+                                            update: "@T("Admin.Common.Update")",
+                                            cancel: "@T("Admin.Common.Cancel")"
+                                        }
+                                    }, {
+                                        name: "destroy",
+                                        text: "@T("Admin.Common.Delete")"
+                                    }
+                                ],
+                                width: 200
+                            }
+                        ]
+                    });
+                });
+
+                //local datasource
+                var allOrderAttributes = [
+                    @for (int i = 0; i < Model.AvailableOrderAttributes.Count; i++)
+                    {
+                        var orderAttributeItem = Model.AvailableOrderAttributes[i];
+                        <text>
+                            {
+                                Id: @(orderAttributeItem.Id),
+                                Name: "@(Html.Raw(HttpUtility.JavaScriptStringEncode(orderAttributeItem.Name)))"
+                            }
+                                </text>
+                        if (i != Model.AvailableOrderAttributes.Count - 1)
+                        {
+                            <text>,</text>
+                        }
+                    }
+                ];
+
+                var allAttributeControlTypes = [
+                    @{
+                        var allAttributeControlTypes = (from act in AttributeControlType.DropdownList.ToSelectList()
+                            select new {Id = act.Value, Name = act.Text}).ToList();
+                    }
+                            @for (int i = 0; i < allAttributeControlTypes.Count; i++)
+                    {
+                        var attributeControlType = allAttributeControlTypes[i];
+                        <text>
+                            {
+                                Id: @(attributeControlType.Id),
+                                Name: "@(Html.Raw(HttpUtility.JavaScriptStringEncode(attributeControlType.Name)))"
+                            }
+                            </text>
+                        if (i != allAttributeControlTypes.Count - 1)
+                        {
+                            <text>,</text>
+                        }
+                    }
+                ];
+
+                function orderAttributeDropDownEditor(container, options) {
+                    $('<input required data-text-field="Name" data-value-field="Id" data-bind="value:OrderAttributeId"/>')
+                        .appendTo(container)
+                        .kendoDropDownList({
+                            autoBind: false,
+                            dataSource: allOrderAttributes
+                        });
+                }
+
+                function attributeControlTypeDropDownEditor(container, options) {
+                    $('<input required data-text-field="Name" data-value-field="Id" data-bind="value:AttributeControlTypeId"/>')
+                        .appendTo(container)
+                        .kendoDropDownList({
+                            autoBind: false,
+                            dataSource: allAttributeControlTypes
+                        });
+                }
+                </script>
+                <input type="submit" id="btnRefreshOrderAttributes" style="display: none" />
+                <script type="text/javascript">
+                    $(document).ready(function () {
+                        $('#btnRefreshOrderAttributes').click(function () {
+                            //refresh grid
+                            var grid = $("#orderattributemappings-grid").data('kendoGrid');
+                            grid.dataSource.read();
+
+                            //return false to don't reload a page
+                            return false;
+                        });
+                    });
+                </script>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="panel panel-default">
+            <div class="panel-body">
+                @T("Admin.Catalog.Orders.OrderAttributes.NoAttributesAvailable")
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="panel panel-default">
+        <div class="panel-body">
+            @T("Admin.Catalog.Orders.OrderAttributes.SaveBeforeEdit")
+        </div>
+    </div>
+}

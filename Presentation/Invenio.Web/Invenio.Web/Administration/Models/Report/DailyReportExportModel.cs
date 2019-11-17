@@ -51,13 +51,13 @@ namespace Invenio.Admin.Models.Report
             }
         }
 
-        public string PartNumber
-        {
-            get
-            {
-                return string.Join(", ", Items.Select(s => s.PartNumber).Distinct().ToList());
-            }
-        }
+        //public string PartNumber
+        //{
+        //    get
+        //    {
+        //        return string.Join(", ", Items.Select(s => s.PartNumber).Distinct().ToList());
+        //    }
+        //}
 
         public string OrderNo
         {

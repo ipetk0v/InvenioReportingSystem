@@ -37,137 +37,131 @@
             <div class="panel panel-default">
                 <div class="panel-body">
                     <div id="final-reports-grid"></div>
-                    <script>
-            $(document).ready(function() {
-                $("#final-reports-grid").kendoGrid({
-                    dataSource: {
-                        type: "json",
-                        transport: {
-                            read: {
-                                url: "@Html.Raw(Url.Action("DailyFinalReport", "Report"))",
-                                type: "POST",
-                                dataType: "json",
-                                data: additionalData
-                            }
-                        },
-                        schema: {
-                            data: "Data",
-                            total: "Total",
-                            errors: "Errors"
-                        },
-                        error: function(e) {
-                            display_kendoui_grid_error(e);
-                            // Cancel the changes
-                            this.cancelChanges();
-                        },
-                        //aggregate: [{ field: "Quantity", aggregate: "sum" },
-                        //    { field: "BlockedParts", aggregate: "sum" },
-                        //    { field: "ReworkedParts", aggregate: "sum" },
-                        //    { field: "NokParts", aggregate: "sum" }
-                        //],
-                        pageSize: @(defaultGridPageSize),
-                        serverPaging: true,
-                        serverFiltering: true,
-                        serverSorting: true
-                    },
-                    pageable: {
-                        refresh: true,
-                        pageSizes: [@(gridPageSizes)],
-                        @Html.Partial("_GridPagerMessages")
-                    },
-                    editable: {
-                        confirmation: "@T("Admin.Common.DeleteConfirmation")",
-                        mode: "inline"
-                    },
-                    scrollable: false,
-                    columns:
-                    [
-                        {
-                            field: "DateOfInspection",
-                            title: "@T("Admin.Report.DailyFinalReport.DateOfInspection")",
-                            type: "date",
-                            format: "{0:dd MMM yyyy}"
-                        },
-                        {
-                            field: "PartNumber",
-                            title: "@T("Admin.Report.DailyFinalReport.PartNumber")"
-                        },{
-                            field: "DeliveryNumber",
-                            title: "@T("Admin.Report.DailyFinalReport.DeliveryNumber")"
-                        },
-                        {
-                            field: "ChargeNumber",
-                            title: "@T("Admin.Report.DailyFinalReport.ChargeNumber")"
-                        },
-                        {
-                            field: "Quantity",
-                            title: "@T("Admin.Report.DailyFinalReport.Quantity")"
-                        },{
-                            field: "FirstRunOkParts",
-                            title: "@T("Admin.Report.DailyFinalReport.FirstRunOkParts")"
-                        },{
-                            field: "BlockedParts",
-                            title: "@T("Admin.Report.DailyFinalReport.BlockedParts")"
-                        },{
-                            field: "NokParts",
-                            title: "@T("Admin.Report.DailyFinalReport.NokParts")"
-                        },
-                        {
-                            field: "Dod1",
-                            title: "@T("1")"
-                        },
-                        {
-                            field: "Dod2",
-                            title: "@T("2")"
-                        },
-                        {
-                            field: "Dod3",
-                            title: "@T("3")"
-                        },
-                        {
-                            field: "Dod4",
-                            title: "@T("4")"
-                        },
-                        {
-                            field: "Dod5",
-                            title: "@T("5")"
-                        },
-                        {
-                            field: "Dod6",
-                            title: "@T("6")"
-                        },
-                        {
-                            field: "Dod7",
-                            title: "@T("7")"
-                        },
-                        {
-                            field: "Dod8",
-                            title: "@T("8")"
-                        },
-                        {
-                            field: "NokPercentage",
-                            title: "@T("Admin.Report.DailyFinalReport.NokPercentage")"
-                        },{
-                            field: "ReworkedParts",
-                            title: "@T("Admin.Report.DailyFinalReport.ReworkedParts")"
-                        },{
-                            field: "Dor1",
-                            title: "@T("1")"
-                        }, {
-                            field: "Dor2",
-                            title: "@T("2")"
-                        },{
-                            field: "Dor3",
-                            title: "@T("3")"
-                        },{
-                            field: "Dor4",
-                            title: "@T("4")"
-                        },{
-                            field: "ReworkedPercentage",
-                            title: "@T("Admin.Report.DailyFinalReport.ReworkedPercentage")"
-                        }]
-                });
-            });
+
+                <script>
+                        $(document).ready(function() {
+                            $("#final-reports-grid").kendoGrid({
+                                dataSource: {
+                                    type: "json",
+                                    transport: {
+                                        read: {
+                                            url: "@Html.Raw(Url.Action("DailyFinalReport", "Report"))",
+                                            type: "POST",
+                                            dataType: "json",
+                                            data: additionalData
+                                        }
+                                    },
+                                    schema: {
+                                        data: "Data",
+                                        total: "Total",
+                                        errors: "Errors"
+                                    },
+                                    error: function(e) {
+                                        display_kendoui_grid_error(e);
+                                        // Cancel the changes
+                                        this.cancelChanges();
+                                    },
+                                    //aggregate: [{ field: "Quantity", aggregate: "sum" },
+                                    //    { field: "BlockedParts", aggregate: "sum" },
+                                    //    { field: "ReworkedParts", aggregate: "sum" },
+                                    //    { field: "NokParts", aggregate: "sum" }
+                                    //],
+                                    pageSize: @(defaultGridPageSize),
+                                    serverPaging: true,
+                                    serverFiltering: true,
+                                    serverSorting: true
+                                },
+                                pageable: {
+                                    refresh: true,
+                                    pageSizes: [@(gridPageSizes)],
+                                    @Html.Partial("_GridPagerMessages")
+                                },
+                                editable: {
+                                    confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                    mode: "inline"
+                                },
+                                scrollable: false,
+                                columns:
+                                [
+                                    {
+                                        field: "DateOfInspection",
+                                        title: "@T("Admin.Report.DailyFinalReport.DateOfInspection")",
+                                        type: "date",
+                                        format: "{0:dd MMM yyyy}"
+                                    },
+                                    {
+                                        field: "PartNumber",
+                                        title: "@T("Admin.Report.DailyFinalReport.PartNumber")"
+                                    },
+                                    {
+                                        field: "Quantity",
+                                        title: "@T("Admin.Report.DailyFinalReport.Quantity")"
+                                    },{
+                                        field: "FirstRunOkParts",
+                                        title: "@T("Admin.Report.DailyFinalReport.FirstRunOkParts")"
+                                    },{
+                                        field: "BlockedParts",
+                                        title: "@T("Admin.Report.DailyFinalReport.BlockedParts")"
+                                    },{
+                                        field: "NokParts",
+                                        title: "@T("Admin.Report.DailyFinalReport.NokParts")"
+                                    },
+                                    {
+                                        field: "Dod1",
+                                        title: "@T("1")"
+                                    },
+                                    {
+                                        field: "Dod2",
+                                        title: "@T("2")"
+                                    },
+                                    {
+                                        field: "Dod3",
+                                        title: "@T("3")"
+                                    },
+                                    {
+                                        field: "Dod4",
+                                        title: "@T("4")"
+                                    },
+                                    {
+                                        field: "Dod5",
+                                        title: "@T("5")"
+                                    },
+                                    {
+                                        field: "Dod6",
+                                        title: "@T("6")"
+                                    },
+                                    {
+                                        field: "Dod7",
+                                        title: "@T("7")"
+                                    },
+                                    {
+                                        field: "Dod8",
+                                        title: "@T("8")"
+                                    },
+                                    {
+                                        field: "NokPercentage",
+                                        title: "@T("Admin.Report.DailyFinalReport.NokPercentage")"
+                                    },{
+                                        field: "ReworkedParts",
+                                        title: "@T("Admin.Report.DailyFinalReport.ReworkedParts")"
+                                    },{
+                                        field: "Dor1",
+                                        title: "@T("1")"
+                                    }, {
+                                        field: "Dor2",
+                                        title: "@T("2")"
+                                    },{
+                                        field: "Dor3",
+                                        title: "@T("3")"
+                                    },{
+                                        field: "Dor4",
+                                        title: "@T("4")"
+                                    },{
+                                        field: "ReworkedPercentage",
+                                        title: "@T("Admin.Report.DailyFinalReport.ReworkedPercentage")"
+                                    }]
+                            });
+                        });
                     </script>
                     <script type="text/javascript">
                         var selectedIds = [];
@@ -204,147 +198,147 @@
                         <div class="col-md-6" style="margin-top:10px;">
                             <div id="blocked-reports-grid"></div>
                             <script>
-                        var record = 0;
+                                var record = 0;
 
-                        $(document).ready(function() {
-                            $("#blocked-reports-grid").kendoGrid({
-                                dataSource: {
-                                    type: "json",
-                                    transport: {
-                                        read: {
-                                            url: "@Html.Raw(Url.Action("BlockedReportFinalList", "Report"))",
-                                            type: "POST",
-                                            dataType: "json",
-                                            data: additionalData
-                                        }
-                                    },
-                                    schema: {
-                                        data: "Data",
-                                        total: "Total",
-                                        errors: "Errors"
-                                    },
-                                    error: function(e) {
-                                        display_kendoui_grid_error(e);
-                                        // Cancel the changes
-                                        this.cancelChanges();
-                                    },
-                                    pageSize: @(defaultGridPageSize),
-                                    serverPaging: true,
-                                    serverFiltering: true,
-                                    serverSorting: true
-                                },
-                                pageable: {
-                                    refresh: true,
-                                    pageSizes: [@(gridPageSizes)],
-                                    @Html.Partial("_GridPagerMessages")
-                                },
-                                editable: {
-                                    confirmation: "@T("Admin.Common.DeleteConfirmation")",
-                                    mode: "inline"
-                                },
-                                scrollable: false,
-                                dataBinding: function() {
-                                    record = (this.dataSource.page() -1) * this.dataSource.pageSize();
-                                },
-                                columns: [
-                                    {
-                                        title: "#",
-                                        template: "#= ++record #",
-                                        width: 35
-                                    },
-                                    {
-                                        field: "Description",
-                                        title: "@T("Admin.Report.DailyFinalReport.DescriptionOfDefects")"
-                                    }]
-                            });
-                        });
+                                $(document).ready(function() {
+                                    $("#blocked-reports-grid").kendoGrid({
+                                        dataSource: {
+                                            type: "json",
+                                            transport: {
+                                                read: {
+                                                    url: "@Html.Raw(Url.Action("BlockedReportFinalList", "Report"))",
+                                                    type: "POST",
+                                                    dataType: "json",
+                                                    data: additionalData
+                                                }
+                                            },
+                                            schema: {
+                                                data: "Data",
+                                                total: "Total",
+                                                errors: "Errors"
+                                            },
+                                            error: function(e) {
+                                                display_kendoui_grid_error(e);
+                                                // Cancel the changes
+                                                this.cancelChanges();
+                                            },
+                                            pageSize: @(defaultGridPageSize),
+                                            serverPaging: true,
+                                            serverFiltering: true,
+                                            serverSorting: true
+                                        },
+                                        pageable: {
+                                            refresh: true,
+                                            pageSizes: [@(gridPageSizes)],
+                                            @Html.Partial("_GridPagerMessages")
+                                        },
+                                        editable: {
+                                            confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                            mode: "inline"
+                                        },
+                                        scrollable: false,
+                                        dataBinding: function() {
+                                            record = (this.dataSource.page() -1) * this.dataSource.pageSize();
+                                        },
+                                        columns: [
+                                            {
+                                                title: "#",
+                                                template: "#= ++record #",
+                                                width: 35
+                                            },
+                                            {
+                                                field: "Description",
+                                                title: "@T("Admin.Report.DailyFinalReport.DescriptionOfDefects")"
+                                            }]
+                                    });
+                                });
 
-                        function additionalData() {
-                            var data = {
-                                OrderId: '@Model.OrderId'
-                                @*CreatedOnFrom: $('#@Html.FieldIdFor(model => model.CreatedOnFrom)').val(),
+                                function additionalData() {
+                                    var data = {
+                                        OrderId: '@Model.OrderId'
+                                        @*CreatedOnFrom: $('#@Html.FieldIdFor(model => model.CreatedOnFrom)').val(),
                                 CreatedOnTo: $('#@Html.FieldIdFor(model => model.CreatedOnTo)').val(),
                                 SearchApprovedId: $('#SearchApprovedId').val()*@
-                            };
-                            addAntiForgeryToken(data);
-                            return data;
-                        }
+                                    };
+                                    addAntiForgeryToken(data);
+                                    return data;
+                                }
                             </script>
                         </div>
                         <div class="col-md-6" style="margin-top: 10px;">
                             <div id="total-reports-grid"></div>
                             <script>
-                        var record = 0;
-                        $(document).ready(function() {
-                            $("#total-reports-grid").kendoGrid({
-                                dataSource: {
-                                    type: "json",
-                                    transport: {
-                                        read: {
-                                            url: "@Html.Raw(Url.Action("TotalOrderReportData", "Report"))",
-                                            type: "POST",
-                                            dataType: "json",
-                                            data: additionalData
-                                        }
-                                    },
-                                    schema: {
-                                        data: "Data",
-                                        total: "Total",
-                                        errors: "Errors"
-                                    },
-                                    error: function(e) {
-                                        display_kendoui_grid_error(e);
-                                        // Cancel the changes
-                                        this.cancelChanges();
-                                    },
-                                    //pageSize: @(defaultGridPageSize),
-                                    //serverPaging: true,
-                                    //serverFiltering: true,
-                                    //serverSorting: true
-                                },
-                                editable: {
-                                    confirmation: "@T("Admin.Common.DeleteConfirmation")",
-                                    mode: "inline"
-                                },
-                                scrollable: false,
-                                dataBinding: function() {
-                                    record = (this.dataSource.page() -1) * this.dataSource.pageSize();
-                                },
-                                columns: [
-                                    {
-                                        field: "TotalChecked",
-                                        title: "@T("Admin.Report.DailyFinalReport.TotalChecked")"
-                                    },
-                                    {
-                                        field: "TotalOk",
-                                        title: "@T("Admin.Report.DailyFinalReport.TotalOk")"
-                                    },
-                                    {
-                                        field: "TotalBlocked",
-                                        title: "@T("Admin.Report.DailyFinalReport.TotalBlocked")"
-                                    },
-                                    {
-                                        field: "TotalReworked",
-                                        title: "@T("Admin.Report.DailyFinalReport.TotalReworked")"
-                                    },
-                                    {
-                                        field: "TotalNok",
-                                        title: "@T("Admin.Report.DailyFinalReport.TotalNok")"
-                                    },
-                                    {
-                                        field: "NokPercentage",
-                                        title: "@T("Admin.Report.DailyFinalReport.NokPercentage")"
-                                    }]
-                            });
-                        });
+                                var record = 0;
+                                $(document).ready(function() {
+                                    $("#total-reports-grid").kendoGrid({
+                                        dataSource: {
+                                            type: "json",
+                                            transport: {
+                                                read: {
+                                                    url: "@Html.Raw(Url.Action("TotalOrderReportData", "Report"))",
+                                                    type: "POST",
+                                                    dataType: "json",
+                                                    data: additionalData
+                                                }
+                                            },
+                                            schema: {
+                                                data: "Data",
+                                                total: "Total",
+                                                errors: "Errors"
+                                            },
+                                            error: function(e) {
+                                                display_kendoui_grid_error(e);
+                                                // Cancel the changes
+                                                this.cancelChanges();
+                                            },
+                                            //pageSize: @(defaultGridPageSize),
+                                            //serverPaging: true,
+                                            //serverFiltering: true,
+                                            //serverSorting: true
+                                        },
+                                        editable: {
+                                            confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                            mode: "inline"
+                                        },
+                                        scrollable: false,
+                                        dataBinding: function() {
+                                            record = (this.dataSource.page() -1) * this.dataSource.pageSize();
+                                        },
+                                        columns: [
+                                            {
+                                                field: "TotalChecked",
+                                                title: "@T("Admin.Report.DailyFinalReport.TotalChecked")"
+                                            },
+                                            {
+                                                field: "TotalOk",
+                                                title: "@T("Admin.Report.DailyFinalReport.TotalOk")"
+                                            },
+                                            {
+                                                field: "TotalBlocked",
+                                                title: "@T("Admin.Report.DailyFinalReport.TotalBlocked")"
+                                            },
+                                            {
+                                                field: "TotalReworked",
+                                                title: "@T("Admin.Report.DailyFinalReport.TotalReworked")"
+                                            },
+                                            {
+                                                field: "TotalNok",
+                                                title: "@T("Admin.Report.DailyFinalReport.TotalNok")"
+                                            },
+                                            {
+                                                field: "NokPercentage",
+                                                title: "@T("Admin.Report.DailyFinalReport.NokPercentage")"
+                                            }]
+                                    });
+                                });
 
-                        function additionalData() {
-                            var data = {
-                                OrderId: '@Model.OrderId'
-                            };
-                            addAntiForgeryToken(data);
-                            return data;
-                        }
+                                function additionalData() {
+                                    var data = {
+                                        OrderId: '@Model.OrderId'
+                                    };
+                                    addAntiForgeryToken(data);
+                                    return data;
+                                }
                             </script>
                         </div>
                     </div>
@@ -352,70 +346,70 @@
                         <div class="col-md-6" style="margin-top:10px;">
                             <div id="reworked-reports-grid"></div>
                             <script>
-                        var record = 0;
-                        $(document).ready(function() {
-                            $("#reworked-reports-grid").kendoGrid({
-                                dataSource: {
-                                    type: "json",
-                                    transport: {
-                                        read: {
-                                            url: "@Html.Raw(Url.Action("ReworkedReportFinalList", "Report"))",
-                                            type: "POST",
-                                            dataType: "json",
-                                            data: additionalData
-                                        }
-                                    },
-                                    schema: {
-                                        data: "Data",
-                                        total: "Total",
-                                        errors: "Errors"
-                                    },
-                                    error: function(e) {
-                                        display_kendoui_grid_error(e);
-                                        // Cancel the changes
-                                        this.cancelChanges();
-                                    },
-                                    pageSize: @(defaultGridPageSize),
-                                    serverPaging: true,
-                                    serverFiltering: true,
-                                    serverSorting: true
-                                },
-                                pageable: {
-                                    refresh: true,
-                                    pageSizes: [@(gridPageSizes)],
-                                    @Html.Partial("_GridPagerMessages")
-                                },
-                                editable: {
-                                    confirmation: "@T("Admin.Common.DeleteConfirmation")",
-                                    mode: "inline"
-                                },
-                                scrollable: false,
-                                dataBinding: function() {
-                                    record = (this.dataSource.page() -1) * this.dataSource.pageSize();
-                                },
-                                columns: [
-                                    {
-                                        title: "#",
-                                        template: "#= ++record #",
-                                        width: 35
-                                    },
-                                    {
-                                        field: "Description",
-                                        title: "@T("Admin.Report.DailyFinalReport.DescriptionOfRework")"
-                                    }]
-                            });
-                        });
+                                var record = 0;
+                                $(document).ready(function() {
+                                    $("#reworked-reports-grid").kendoGrid({
+                                        dataSource: {
+                                            type: "json",
+                                            transport: {
+                                                read: {
+                                                    url: "@Html.Raw(Url.Action("ReworkedReportFinalList", "Report"))",
+                                                    type: "POST",
+                                                    dataType: "json",
+                                                    data: additionalData
+                                                }
+                                            },
+                                            schema: {
+                                                data: "Data",
+                                                total: "Total",
+                                                errors: "Errors"
+                                            },
+                                            error: function(e) {
+                                                display_kendoui_grid_error(e);
+                                                // Cancel the changes
+                                                this.cancelChanges();
+                                            },
+                                            pageSize: @(defaultGridPageSize),
+                                            serverPaging: true,
+                                            serverFiltering: true,
+                                            serverSorting: true
+                                        },
+                                        pageable: {
+                                            refresh: true,
+                                            pageSizes: [@(gridPageSizes)],
+                                            @Html.Partial("_GridPagerMessages")
+                                        },
+                                        editable: {
+                                            confirmation: "@T("Admin.Common.DeleteConfirmation")",
+                                            mode: "inline"
+                                        },
+                                        scrollable: false,
+                                        dataBinding: function() {
+                                            record = (this.dataSource.page() -1) * this.dataSource.pageSize();
+                                        },
+                                        columns: [
+                                            {
+                                                title: "#",
+                                                template: "#= ++record #",
+                                                width: 35
+                                            },
+                                            {
+                                                field: "Description",
+                                                title: "@T("Admin.Report.DailyFinalReport.DescriptionOfRework")"
+                                            }]
+                                    });
+                                });
 
-                        function additionalData() {
-                            var data = {
-                                OrderId: '@Model.OrderId'
-                                @*CreatedOnFrom: $('#@Html.FieldIdFor(model => model.CreatedOnFrom)').val(),
+                                function additionalData() {
+                                    var data = {
+                                        OrderId: '@Model.OrderId'
+                                        @*CreatedOnFrom: $('#@Html.FieldIdFor(model => model.CreatedOnFrom)').val(),
                                 CreatedOnTo: $('#@Html.FieldIdFor(model => model.CreatedOnTo)').val(),
                                 SearchApprovedId: $('#SearchApprovedId').val()*@
-                            };
-                            addAntiForgeryToken(data);
-                            return data;
-                        }
+                                    };
+                                    addAntiForgeryToken(data);
+                                    return data;
+                                }
                             </script>
                         </div>
                     </div>

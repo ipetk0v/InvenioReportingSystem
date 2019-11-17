@@ -1,15 +1,14 @@
-﻿using System;
-using Invenio.Core.Domain.ChargeNumbers;
-using Invenio.Core.Domain.Criterias;
-using Invenio.Core.Domain.DeliveryNumbers;
-using Invenio.Core.Domain.Orders;
-using Invenio.Core.Domain.Parts;
+﻿using Invenio.Core.Domain.Orders;
 using Invenio.Core.Domain.Users;
+using System;
+using System.Collections.Generic;
 
 namespace Invenio.Core.Domain.Reports
 {
     public class Report : BaseEntity
     {
+        private ICollection<ReportOrderAttribute> _reportOrderAttributes;
+
         public long CheckedPartsQuantity { get; set; }
         public long OkPartsQuantity { get; set; }
         public long NokPartsQuantity { get; set; }
@@ -31,13 +30,10 @@ namespace Invenio.Core.Domain.Reports
         public int OrderId { get; set; }
         public Order Order { get; set; }
 
-        public int? PartId { get; set; }
-        public Part Part { get; set; }
-
-        public int? ChargeNumberId { get; set; }
-        public ChargeNumber ChargeNumber { get; set; }
-
-        public int? DeliveryNumberId { get; set; }
-        public DeliveryNumber DeliveryNumber { get; set; }
+        public virtual ICollection<ReportOrderAttribute> ReportOrderAttributes
+        {
+            get { return _reportOrderAttributes ?? (_reportOrderAttributes = new List<ReportOrderAttribute>()); }
+            protected set { _reportOrderAttributes = value; }
+        }
     }
 }

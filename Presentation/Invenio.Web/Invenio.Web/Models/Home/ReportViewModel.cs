@@ -3,6 +3,7 @@ using System.Collections;
 using Invenio.Web.Framework.Mvc;
 using System.Collections.Generic;
 using System.Web.Mvc;
+using Invenio.Core.Domain.Orders;
 
 namespace Invenio.Web.Models.Home
 {
@@ -23,13 +24,12 @@ namespace Invenio.Web.Models.Home
             WorkShifts = new List<SelectListItem>();
             Suppliers = new List<SelectListItem>();
             Orders = new List<SelectListItem>();
-            DeliveryNumbers = new List<SelectListItem>();
-            ChargeNumbers = new List<SelectListItem>();
             BlockedParts = new List<SelectListItem>();
             ReworkedParts = new List<SelectListItem>();
             NokCriteria = new List<CriteriaModel>();
             ReworkedCriteria = new List<CriteriaModel>();
-            Parts = new List<SelectListItem>(); 
+            Attributes = new List<OrderAttributeModel>();
+            PostedAttributes = new List<PostedAttributesModel>();
         }
 
         public int WorkShiftId { get; set; }
@@ -39,17 +39,10 @@ namespace Invenio.Web.Models.Home
         public int supplierId { get; set; }
         public IList<SelectListItem> Suppliers { get; set; }
 
-        public int PartId { get; set; }
-        public IList<SelectListItem> Parts { get; set; }
-
         public int OrderId { get; set; }
         public IList<SelectListItem> Orders { get; set; }
 
-        public int DeliveryNumberId { get; set; }
-        public IList<SelectListItem> DeliveryNumbers { get; set; }
-
-        public int ChargeNumberId { get; set; }
-        public IList<SelectListItem> ChargeNumbers { get; set; }
+        public IList<OrderAttributeModel> Attributes { get; set; }
 
         public int CheckedQuantity { get; set; }
 
@@ -63,8 +56,38 @@ namespace Invenio.Web.Models.Home
 
         public IList<CriteriaModel> NokCriteria { get; set; }
         public IList<CriteriaModel> ReworkedCriteria { get; set; }
+        public IList<PostedAttributesModel> PostedAttributes { get; set; }
     }
 
+    public class PostedAttributesModel
+    {
+        public int AttributeId { get; set; }
+
+        public int AttributeValueId { get; set; }
+    }
+
+    public class OrderAttributeMappingModel
+    {
+        public OrderAttributeMappingModel()
+        {
+            OrderAttributes = new List<OrderAttributeModel>();
+        }
+
+        public IList<OrderAttributeModel> OrderAttributes { get; set; }
+    }
+
+    public class OrderAttributeModel
+    {
+        public OrderAttributeModel()
+        {
+            OrderAttributeValues = new List<OrderAttributeValue>();
+        }
+
+        public string OrderAttribute { get; set; }
+        public int OrderAttributeId { get; set; }
+        public IList<OrderAttributeValue> OrderAttributeValues { get; set; }
+    }
+    
     public class CriteriaModel : BaseNopModel
     {
         public int CriteriaId { get; set; }

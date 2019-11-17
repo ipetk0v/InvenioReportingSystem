@@ -7519,6 +7519,7 @@
     <Content Include="Views\User\Login.cshtml" />
     <Content Include="Views\Home\ReportHistory.cshtml" />
     <Content Include="Views\Shared\_BaseLayout.cshtml" />
+    <Content Include="Views\Home\_OrderAttributes.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
