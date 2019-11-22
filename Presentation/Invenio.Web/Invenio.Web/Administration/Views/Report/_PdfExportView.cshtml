@@ -14,10 +14,6 @@
                 <td style="border-bottom-width: 1px">@Model.SupplierName</td>
             </tr>
             <tr>
-                <td>PART NUMBER :</td>
-                <td>@Model.PartNumber</td>
-            </tr>
-            <tr>
                 <td>PART DESCRIPTION :</td>
                 <td></td>
             </tr>
@@ -43,9 +39,9 @@
                 <tr>
                     <th>No</th>
                     <th>Date of inspection</th>
-                    <th>Part number</th>
-                    <th>Delivery №</th>
-                    <th>Charge №</th>
+                    <th colspan="@Model.Attributes.Count">
+                        Attributes
+                    </th>
                     <th>Quantity</th>
                     <th>First run OK parts</th>
                     <th>Blocked parts</th>
@@ -60,8 +56,10 @@
                 <tr>
                     <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.RowNumber")</th>
                     <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.DateOfInspection")</th>
-                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.PartNumber")</th>
-                    <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.DeliveryNumber")</th>
+                    @foreach (var attr in Model.Attributes)
+                    {
+                        <th style="border-top: 1px">@attr.Name</th>
+                    }
                     <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.ChargeNumber")</th>
                     <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.Quantity")</th>
                     <th style="border-top: 1px">@T("Admin.Report.DailyFinalReport.FirstRunOkParts")</th>
@@ -91,9 +89,11 @@
                 <tr>
                     <td>@(i++)</td>
                     <td>@(item.DateOfInspection.HasValue ? item.DateOfInspection.Value.ToString("dd.MMM.yy") : "")</td>
-                    <td>@item.PartNumber</td>
-                    <td>@item.DeliveryNumber</td>
-                    <td>@item.ChargeNumber</td>
+                    @foreach (var attr in Model.Attributes)
+                    {
+                        <td>@(item.Attributes.ContainsKey(attr.Id) ? item.Attributes[attr.Id] : string.Empty)</td>
+                    }
+
                     <td>@item.Quantity</td>
                     <td>@item.FirstRunOkParts</td>
                     <td>@item.BlockedParts</td>

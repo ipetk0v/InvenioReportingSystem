@@ -1,11 +1,14 @@
 ﻿using Invenio.Web.Framework.Mvc;
 using System;
+using System.Collections.Generic;
 
 namespace Invenio.Admin.Models.Report
 {
     public class DailyReportModel : BaseNopEntityModel
     {
         public DateTime? DateOfInspection { get; set; }
+        public string AttrsKey { get; set; }
+        public Dictionary<int, string> Attributes { get; set; }
 
         public long Quantity { get; set; }
 

@@ -11,12 +11,15 @@ namespace Invenio.Admin.Models.Report
     {
 
         public DailyReportExportModel(IEnumerable<Core.Domain.Criterias.Criteria> criterias,
-            IOrderedEnumerable<DailyReportModel> items, Order order)
+            IOrderedEnumerable<DailyReportModel> items, Order order, IEnumerable<OrderAttribute> attributes)
         {
             _criterias = criterias;
             Items = items;
             _order = order;
+            Attributes = attributes.ToList();
         }
+
+        public List<OrderAttribute> Attributes { get; set; }
 
         public IEnumerable<DailyReportModel> MainTableItems { get; set; }
 
