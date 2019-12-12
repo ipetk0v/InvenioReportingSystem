@@ -26,6 +26,7 @@ namespace Invenio.Admin.Models.Orders
         public int PartId { get; set; }
         public IList<OrderPartsModel> Parts { get; set; }
 
+        [NopResourceDisplayName("Admin.Catalog.Attributes.OrderAttributes.UsedByOrders.ParentOrderAttributeId")]
         public int? ParentOrderAttributeId { get; set; }
         public IList<SelectListItem> ParentOrderAttributeList { get; set; }
 
@@ -34,7 +35,7 @@ namespace Invenio.Admin.Models.Orders
         public partial class UsedByOrderModel : BaseNopEntityModel
         {
             [NopResourceDisplayName("Admin.Catalog.Attributes.OrderAttributes.UsedByOrders.Order")]
-            public string OrderName { get; set; }
+            public string OrderNumber { get; set; }
             [NopResourceDisplayName("Admin.Catalog.Attributes.OrderAttributes.UsedByOrders.Published")]
             public bool Published { get; set; }
         }

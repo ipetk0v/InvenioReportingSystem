@@ -11,12 +11,13 @@ namespace Invenio.Admin.Models.Report
     {
 
         public DailyReportExportModel(IEnumerable<Core.Domain.Criterias.Criteria> criterias,
-            IOrderedEnumerable<DailyReportModel> items, Order order, IEnumerable<OrderAttribute> attributes)
+            IOrderedEnumerable<DailyReportModel> items, Order order, IEnumerable<OrderAttribute> attributes, string partNumbers)
         {
             _criterias = criterias;
             Items = items;
             _order = order;
             Attributes = attributes.ToList();
+            PartNumbers = partNumbers;
         }
 
         public List<OrderAttribute> Attributes { get; set; }
@@ -27,6 +28,7 @@ namespace Invenio.Admin.Models.Report
         public IOrderedEnumerable<DailyReportModel> Items { get; set; }
         private readonly Order _order;
 
+        public string PartNumbers { get; set; }
 
         public List<Core.Domain.Criterias.Criteria> BlockedCriterias
         {
@@ -58,7 +60,10 @@ namespace Invenio.Admin.Models.Report
         //{
         //    get
         //    {
-        //        return string.Join(", ", Items.Select(s => s.PartNumber).Distinct().ToList());
+        //        return string.Join(", ", Items.Select(s => s.Attributes.ContainsValue("Part")
+        //            ? s.Attributes.Values.First()
+        //            : string.Empty)
+        //            .Distinct().ToList());
         //    }
         //}
 

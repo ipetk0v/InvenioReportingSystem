@@ -40,8 +40,9 @@ namespace Invenio.Services.Reports
             int orderId = 0,
             int isAprroved = 0,
             int userId = 0,
-            DateTime? fromDate = null,
-            DateTime? toDate = null,
+            DateTime? date = null,
+            DateTime? DateFrom = null,
+            DateTime? DateTo = null,
             int pageIndex = 0,
             int pageSize = int.MaxValue,
             bool showHidden = false)
@@ -66,11 +67,15 @@ namespace Invenio.Services.Reports
             if (userId != 0)
                 query = query.Where(x => x.UserId == userId);
 
-            if (fromDate.HasValue)
-                query = query.Where(x => x.DateOfInspection.Value >= fromDate.Value);
+            if (date.HasValue)
+                query = query.Where(x => x.DateOfInspection.Value.Year == date.Value.Year 
+                                         && x.DateOfInspection.Value.Month == date.Value.Month);
 
-            if (toDate.HasValue)
-                query = query.Where(x => x.DateOfInspection.Value <= toDate.Value);
+            if(DateTo.HasValue)
+                query = query.Where(x => x.DateOfInspection.Value <= DateTo.Value);
+
+            if (DateFrom.HasValue)
+                query = query.Where(x => x.DateOfInspection.Value >= DateFrom.Value);
 
             query = query.OrderByDescending(r => r.Id);
 

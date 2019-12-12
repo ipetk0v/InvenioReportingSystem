@@ -14,6 +14,8 @@ namespace Invenio.Admin.Models.Users
             AvailableUserRoles = new List<SelectListItem>();
         }
 
+        public int UserId { get; set; }
+
         [UIHint("MultiSelect")]
         [NopResourceDisplayName("Admin.Users.Users.List.UserRoles")]
         public IList<int> SearchUserRoleIds { get; set; }

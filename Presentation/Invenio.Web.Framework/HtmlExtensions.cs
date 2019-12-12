@@ -50,7 +50,7 @@ namespace Invenio.Web.Framework
                     //default tab
                     tabStrip.AppendLine("<li class=\"active\">");
                     tabStrip.AppendLine(string.Format("<a data-tab-name=\"{0}-{1}-tab\" href=\"#{0}-{1}-tab\" data-toggle=\"tab\">{2}</a>",
-                            name, 
+                            name,
                             "standard",
                             EngineContext.Current.Resolve<ILocalizationService>().GetResource("Admin.Common.Standard")));
                     tabStrip.AppendLine("</li>");
@@ -67,7 +67,7 @@ namespace Invenio.Web.Framework
                         var urlHelper = new UrlHelper(helper.ViewContext.RequestContext);
                         var iconUrl = urlHelper.Content("~/Content/images/flags/" + language.FlagImageFileName);
                         tabStrip.AppendLine(string.Format("<a data-tab-name=\"{0}-{1}-tab\" href=\"#{0}-{1}-tab\" data-toggle=\"tab\"><img alt='' src='{2}'>{3}</a>",
-                                name, 
+                                name,
                                 language.Id,
                                 iconUrl,
                                 HttpUtility.HtmlEncode(language.Name)));
@@ -75,7 +75,7 @@ namespace Invenio.Web.Framework
                         tabStrip.AppendLine("</li>");
                     }
                     tabStrip.AppendLine("</ul>");
-                    
+
                     //default tab
                     tabStrip.AppendLine("<div class=\"tab-content\">");
                     tabStrip.AppendLine(string.Format("<div class=\"tab-pane active\" id=\"{0}-{1}-tab\">", name, "standard"));
@@ -244,7 +244,7 @@ namespace Invenio.Web.Framework
             }
             return MvcHtmlString.Create(result.ToString());
         }
-        
+
         /// <summary>
         /// Render CSS styles of selected index 
         /// </summary>
@@ -387,7 +387,7 @@ namespace Invenio.Web.Framework
                 {
                     var langId = EngineContext.Current.Resolve<IWorkContext>().WorkingLanguage.Id;
                     hintResource = EngineContext.Current.Resolve<ILocalizationService>()
-                        .GetResource(resourceDisplayName.ResourceKey + ".Hint",  langId, returnEmptyIfNotFound: true, logIfNotFound: false);
+                        .GetResource(resourceDisplayName.ResourceKey + ".Hint", langId, returnEmptyIfNotFound: true, logIfNotFound: false);
                     if (!String.IsNullOrEmpty(hintResource))
                     {
                         result.Append(helper.Hint(hintResource).ToHtmlString());
@@ -412,20 +412,20 @@ namespace Invenio.Web.Framework
             var metadata = ModelMetadata.FromLambdaExpression(expression, helper.ViewData);
             if ((!renderFormControlClass.HasValue && metadata.ModelType.Name.Equals("String")) ||
                 (renderFormControlClass.HasValue && renderFormControlClass.Value))
-                htmlAttributes = new {@class = "form-control"};
+                htmlAttributes = new { @class = "form-control" };
 
             if (required)
                 result.AppendFormat(
                     "<div class=\"input-group input-group-required\">{0}<div class=\"input-group-btn\"><span class=\"required\">*</span></div></div>",
-                    helper.EditorFor(expression, new {htmlAttributes, postfix}));
+                    helper.EditorFor(expression, new { htmlAttributes, postfix }));
             else
-                result.Append(helper.EditorFor(expression, new {htmlAttributes, postfix}));
+                result.Append(helper.EditorFor(expression, new { htmlAttributes, postfix }));
 
             return MvcHtmlString.Create(result.ToString());
         }
 
         public static MvcHtmlString NopDropDownList<TModel>(this HtmlHelper<TModel> helper, string name,
-            IEnumerable<SelectListItem> itemList, object htmlAttributes = null, 
+            IEnumerable<SelectListItem> itemList, object htmlAttributes = null,
             bool renderFormControlClass = true, bool required = false)
         {
             var result = new StringBuilder();
@@ -640,7 +640,7 @@ namespace Invenio.Web.Framework
             monthsList.InnerHtml = months.ToString();
             yearsList.InnerHtml = years.ToString();
 
-            if (wrapTags) 
+            if (wrapTags)
             {
                 string wrapDaysList = "<span class=\"days-list select-wrapper\">" + daysList + "</span>";
                 string wrapMonthsList = "<span class=\"months-list select-wrapper\">" + monthsList + "</span>";
@@ -651,6 +651,102 @@ namespace Invenio.Web.Framework
             else
             {
                 return MvcHtmlString.Create(string.Concat(daysList, monthsList, yearsList));
+            }
+
+        }
+
+        public static MvcHtmlString MonthPickerDropDowns(this HtmlHelper html,
+     string monthName, string yearName, int? beginYear = null, int? endYear = null,
+    int? selectedMonth = null, int? selectedYear = null, bool localizeLabels = true, object htmlAttributes = null, bool wrapTags = false)
+        {
+            //var daysList = new TagBuilder("select");
+            var monthsList = new TagBuilder("select");
+            var yearsList = new TagBuilder("select");
+
+            //daysList.Attributes.Add("name", dayName);
+            monthsList.Attributes.Add("name", monthName);
+            monthsList.Attributes.Add("id", monthName);
+            yearsList.Attributes.Add("name", yearName);
+            yearsList.Attributes.Add("id", yearName);
+
+            var htmlAttributesDictionary = HtmlHelper.AnonymousObjectToHtmlAttributes(htmlAttributes);
+            //daysList.MergeAttributes(htmlAttributesDictionary, true);
+            monthsList.MergeAttributes(htmlAttributesDictionary, true);
+            yearsList.MergeAttributes(htmlAttributesDictionary, true);
+
+            //var days = new StringBuilder();
+            var months = new StringBuilder();
+            var years = new StringBuilder();
+
+            string monthLocale, yearLocale;
+            //string dayLocale, monthLocale, yearLocale;
+            if (localizeLabels)
+            {
+                var locService = EngineContext.Current.Resolve<ILocalizationService>();
+                //dayLocale = locService.GetResource("Common.Day");
+                monthLocale = locService.GetResource("Common.Month");
+                yearLocale = locService.GetResource("Common.Year");
+            }
+            else
+            {
+                //dayLocale = "Day";
+                monthLocale = "Month";
+                yearLocale = "Year";
+            }
+
+            //days.AppendFormat("<option value='{0}'>{1}</option>", "0", dayLocale);
+            //for (int i = 1; i <= 31; i++)
+            //    days.AppendFormat("<option value='{0}'{1}>{0}</option>", i,
+            //        (selectedDay.HasValue && selectedDay.Value == i) ? " selected=\"selected\"" : null);
+
+
+            months.AppendFormat("<option value='{0}'>{1}</option>", "0", monthLocale);
+            for (int i = 1; i <= 12; i++)
+            {
+                months.AppendFormat("<option value='{0}'{1}>{2}</option>",
+                                    i,
+                                    (selectedMonth.HasValue && selectedMonth.Value == i) ? " selected=\"selected\"" : null,
+                                    CultureInfo.CurrentUICulture.DateTimeFormat.GetMonthName(i));
+            }
+
+
+            years.AppendFormat("<option value='{0}'>{1}</option>", "0", yearLocale);
+
+            if (beginYear == null)
+                beginYear = DateTime.UtcNow.Year - 5;
+            if (endYear == null)
+                endYear = DateTime.UtcNow.Year;
+
+            if (endYear > beginYear)
+            {
+                for (int i = beginYear.Value; i <= endYear.Value; i++)
+                    years.AppendFormat("<option value='{0}'{1}>{0}</option>", i,
+                        (selectedYear.HasValue && selectedYear.Value == i) ? " selected=\"selected\"" : null);
+            }
+            else
+            {
+                for (int i = beginYear.Value; i >= endYear.Value; i--)
+                    years.AppendFormat("<option value='{0}'{1}>{0}</option>", i,
+                        (selectedYear.HasValue && selectedYear.Value == i) ? " selected=\"selected\"" : null);
+            }
+
+            //daysList.InnerHtml = days.ToString();
+            monthsList.InnerHtml = months.ToString();
+            yearsList.InnerHtml = years.ToString();
+
+            if (wrapTags)
+            {
+                //string wrapDaysList = "<span class=\"days-list select-wrapper\">" + daysList + "</span>";
+                string wrapMonthsList = "<span class=\"months-list select-wrapper\">" + monthsList + "</span>";
+                string wrapYearsList = "<span class=\"years-list select-wrapper\">" + yearsList + "</span>";
+
+                return MvcHtmlString.Create(string.Concat(wrapMonthsList, wrapYearsList));
+                //return MvcHtmlString.Create(string.Concat(wrapDaysList, wrapMonthsList, wrapYearsList));
+            }
+            else
+            {
+                return MvcHtmlString.Create(string.Concat(monthsList, yearsList));
+                //return MvcHtmlString.Create(string.Concat(daysList, monthsList, yearsList));
             }
 
         }

@@ -49,7 +49,7 @@
                                 model: {
                                     id: "Id",
                                     fields: {
-                                        OrderAttribute: { editable: false, type: "string" },
+                                        OrderAttribute: { editable: true, type: "string" },
                                         OrderAttributeId: { editable: true, type: "number" },
                                         //TextPrompt: { editable: true, type: "string" },
                                         //IsRequired: { editable: true, type: "boolean" },
@@ -87,7 +87,7 @@
                             @Html.Partial("_GridPagerMessages")
                         },
                         toolbar: [{ name: "create", text: "@T("Admin.Common.AddNewRecord")" }],
-                        edit: function(e) {
+                        edit: function (e) {
                             if (e.model.isNew()) {
                                 //little hack here
                                 //pre-select the first value of kendoui dropdownlist datasource
@@ -104,6 +104,9 @@
                         editable: {
                             confirmation: "@T("Admin.Common.DeleteConfirmation")",
                             mode: "inline"
+                        },
+                        remove: function(e) {
+                            console.log(e)
                         },
                         scrollable: false,
                         columns: [
@@ -158,7 +161,7 @@
                                 Id: @(orderAttributeItem.Id),
                                 Name: "@(Html.Raw(HttpUtility.JavaScriptStringEncode(orderAttributeItem.Name)))"
                             }
-                                </text>
+                        </text>
                         if (i != Model.AvailableOrderAttributes.Count - 1)
                         {
                             <text>,</text>

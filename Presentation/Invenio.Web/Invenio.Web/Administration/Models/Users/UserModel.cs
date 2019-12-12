@@ -19,7 +19,7 @@ namespace Invenio.Admin.Models.Users
             this.SendEmail = new SendEmailModel() { SendImmediately = true };
             this.SendPm = new SendPmModel();
 
-            this.SelectedUserRoleIds= new List<int>();
+            this.SelectedUserRoleIds = new List<int>();
             this.AvailableUserRoles = new List<SelectListItem>();
 
             this.SelectedCustomerIds = new List<int>();
@@ -35,7 +35,9 @@ namespace Invenio.Admin.Models.Users
             this.AvailableNewsletterSubscriptionStores = new List<StoreModel>();
             this.RewardPointsAvailableStores = new List<SelectListItem>();
         }
-       
+
+        public int UserId { get; set; }
+
         public bool UsernamesEnabled { get; set; }
 
         [NopResourceDisplayName("Admin.Users.Users.Fields.Username")]
@@ -69,7 +71,7 @@ namespace Invenio.Admin.Models.Users
         public string LastName { get; set; }
         [NopResourceDisplayName("Admin.Users.Users.Fields.FullName")]
         public string FullName { get; set; }
-        
+
         public bool DateOfBirthEnabled { get; set; }
         [UIHint("DateNullable")]
         [NopResourceDisplayName("Admin.Users.Users.Fields.DateOfBirth")]
@@ -130,7 +132,7 @@ namespace Invenio.Admin.Models.Users
         [NopResourceDisplayName("Admin.Users.Users.Fields.AdminComment")]
         [AllowHtml]
         public string AdminComment { get; set; }
-        
+
         [NopResourceDisplayName("Admin.Users.Users.Fields.IsTaxExempt")]
         public bool IsTaxExempt { get; set; }
 
@@ -251,6 +253,15 @@ namespace Invenio.Admin.Models.Users
 
 
         #region Nested classes
+
+        public partial class UserWorkingMonthlyHours : BaseNopEntityModel
+        {
+            public int UserId { get; set; }
+
+            public string Period { get; set; }
+
+            public int WorkHours { get; set; }
+        }
 
         public partial class StoreModel : BaseNopEntityModel
         {

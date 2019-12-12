@@ -1,24 +1,17 @@
+using Invenio.Core;
+using Invenio.Core.Caching;
+using Invenio.Core.Data;
+using Invenio.Core.Domain.Common;
+using Invenio.Core.Domain.Users;
+using Invenio.Data;
+using Invenio.Services.Common;
+using Invenio.Services.Events;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using Invenio.Core;
-using Invenio.Core.Caching;
-using Invenio.Core.Data;
-//using Invenio.Core.Domain.Blogs;
-using Invenio.Core.Domain.Catalog;
-using Invenio.Core.Domain.Common;
-using Invenio.Core.Domain.Users;
-//using Invenio.Core.Domain.Forums;
-//using Invenio.Core.Domain.News;
-//using Invenio.Core.Domain.Orders;
-//using Invenio.Core.Domain.Polls;
-//using Invenio.Core.Domain.Shipping;
-using Invenio.Data;
-using Invenio.Services.Common;
-using Invenio.Services.Events;
 
 namespace Invenio.Services.Users
 {
@@ -56,14 +49,7 @@ namespace Invenio.Services.Users
         private readonly IRepository<UserPassword> _UserPasswordRepository;
         private readonly IRepository<UserRole> _UserRoleRepository;
         private readonly IRepository<GenericAttribute> _gaRepository;
-        //private readonly IRepository<Order> _orderRepository;
-        //private readonly IRepository<ForumPost> _forumPostRepository;
-        //private readonly IRepository<ForumTopic> _forumTopicRepository;
-        //private readonly IRepository<BlogComment> _blogCommentRepository;
-        //private readonly IRepository<NewsComment> _newsCommentRepository;
-        //private readonly IRepository<PollVotingRecord> _pollVotingRecordRepository;
-        //private readonly IRepository<ProductReview> _productReviewRepository;
-        //private readonly IRepository<ProductReviewHelpfulness> _productReviewHelpfulnessRepository;
+        private readonly IRepository<UserMonthlyWorkingHours> _umwhRepository;
         private readonly IGenericAttributeService _genericAttributeService;
         private readonly IDataProvider _dataProvider;
         private readonly IDbContext _dbContext;
@@ -81,18 +67,11 @@ namespace Invenio.Services.Users
             IRepository<UserPassword> UserPasswordRepository,
             IRepository<UserRole> UserRoleRepository,
             IRepository<GenericAttribute> gaRepository,
-            //IRepository<Order> orderRepository,
-            //IRepository<ForumPost> forumPostRepository,
-            //IRepository<ForumTopic> forumTopicRepository,
-            //IRepository<BlogComment> blogCommentRepository,
-            //IRepository<NewsComment> newsCommentRepository,
-            //IRepository<PollVotingRecord> pollVotingRecordRepository,
-            //IRepository<ProductReview> productReviewRepository,
-            //IRepository<ProductReviewHelpfulness> productReviewHelpfulnessRepository,
             IGenericAttributeService genericAttributeService,
             IDataProvider dataProvider,
             IDbContext dbContext,
-            IEventPublisher eventPublisher, 
+            IEventPublisher eventPublisher,
+            IRepository<UserMonthlyWorkingHours> umwhRepository,
             UserSettings UserSettings,
             CommonSettings commonSettings)
         {
@@ -101,20 +80,13 @@ namespace Invenio.Services.Users
             this._UserPasswordRepository = UserPasswordRepository;
             this._UserRoleRepository = UserRoleRepository;
             this._gaRepository = gaRepository;
-            //this._orderRepository = orderRepository;
-            //this._forumPostRepository = forumPostRepository;
-            //this._forumTopicRepository = forumTopicRepository;
-            //this._blogCommentRepository = blogCommentRepository;
-            //this._newsCommentRepository = newsCommentRepository;
-            //this._pollVotingRecordRepository = pollVotingRecordRepository;
-            //this._productReviewRepository = productReviewRepository;
-            //this._productReviewHelpfulnessRepository = productReviewHelpfulnessRepository;
             this._genericAttributeService = genericAttributeService;
             this._dataProvider = dataProvider;
             this._dbContext = dbContext;
             this._eventPublisher = eventPublisher;
             this._UserSettings = UserSettings;
             this._commonSettings = commonSettings;
+            this._umwhRepository = umwhRepository;
         }
 
         #endregion
@@ -198,7 +170,7 @@ namespace Invenio.Services.Users
                 string dateOfBirthStr = monthOfBirth.ToString("00", CultureInfo.InvariantCulture) + "-" + dayOfBirth.ToString("00", CultureInfo.InvariantCulture);
                 //EndsWith is not supported by SQL Server Compact
                 //so let's use the following workaround http://social.msdn.microsoft.com/Forums/is/sqlce/thread/0f810be1-2132-4c59-b9ae-8f7013c0cc00
-                
+
                 //we also cannot use Length function in SQL Server Compact (not supported in this context)
                 //z.Attribute.Value.Length - dateOfBirthStr.Length = 5
                 //dateOfBirthStr.Length = 5
@@ -215,7 +187,7 @@ namespace Invenio.Services.Users
                 string dateOfBirthStr = dayOfBirth.ToString("00", CultureInfo.InvariantCulture);
                 //EndsWith is not supported by SQL Server Compact
                 //so let's use the following workaround http://social.msdn.microsoft.com/Forums/is/sqlce/thread/0f810be1-2132-4c59-b9ae-8f7013c0cc00
-                
+
                 //we also cannot use Length function in SQL Server Compact (not supported in this context)
                 //z.Attribute.Value.Length - dateOfBirthStr.Length = 8
                 //dateOfBirthStr.Length = 2
@@ -271,7 +243,7 @@ namespace Invenio.Services.Users
             //search by IpAddress
             if (!String.IsNullOrWhiteSpace(ipAddress) && CommonHelper.IsValidIpAddress(ipAddress))
             {
-                    query = query.Where(w => w.LastIpAddress == ipAddress);
+                query = query.Where(w => w.LastIpAddress == ipAddress);
             }
 
             //if (loadOnlyWithShoppingCart)
@@ -284,7 +256,7 @@ namespace Invenio.Services.Users
             //        query.Where(c => c.ShoppingCartItems.Any(x => x.ShoppingCartTypeId == sctId)) :
             //        query.Where(c => c.ShoppingCartItems.Any());
             //}
-            
+
             query = query.OrderByDescending(c => c.CreatedOnUtc);
 
             var Users = new PagedList<User>(query, pageIndex, pageSize);
@@ -307,7 +279,7 @@ namespace Invenio.Services.Users
             query = query.Where(c => !c.Deleted);
             if (UserRoleIds != null && UserRoleIds.Length > 0)
                 query = query.Where(c => c.UserRoles.Select(cr => cr.Id).Intersect(UserRoleIds).Any());
-            
+
             query = query.OrderByDescending(c => c.LastActivityDateUtc);
             var Users = new PagedList<User>(query, pageIndex, pageSize);
             return Users;
@@ -350,7 +322,7 @@ namespace Invenio.Services.Users
         {
             if (UserId == 0)
                 return null;
-            
+
             return _UserRepository.GetById(UserId);
         }
 
@@ -378,7 +350,7 @@ namespace Invenio.Services.Users
             }
             return sortedUsers;
         }
-        
+
         /// <summary>
         /// Gets a User by GUID
         /// </summary>
@@ -450,7 +422,7 @@ namespace Invenio.Services.Users
             var User = query.FirstOrDefault();
             return User;
         }
-        
+
         /// <summary>
         /// Insert a guest User
         /// </summary>
@@ -475,7 +447,7 @@ namespace Invenio.Services.Users
 
             return User;
         }
-        
+
         /// <summary>
         /// Insert a User
         /// </summary>
@@ -490,7 +462,7 @@ namespace Invenio.Services.Users
             //event notification
             _eventPublisher.EntityInserted(User);
         }
-        
+
         /// <summary>
         /// Updates the User
         /// </summary>
@@ -523,7 +495,7 @@ namespace Invenio.Services.Users
         {
             if (User == null)
                 throw new ArgumentNullException();
-            
+
             //clear entered coupon codes
             //if (clearCouponCodes)
             //{
@@ -556,10 +528,10 @@ namespace Invenio.Services.Users
             {
                 _genericAttributeService.SaveAttribute<string>(User, SystemUserAttributeNames.SelectedPaymentMethod, null, storeId);
             }
-            
+
             UpdateUser(User);
         }
-        
+
         /// <summary>
         /// Delete guest User records
         /// </summary>
@@ -684,8 +656,8 @@ namespace Invenio.Services.Users
                 query = from c in query
                         group c by c.Id
                             into cGroup
-                            orderby cGroup.Key
-                            select cGroup.FirstOrDefault();
+                        orderby cGroup.Key
+                        select cGroup.FirstOrDefault();
                 query = query.OrderBy(c => c.Id);
                 var Users = query.ToList();
 
@@ -715,7 +687,7 @@ namespace Invenio.Services.Users
         }
 
         #endregion
-        
+
         #region User roles
 
         /// <summary>
@@ -791,7 +763,7 @@ namespace Invenio.Services.Users
                 return UserRoles;
             });
         }
-        
+
         /// <summary>
         /// Inserts a User role
         /// </summary>
@@ -837,7 +809,7 @@ namespace Invenio.Services.Users
         /// <param name="passwordFormat">Password format; pass null to load all records</param>
         /// <param name="passwordsToReturn">Number of returning passwords; pass null to load all records</param>
         /// <returns>List of User passwords</returns>
-        public virtual IList<UserPassword> GetUserPasswords(int? UserId = null, 
+        public virtual IList<UserPassword> GetUserPasswords(int? UserId = null,
             PasswordFormat? passwordFormat = null, int? passwordsToReturn = null)
         {
             var query = _UserPasswordRepository.Table;

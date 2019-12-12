@@ -242,6 +242,7 @@
     <Compile Include="Domain\Users\UserAttributeValue.cs" />
     <Compile Include="Domain\Users\UserExtensions.cs" />
     <Compile Include="Domain\Users\UserLoginResults.cs" />
+    <Compile Include="Domain\Users\UserMonthlyWorkingHours.cs" />
     <Compile Include="Domain\Users\UserNameFormat.cs" />
     <Compile Include="Domain\Users\UserPassword.cs" />
     <Compile Include="Domain\Users\UserRegistrationType.cs" />

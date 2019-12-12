@@ -25,6 +25,7 @@ using Invenio.Web.Framework.Kendoui;
 using Invenio.Web.Framework.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Web.Mvc;
@@ -424,6 +425,7 @@ namespace Invenio.Admin.Controllers
             if (User != null)
             {
                 model.Id = User.Id;
+                model.UserId = User.Id;
                 if (!excludeProperties)
                 {
                     model.Email = User.Email;
@@ -1807,6 +1809,231 @@ namespace Invenio.Admin.Controllers
             return View(model);
         }
 
+        #endregion
+
+        #region UserMonthlyWorkHours
+        public virtual ActionResult UserMonthlyWorkHoursList(int userId, DataSourceRequest command)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
+                return AccessDeniedKendoGridJson();
+
+            if (userId == 0)
+                return new NullJsonResult();
+
+            var userMonthlyWorkingHoursList = _userService.GetUserById(userId)?.UserMonthlyWorkingHours.ToList().OrderByDescending(x => x.FirstDateOfMonth);
+
+            var listOfModel = new List<UserMonthlyWorkingHoursModel>();
+            foreach (var item in userMonthlyWorkingHoursList)
+            {
+                var resultModel = new UserMonthlyWorkingHoursModel
+                {
+                    UserId = userId,
+                    WorkHours = item.WorkHours,
+                    Period = GetPeriodAsString(item),
+                    Id = item.Id
+                };
+
+                listOfModel.Add(resultModel);
+            }
+
+            //var pagedList = new PagedList<UserMonthlyWorkingHoursModel>(listOfModel, command.Page - 1, command.PageSize);
+            var gridModel = new DataSourceResult
+            {
+                Data = listOfModel,
+                Total = listOfModel.Count
+            };
+
+            return Json(gridModel);
+        }
+
+        private string GetPeriodAsString(UserMonthlyWorkingHours umwh)
+        {
+            var month = umwh.FirstDateOfMonth.ToString("MMMM", CultureInfo.InvariantCulture);
+            var year = umwh.FirstDateOfMonth.Year;
+
+            return $"{month} {year}";
+        }
+
+        [HttpPost]
+        public virtual ActionResult UserMonthlyWorkHoursInsert(UserModel.UserWorkingMonthlyHours model)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
+                return AccessDeniedKendoGridJson();
+
+            var user = _userService.GetUserById(model.UserId);
+
+            if (user != null && !string.IsNullOrEmpty(model.Period))
+            {
+                var period = model.Period.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (period.Length > 2)
+                {
+                    var month = GetMonthByString(period[1]);
+                    var year = int.Parse(period[3]);
+
+                    var umwh = new UserMonthlyWorkingHours
+                    {
+                        FirstDateOfMonth = new DateTime(year, month, 1),
+                        LastDateOfMonth = new DateTime(year, month, DateTime.DaysInMonth(year, month)),
+                        WorkHours = model.WorkHours
+                    };
+
+                    user.UserMonthlyWorkingHours.Add(umwh);
+
+                    _userService.UpdateUser(user);
+                }
+            }
+
+            return new NullJsonResult();
+        }
+
+        private int GetMonthByString(string month)
+        {
+            switch (month)
+            {
+                case "Jan": return 1;
+                case "Feb": return 2;
+                case "Mar": return 3;
+                case "Apr": return 4;
+                case "May": return 5;
+                case "Jun": return 6;
+                case "Jul": return 7;
+                case "Aug": return 8;
+                case "Sep": return 9;
+                case "Oct": return 10;
+                case "Nov": return 11;
+                case "Dec": return 12;
+                default: return 0;
+            }
+        }
+
+        [HttpPost]
+        public virtual ActionResult UserMonthlyWorkHoursUpdate(UserModel.UserWorkingMonthlyHours model)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
+                return AccessDeniedKendoGridJson();
+
+            var user = _userService.GetUserById(model.UserId);
+
+            if (user != null)
+            {
+                var period = model.Period.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (period.Length > 2)
+                {
+                    var month = GetMonthByString(period[1]);
+                    var year = int.Parse(period[3]);
+
+                    var existLine = user.UserMonthlyWorkingHours
+                                        .FirstOrDefault(x => x.FirstDateOfMonth.Month == month && x.FirstDateOfMonth.Year == year);
+
+                    if (existLine == null)
+                    {
+                        var umwh = new UserMonthlyWorkingHours
+                        {
+                            FirstDateOfMonth = new DateTime(year, month, 1),
+                            LastDateOfMonth = new DateTime(year, month, DateTime.DaysInMonth(year, month)),
+                            WorkHours = model.WorkHours
+                        };
+
+                        user.UserMonthlyWorkingHours.Add(umwh);
+                    }
+                    else
+                    {
+                        var nel = existLine;
+                        nel.WorkHours = model.WorkHours;
+                        user.UserMonthlyWorkingHours.Remove(existLine);
+                        user.UserMonthlyWorkingHours.Add(nel);
+                    }
+
+                    _userService.UpdateUser(user);
+                }
+                else
+                {
+                    var monthInt = GetMonthLikeNumber(period[0]);
+                    var year = int.Parse(period[1]);
+
+                    var existLine = user.UserMonthlyWorkingHours
+                        .FirstOrDefault(x => x.FirstDateOfMonth.Month == monthInt && x.FirstDateOfMonth.Year == year);
+
+                    if (existLine != null)
+                    {
+                        var nel = existLine;
+                        nel.WorkHours = model.WorkHours;
+                        user.UserMonthlyWorkingHours.Remove(existLine);
+                        user.UserMonthlyWorkingHours.Add(nel);
+                        _userService.UpdateUser(user);
+                    }
+                }
+            }
+
+            return new NullJsonResult();
+        }
+
+        [HttpPost]
+        public virtual ActionResult UserMonthlyWorkHoursDelete(UserModel.UserWorkingMonthlyHours model)
+        {
+            if (!_permissionService.Authorize(StandardPermissionProvider.ManageUsers))
+                return AccessDeniedKendoGridJson();
+
+            var user = _userService.GetUserById(model.UserId);
+
+            if (user != null)
+            {
+                var period = model.Period.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (period.Length > 2)
+                {
+                    var month = GetMonthByString(period[1]);
+                    var year = int.Parse(period[3]);
+
+                    var existLine = user.UserMonthlyWorkingHours
+                        .FirstOrDefault(x => x.FirstDateOfMonth.Month == month && x.FirstDateOfMonth.Year == year);
+
+                    if (existLine != null)
+                    {
+                        user.UserMonthlyWorkingHours.Remove(existLine);
+                        _userService.UpdateUser(user);
+                    }
+                }
+                else
+                {
+                    var monthInt = GetMonthLikeNumber(period[0]);
+                    var year = int.Parse(period[1]);
+
+                    var existLine = user.UserMonthlyWorkingHours
+                        .FirstOrDefault(x => x.FirstDateOfMonth.Month == monthInt && x.FirstDateOfMonth.Year == year);
+
+                    if (existLine != null)
+                    {
+                        user.UserMonthlyWorkingHours.Remove(existLine);
+                        _userService.UpdateUser(user);
+                    }
+                }
+            }
+
+            return new NullJsonResult();
+        }
+
+        private int GetMonthLikeNumber(string month)
+        {
+            switch (month)
+            {
+                case "January": return 1;
+                case "February": return 2;
+                case "March": return 3;
+                case "April": return 4;
+                case "May": return 5;
+                case "June": return 6;
+                case "July": return 7;
+                case "August": return 8;
+                case "September": return 9;
+                case "October": return 10;
+                case "November": return 11;
+                case "December": return 12;
+                default: return 0;
+            }
+        }
         #endregion
 
         #region Activity log

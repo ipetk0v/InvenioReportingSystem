@@ -109,6 +109,7 @@
     <Compile Include="Mapping\Users\UserAttributeMap.cs" />
     <Compile Include="Mapping\Users\UserAttributeValueMap.cs" />
     <Compile Include="Mapping\Users\UserMap.cs" />
+    <Compile Include="Mapping\Users\UserMonthlyWorkingHoursMap.cs" />
     <Compile Include="Mapping\Users\UserPasswordMap.cs" />
     <Compile Include="Mapping\Users\UserRoleMap.cs" />
     <Compile Include="Migrations\201907271015055_InitialCreate.cs" />

@@ -301,7 +301,7 @@ namespace Invenio.Admin.Controllers
                     return new OrderAttributeModel.UsedByOrderModel
                     {
                         Id = x.Id,
-                        OrderName = x.Name,
+                        OrderNumber = x.Number,
                         Published = x.Published
                     };
                 }),

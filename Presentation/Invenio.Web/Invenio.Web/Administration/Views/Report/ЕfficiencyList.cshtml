@@ -23,20 +23,32 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <div class="col-md-4">
-                                    @Html.NopLabelFor(model => model.DateFrom)
+                                    <label style="float:right">@T("Account.Fields.EfficiancySearch")</label>
                                 </div>
                                 <div class="col-md-8">
-                                    @Html.NopEditorFor(model => model.DateFrom)
+                                    @*@Html.DatePickerDropDowns(
+                                        Model.DateFrom.Value.Day.ToString(),
+                                        Model.DateFrom.Value.Month.ToString(),
+                                        Model.DateFrom.Value.ToString())*@
+                                    @Html.MonthPickerDropDowns(
+                                        Html.FieldNameFor(x => x.EfficiencySearchMonth),
+                                        Html.FieldNameFor(x => x.EfficiencySearchYear),
+                                        DateTime.Now.Year - 110,
+                                        DateTime.Now.Year,
+                                        Model.EfficiencySearchMonth,
+                                        Model.EfficiencySearchYear,
+                                        true,
+                                        new { @class = "form-control", @style = "margin:0 0 10px" })
                                 </div>
                             </div>
-                            <div class="form-group">
+                            @*<div class="form-group">
                                 <div class="col-md-4">
                                     @Html.NopLabelFor(model => model.DateTo)
                                 </div>
                                 <div class="col-md-8">
                                     @Html.NopEditorFor(model => model.DateTo)
                                 </div>
-                            </div>
+                            </div>*@
                             <div class="form-group">
                                 <div class="col-md-8 col-md-offset-4">
                                     <button type="button" id="search-Customers" class="btn btn-primary btn-search">
@@ -109,32 +121,32 @@
                                 },
                                 scrollable: false,
                                 columns: [
-                                {
-                                    field: "UserName",
-                                    title: "@T("Admin.Report.EfficiencyList.UserName")"
-                                }, {
-                                    field: "MonthlyHours",
-                                    title: "@T("Admin.Report.EfficiencyList.MonthlyHours")"
-                                },{
-                                    field: "HoursSold",
-                                    title: "@T("Admin.Report.EfficiencyList.HoursSold")"
-                                },{
+                                    {
+                                        field: "UserName",
+                                        title: "@T("Admin.Report.EfficiencyList.UserName")"
+                                    }, {
+                                        field: "MonthlyHours",
+                                        title: "@T("Admin.Report.EfficiencyList.MonthlyHours")"
+                                    },{
+                                        field: "HoursSold",
+                                        title: "@T("Admin.Report.EfficiencyList.HoursSold")"
+                                    },@*{
                                     field: "HoursSoldEf",
                                     title: "@T("Admin.Report.EfficiencyList.HoursSold")"
-                                },{
-                                    field: "Difference",
-                                    title: "@T("Admin.Report.EfficiencyList.Difference")"
-                                },{
-                                    field: "Efficiency",
-                                    title: "@T("Admin.Report.EfficiencyList.Efficiency")"
-                                },
+                                },*@{
+                                        field: "Difference",
+                                        title: "@T("Admin.Report.EfficiencyList.Difference")"
+                                    },{
+                                        field: "Efficiency",
+                                        title: "@T("Admin.Report.EfficiencyList.Efficiency")"
+                                    },
                                     @*{
                                     field: "Id",
                                     title: "@T("Admin.Common.Edit")",
                                     width: 100,
                                     headerAttributes: { style: "text-align:center" },
                                     attributes: { style: "text-align:center" },
-                                    template: '<a class="btn btn-default" href="Edit/#=Id#"><i class="fa fa-pencil"></i>@T("Admin.Common.Edit")</a>'                                
+                                    template: '<a class="btn btn-default" href="Edit/#=Id#"><i class="fa fa-pencil"></i>@T("Admin.Common.Edit")</a>'
                                     }*@
                                 ]
                             });
@@ -182,8 +194,8 @@
 
                         function additionalData() {
                             var data = {
-                                DateFrom: $('#@Html.FieldIdFor(model => model.DateFrom)').val(),
-                                DateTo: $('#@Html.FieldIdFor(model => model.DateTo)').val(),
+                                EfficiencySearchMonth: $('#@Html.FieldIdFor(model => model.EfficiencySearchMonth)').val(),
+                                EfficiencySearchYear: $('#@Html.FieldIdFor(model => model.EfficiencySearchYear)').val(),
                                 Name: $('#@Html.FieldIdFor(model => model.Name)').val(),
                                 OrderById: $('#@Html.FieldIdFor(model => model.OrderById)').val()
                             };
@@ -198,25 +210,25 @@
 </div>
 
 @*<script type="text/javascript">
-    $(document).ready(stateProvinceFilter());
+        $(document).ready(stateProvinceFilter());
 
-    function stateProvinceFilter() {
-        var selectedItem = $("#CountryId").val();
-        var ddlStates = $("#@Html.FieldIdFor(model => model.StateProvinceId)");
-        $.ajax({
-            cache: false,
-            type: "GET",
-            url: "@(Url.Action("GetStatesByCountryId", "Country"))",
-            data: { "countryId": selectedItem, "addSelectStateItem": "false" },
-            success: function (data) {
-                ddlStates.html('');
-                $.each(data, function (id, option) {
-                    ddlStates.append($('<option></option>').val(option.id).html(option.name));
-                });
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                alert('Failed to retrieve states.');
-            }
-        });
-    };
-</script>*@
+        function stateProvinceFilter() {
+            var selectedItem = $("#CountryId").val();
+            var ddlStates = $("#@Html.FieldIdFor(model => model.StateProvinceId)");
+            $.ajax({
+                cache: false,
+                type: "GET",
+                url: "@(Url.Action("GetStatesByCountryId", "Country"))",
+                data: { "countryId": selectedItem, "addSelectStateItem": "false" },
+                success: function (data) {
+                    ddlStates.html('');
+                    $.each(data, function (id, option) {
+                        ddlStates.append($('<option></option>').val(option.id).html(option.name));
+                    });
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    alert('Failed to retrieve states.');
+                }
+            });
+        };
+    </script>*@

@@ -15,6 +15,7 @@ namespace Invenio.Services.Reports
             int orderId = 0,
             int isAprroved = 0,
             int userId = 0,
+            DateTime? date = null,
             DateTime? fromDate = null,
             DateTime? toDate = null,
             int pageIndex = 0,

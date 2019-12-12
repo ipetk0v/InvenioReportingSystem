@@ -1,2 +1,2 @@
 DataProvider: sqlserver
-DataConnectionString: Data Source=.;Initial Catalog=IDB;Integrated Security=True;Persist Security Info=False
+DataConnectionString: Data Source=.;Initial Catalog=INDB;Integrated Security=True;Persist Security Info=False

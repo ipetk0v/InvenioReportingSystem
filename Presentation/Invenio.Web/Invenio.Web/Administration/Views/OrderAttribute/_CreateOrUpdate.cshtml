@@ -107,9 +107,6 @@
             @if (Model.Id > 0)
             {
                 <div class="panel-body">
-                    <p>
-                        @T("Admin.Catalog.Attributes.OrderAttributes.PredefinedValues.Hint")
-                    </p>
                     <div id="orderattributevalues-grid"></div>
 
                     <script>
@@ -227,9 +224,6 @@
     <div class="panel-group">
         <div class="panel panel-default">
             <div class="panel-body">
-                <p>
-                    @T("Admin.Catalog.Attributes.OrderAttributes.UsedByOrders.Hint")
-                </p>
                 <div id="used-by-orders-grid"></div>
 
                 <script>
@@ -271,7 +265,7 @@
                             },
                             scrollable: false,
                             columns: [{
-                                field: "OrderName",
+                                field: "OrderNumber",
                                 title: "@T("Admin.Catalog.Attributes.OrderAttributes.UsedByOrders.Order")",
                                 width: 400
                             }, {

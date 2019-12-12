@@ -31,6 +31,7 @@ using System.Web.Hosting;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
 using Invenio.Core.Data;
+using Invenio.Services;
 using Image = System.Drawing.Image;
 
 namespace Invenio.Admin.Controllers
@@ -45,6 +46,7 @@ namespace Invenio.Admin.Controllers
         private readonly IOrderService _orderService;
         private readonly IRepository<OrderAttribute> _orderAttributesRep;
         private readonly IRepository<OrderAttributeValue> _attributeValuesRep;
+        private readonly IRepository<OrderAttributeMapping> _orderattributeMappingRep;
         private readonly ILocalizationService _localizationService;
         private readonly IUserActivityService _userActivityService;
         private readonly IEventPublisher _eventPublisher;
@@ -68,7 +70,10 @@ namespace Invenio.Admin.Controllers
             IReportDetailService reportDetailService,
             ICriteriaService criteriaService,
             IPdfService pdfService,
-            ICustomerService customerService, IRepository<OrderAttribute> orderAttributesRep, IRepository<OrderAttributeValue> attrbuteValuesRep)
+            ICustomerService customerService, 
+            IRepository<OrderAttribute> orderAttributesRep, 
+            IRepository<OrderAttributeValue> attrbuteValuesRep,
+            IRepository<OrderAttributeMapping> orderattributeMappingRep)
         {
             _dateTimeHelper = dateTimeHelper;
             _permissionService = permissionService;
@@ -86,6 +91,7 @@ namespace Invenio.Admin.Controllers
             _customerService = customerService;
             _orderAttributesRep = orderAttributesRep;
             _attributeValuesRep = attrbuteValuesRep;
+            _orderattributeMappingRep = orderattributeMappingRep;
         }
 
         public virtual ActionResult Index()
@@ -672,7 +678,7 @@ namespace Invenio.Admin.Controllers
 
             if (listApprovedReports.Any())
             {
-                var groupReports = listApprovedReports.GroupBy(x => x.Order).Select(x => x.ToList()).ToList();
+                var groupReports = listApprovedReports.GroupBy(x => x.OrderId).Select(x => x.ToList()).ToList();
 
                 foreach (var reports in groupReports)
                 {
@@ -716,7 +722,14 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageReports))
                 return AccessDeniedKendoGridJson();
 
-            var attributes = _orderAttributesRep.Table.ToList().OrderBy(w => w.Name);
+            //var attributes = _orderAttributesRep.Table.ToList().OrderBy(w => w.ParentOrderAttributeId);
+            var attributes = _orderattributeMappingRep
+                .Table
+                .Where(x => x.OrderId == Id)
+                .Select(x => x.OrderAttribute)
+                .ToList()
+                .OrderBy(w => w.ParentOrderAttributeId);
+
             ViewBag.Attributes = attributes;
 
             var model = new DailyReportModelList
@@ -732,7 +745,7 @@ namespace Invenio.Admin.Controllers
             if (!_permissionService.Authorize(StandardPermissionProvider.ManageReports))
                 return AccessDeniedKendoGridJson();
 
-            var dfrs = TestGetDailyReportData(model.OrderId);
+            var dfrs = GetDailyReportData(model.OrderId);
 
             var result = new PagedList<DailyReportModel>(dfrs, command.Page - 1, command.PageSize);
             var gridModel = new DataSourceResult
@@ -826,7 +839,7 @@ namespace Invenio.Admin.Controllers
             return Json(gridModel);
         }
 
-        private IList<DailyReportModel> TestGetDailyReportData(int orderId)
+        private IList<DailyReportModel> GetDailyReportData(int orderId)
         {
             var reports = _reportService.GetAllReports(orderId: orderId, isAprroved: 1);
 
@@ -843,7 +856,6 @@ namespace Invenio.Admin.Controllers
             })
              .OrderBy(x => x.Id)
              .ToList();
-
 
             foreach (var dfr in dfrs)
             {
@@ -978,156 +990,173 @@ namespace Invenio.Admin.Controllers
             return dfrs;
         }
 
-        private List<DailyReportModel> GetDailyReportData(int orderId)
-        {
-            var reports = _reportService.GetAllReports(orderId: orderId, isAprroved: 1);
+        //private List<DailyReportModel> GetDailyReportData(int orderId)
+        //{
+        //    var reports = _reportService.GetAllReports(orderId: orderId, isAprroved: 1);
 
-            var dfrs = reports.GroupBy(c => new
-            {
-                c.DateOfInspection?.Date
-            })
-            .Select(x => new DailyReportModel
-            {
-                DateOfInspection = x.Key.Date?.Date
-            })
-            .OrderBy(x => x.Id)
-            .ToList();
+        //    var dfrs = reports.GroupBy(c => new
+        //    {
+        //        c.DateOfInspection?.Date
+        //    })
+        //    .Select(x => new DailyReportModel
+        //    {
+        //        DateOfInspection = x.Key.Date?.Date
+        //    })
+        //    .OrderBy(x => x.Id)
+        //    .ToList();
 
-            foreach (var dfr in dfrs)
-            {
-                var newTest = reports.Where(x => x.DateOfInspection?.Date == dfr.DateOfInspection?.Date);
+        //    foreach (var dfr in dfrs)
+        //    {
+        //        var newTest = reports.Where(x => x.DateOfInspection?.Date == dfr.DateOfInspection?.Date);
 
-                dfr.NokParts = newTest.Sum(x => x.NokPartsQuantity);
-                dfr.ReworkedParts = newTest.Sum(x => x.ReworkPartsQuantity);
-                dfr.FirstRunOkParts = newTest.Sum(x => x.OkPartsQuantity);
-                dfr.BlockedParts = newTest.Sum(x => x.ReworkPartsQuantity) + newTest.Sum(x => x.NokPartsQuantity);
-                dfr.Quantity = newTest.Sum(x => x.OkPartsQuantity) + newTest.Sum(x => x.NokPartsQuantity) + newTest.Sum(x => x.ReworkPartsQuantity);
-            }
+        //        dfr.NokParts = newTest.Sum(x => x.NokPartsQuantity);
+        //        dfr.ReworkedParts = newTest.Sum(x => x.ReworkPartsQuantity);
+        //        dfr.FirstRunOkParts = newTest.Sum(x => x.OkPartsQuantity);
+        //        dfr.BlockedParts = newTest.Sum(x => x.ReworkPartsQuantity) + newTest.Sum(x => x.NokPartsQuantity);
+        //        dfr.Quantity = newTest.Sum(x => x.OkPartsQuantity) + newTest.Sum(x => x.NokPartsQuantity) + newTest.Sum(x => x.ReworkPartsQuantity);
+        //    }
 
-            dfrs.ForEach(x => x.NokPercentage = Math.Round((decimal)x.NokParts / x.Quantity, 5) * 100);
-            dfrs.ForEach(x => x.ReworkedPercentage = Math.Round((decimal)x.ReworkedParts / x.Quantity, 5) * 100);
+        //    dfrs.ForEach(x => x.NokPercentage = Math.Round((decimal)x.NokParts / x.Quantity, 5) * 100);
+        //    dfrs.ForEach(x => x.ReworkedPercentage = Math.Round((decimal)x.ReworkedParts / x.Quantity, 5) * 100);
 
-            //blocked
-            var repDetails = _reportDetailService.GetReportDetailsByOrderId(orderId, true);
+        //    //blocked
+        //    var repDetails = _reportDetailService.GetReportDetailsByOrderId(orderId, true);
 
-            var blokedRepDetails = repDetails
-                .GroupBy(x => new
-                {
-                    DateOfInspection = x.Report.DateOfInspection,
-                    Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
-                    Quantity = x.Quantity
-                })
-                .Select(x => new ReportDetailsModel
-                {
-                    CriteriaId = x.Key.Criteria.Id,
-                    Quantity = x.Key.Quantity,
-                    CriteriaType = x.Key.Criteria.CriteriaType,
-                    DateOfInspection = x.Key.DateOfInspection
-                })
-                .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.BlockedParts).ToList();
+        //    var blokedRepDetails = repDetails
+        //        .GroupBy(x => new
+        //        {
+        //            DateOfInspection = x.Report.DateOfInspection,
+        //            Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
+        //            Quantity = x.Quantity
+        //        })
+        //        .Select(x => new ReportDetailsModel
+        //        {
+        //            CriteriaId = x.Key.Criteria.Id,
+        //            Quantity = x.Key.Quantity,
+        //            CriteriaType = x.Key.Criteria.CriteriaType,
+        //            DateOfInspection = x.Key.DateOfInspection
+        //        })
+        //        .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.BlockedParts).ToList();
 
-            var criteriaBlocked = _criteriaService.GetAllCriteriaValues(orderId).Where(x => x.CriteriaType == CriteriaType.BlockedParts).OrderBy(x => x.Id).ToList();
+        //    var criteriaBlocked = _criteriaService.GetAllCriteriaValues(orderId).Where(x => x.CriteriaType == CriteriaType.BlockedParts).OrderBy(x => x.Id).ToList();
 
-            BindingFlags bindingFlags = BindingFlags.Public |
-                                        BindingFlags.NonPublic |
-                                        BindingFlags.Instance |
-                                        BindingFlags.Static;
+        //    BindingFlags bindingFlags = BindingFlags.Public |
+        //                                BindingFlags.NonPublic |
+        //                                BindingFlags.Instance |
+        //                                BindingFlags.Static;
 
-            var t = 1;
-            foreach (var criteria in criteriaBlocked)
-            {
-                foreach (var dailyReportModel in dfrs)
-                {
-                    var quantity = blokedRepDetails
-                        .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
-                                    && x.CriteriaId == criteria.Id)
-                        //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                        //&& x.ChargeNumber == dailyReportModel.ChargeNumber)
-                        .Sum(x => x.Quantity);
+        //    var t = 1;
+        //    foreach (var criteria in criteriaBlocked)
+        //    {
+        //        foreach (var dailyReportModel in dfrs)
+        //        {
+        //            var quantity = blokedRepDetails
+        //                .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
+        //                            && x.CriteriaId == criteria.Id)
+        //                //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+        //                //&& x.ChargeNumber == dailyReportModel.ChargeNumber)
+        //                .Sum(x => x.Quantity);
 
-                    if (quantity == 0)
-                        continue;
+        //            if (quantity == 0)
+        //                continue;
 
-                    var entity = dfrs
-                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection);
-                    //&& x.PartNumber == dailyReportModel.PartNumber
-                    //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                    //&& x.ChargeNumber == dailyReportModel.ChargeNumber);
+        //            var entity = dfrs
+        //                .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection);
+        //            //&& x.PartNumber == dailyReportModel.PartNumber
+        //            //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+        //            //&& x.ChargeNumber == dailyReportModel.ChargeNumber);
 
-                    if (entity == null)
-                        continue;
+        //            if (entity == null)
+        //                continue;
 
-                    var fieldIndex = t;
-                    var field = entity.GetType().GetFields(bindingFlags).FirstOrDefault(x => x.Name.Contains("Dod" + fieldIndex.ToString()));
-                    if (field == null) continue;
-                    field.SetValue(entity, quantity);
-                }
-                t++;
-            }
+        //            var fieldIndex = t;
+        //            var field = entity.GetType().GetFields(bindingFlags).FirstOrDefault(x => x.Name.Contains("Dod" + fieldIndex.ToString()));
+        //            if (field == null) continue;
+        //            field.SetValue(entity, quantity);
+        //        }
+        //        t++;
+        //    }
 
-            var reworkedRepDetails = repDetails
-                .GroupBy(x => new
-                {
-                    DateOfInspection = x.Report.DateOfInspection,
-                    Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
-                    Quantity = x.Quantity
-                })
-                .Select(x => new ReportDetailsModel
-                {
-                    CriteriaId = x.Key.Criteria.Id,
-                    Quantity = x.Key.Quantity,
-                    CriteriaType = x.Key.Criteria.CriteriaType,
-                    DateOfInspection = x.Key.DateOfInspection
-                })
-                .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.ReworkParts).ToList();
+        //    var reworkedRepDetails = repDetails
+        //        .GroupBy(x => new
+        //        {
+        //            DateOfInspection = x.Report.DateOfInspection,
+        //            Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
+        //            Quantity = x.Quantity
+        //        })
+        //        .Select(x => new ReportDetailsModel
+        //        {
+        //            CriteriaId = x.Key.Criteria.Id,
+        //            Quantity = x.Key.Quantity,
+        //            CriteriaType = x.Key.Criteria.CriteriaType,
+        //            DateOfInspection = x.Key.DateOfInspection
+        //        })
+        //        .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.ReworkParts).ToList();
 
-            var criteriaReworked = _criteriaService.GetAllCriteriaValues(orderId).Where(x => x.CriteriaType == CriteriaType.ReworkParts).OrderBy(x => x.Id).ToList();
+        //    var criteriaReworked = _criteriaService.GetAllCriteriaValues(orderId).Where(x => x.CriteriaType == CriteriaType.ReworkParts).OrderBy(x => x.Id).ToList();
 
-            var y = 1;
-            foreach (var criteria in criteriaReworked)
-            {
-                foreach (var dailyReportModel in dfrs)
-                {
-                    var quantity = reworkedRepDetails
-                        .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
-                                    && x.CriteriaId == criteria.Id)
-                        //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                        //&& x.ChargeNumber == dailyReportModel.ChargeNumber)
-                        .Sum(x => x.Quantity);
+        //    var y = 1;
+        //    foreach (var criteria in criteriaReworked)
+        //    {
+        //        foreach (var dailyReportModel in dfrs)
+        //        {
+        //            var quantity = reworkedRepDetails
+        //                .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
+        //                            && x.CriteriaId == criteria.Id)
+        //                //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+        //                //&& x.ChargeNumber == dailyReportModel.ChargeNumber)
+        //                .Sum(x => x.Quantity);
 
-                    if (quantity == 0)
-                        continue;
+        //            if (quantity == 0)
+        //                continue;
 
-                    var entity = dfrs
-                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection);
-                    //&& x.PartNumber == dailyReportModel.PartNumber
-                    //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                    //&& x.ChargeNumber == dailyReportModel.ChargeNumber);
+        //            var entity = dfrs
+        //                .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection);
+        //            //&& x.PartNumber == dailyReportModel.PartNumber
+        //            //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
+        //            //&& x.ChargeNumber == dailyReportModel.ChargeNumber);
 
-                    if (entity == null)
-                        continue;
+        //            if (entity == null)
+        //                continue;
 
-                    var fieldIndex = y;
-                    var field = entity.GetType().GetFields(bindingFlags).FirstOrDefault(x => x.Name.Contains("Dor" + fieldIndex.ToString()));
-                    if (field == null) continue;
-                    field.SetValue(entity, quantity);
-                }
-                y++;
-            }
+        //            var fieldIndex = y;
+        //            var field = entity.GetType().GetFields(bindingFlags).FirstOrDefault(x => x.Name.Contains("Dor" + fieldIndex.ToString()));
+        //            if (field == null) continue;
+        //            field.SetValue(entity, quantity);
+        //        }
+        //        y++;
+        //    }
 
-            return dfrs;
-        }
+        //    return dfrs;
+        //}
 
         private DailyReportExportModel PrepareExportData(int orderId)
         {
             //var dfrs = GetDailyReportData(orderId).ToList();
-            var dfrs = TestGetDailyReportData(orderId).ToList();
+            var dfrs = GetDailyReportData(orderId).ToList();
             var result = dfrs.OrderBy(x => x.DateOfInspection?.Date);
             var allCreterias = _criteriaService.GetAllCriteriaValues(orderId);
             var order = _orderService.GetOrderById(orderId);
-            var attributes = _orderAttributesRep.Table.ToList().OrderBy(w => w.Name);
+            //var attributes = _orderAttributesRep.Table.ToList().OrderBy(w => w.Name);
+            var attributes = _orderattributeMappingRep
+                .Table
+                .Where(x => x.OrderId == orderId)
+                .Select(x => x.OrderAttribute)
+                .ToList()
+                .OrderBy(w => w.ParentOrderAttributeId);
 
-            return new DailyReportExportModel(allCreterias, result, order, attributes);
+            var attrPart = attributes.FirstOrDefault(x => x.Name.ToLower().Contains("parts"));
+            var partNumbers = string.Empty;
+            foreach (var item in result)
+            {
+                if (attrPart != null)
+                {
+                    var partName = item.Attributes[attrPart.Id];
+                    partNumbers += !string.IsNullOrEmpty(partNumbers) && partNumbers.Contains(partName) ? "" : partName + "; ";
+                }
+            }
+
+            return new DailyReportExportModel(allCreterias, result, order, attributes,partNumbers);
         }
         #endregion
 
@@ -1161,6 +1190,8 @@ namespace Invenio.Admin.Controllers
 
             var rowDailyCount = model.Items.Count();
             var attributesCount = model.Attributes.Count;
+
+            var attrPart = model.Attributes.FirstOrDefault(x => x.Name.ToLower().Contains("parts"));
 
             using (var ms = new MemoryStream())
             {
@@ -1404,6 +1435,12 @@ namespace Invenio.Admin.Controllers
                 var num = 17;
                 foreach (var item in model.Items)
                 {
+                    if (attrPart != null)
+                    {
+                        var partName = item.Attributes[attrPart.Id];
+                        model.PartNumbers += model.PartNumbers != null && model.PartNumbers.Contains(partName) ? "" : partName + "; ";
+                    }
+
                     ws.Cells["A" + num].Value = num;
                     ws.Cells["B" + num].Value = item.DateOfInspection?.Date;
                     ws.Cells["B" + num].Style.Numberformat.Format = "[$-409]DD.MMM.YY;@";
@@ -1564,7 +1601,8 @@ namespace Invenio.Admin.Controllers
                 ws.Cells["H7:Q7"].Merge = true;
                 using (var rng = ws.Cells["H7:Q7"])
                 {
-                    rng.Value = "";
+                    //part numbers
+                    rng.Value = model.PartNumbers;
                 }
                 ws.Cells["H8:Q8"].Merge = true;
                 using (var rng = ws.Cells["H8:Q8"])
@@ -1610,17 +1648,14 @@ namespace Invenio.Admin.Controllers
             var model = new ЕfficiencyListModel();
 
             var date = DateTime.Now;
-            var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
-            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+            model.EfficiencySearchMonth = date.Month;
+            model.EfficiencySearchYear = date.Year;
 
-            model.DateFrom = firstDayOfMonth;
-            model.DateTo = lastDayOfMonth;
-
-            model.OrderBy.Add(new SelectListItem { Text = "Потребителско име", Value = "0" });
-            model.OrderBy.Add(new SelectListItem { Text = "Работни часове", Value = "1" });
-            model.OrderBy.Add(new SelectListItem { Text = "Продадени часове", Value = "2" });
-            model.OrderBy.Add(new SelectListItem { Text = "Разлика", Value = "3" });
-            model.OrderBy.Add(new SelectListItem { Text = "Ефикасност", Value = "4" });
+            model.OrderBy.Add(new SelectListItem { Text = _localizationService.GetResource("EfficiencyList.Search.OrderBy.Name"), Value = "0" });
+            model.OrderBy.Add(new SelectListItem { Text = _localizationService.GetResource("EfficiencyList.Search.OrderBy.WorkHours"), Value = "1" });
+            model.OrderBy.Add(new SelectListItem { Text = _localizationService.GetResource("EfficiencyList.Search.OrderBy.SoldHours"), Value = "2" });
+            model.OrderBy.Add(new SelectListItem { Text = _localizationService.GetResource("EfficiencyList.Search.OrderBy.Difference"), Value = "3" });
+            model.OrderBy.Add(new SelectListItem { Text = _localizationService.GetResource("EfficiencyList.Search.OrderBy.Efficiency"), Value = "4" });
 
             return View(model);
         }
@@ -1693,10 +1728,21 @@ namespace Invenio.Admin.Controllers
             foreach (var user in users)
             {
                 var userReports = _reportService
-                    .GetAllReports(userId: user.Id, fromDate: model.DateFrom, toDate: model.DateTo, isAprroved: 1);
+                    .GetAllReports(userId: user.Id, date: model.ParseEfficiencySearch(), isAprroved: 1);
 
-                var workDays = userReports.Where(x => x.DateOfInspection.HasValue).Select(x => x.DateOfInspection.Value.Date).ToList().Distinct().ToList().Count;
-                var workHours = workDays * 8;
+                //var workDays = userReports.Where(x => x.DateOfInspection.HasValue).Select(x => x.DateOfInspection.Value.Date).ToList().Distinct().ToList().Count;
+                //var workHours = workDays * 8;
+                var workHoursList = user.UserMonthlyWorkingHours;
+
+                if (model.ParseEfficiencySearch().HasValue)
+                    workHoursList = workHoursList
+                        .Where(x => x.FirstDateOfMonth.Year == model.ParseEfficiencySearch().Value.Year 
+                                    && x.FirstDateOfMonth.Month == model.ParseEfficiencySearch().Value.Month).ToList();
+
+                //if (model.DateTo.HasValue)
+                //    workHoursList = workHoursList.Where(x => x.LastDateOfMonth <= model.DateTo.Value).ToList();
+
+                var workHours = workHoursList.Sum(x => x.WorkHours);
 
                 var hoursSold = userReports.Sum(x => x.Time);
 
@@ -1705,19 +1751,19 @@ namespace Invenio.Admin.Controllers
                     .GroupBy(x => x.DateOfInspection.Value.Date)
                     .Select(x => x.ToList());
 
-                var hoursSoldEf = 0;
+                //var hoursSoldEf = 0;
 
-                foreach (var reports in listOfReports)
-                {
-                    var tt = reports.GroupBy(x => x.OrderId).Select(x => x.ToList());
-                    foreach (var reportsTt in tt)
-                    {
-                        var quantity = reportsTt.Sum(x => x.CheckedPartsQuantity);
-                        var pph = _orderService.GetOrderById(reportsTt.First().OrderId)?.PartsPerHour;
+                //foreach (var reports in listOfReports)
+                //{
+                //    var tt = reports.GroupBy(x => x.OrderId).Select(x => x.ToList());
+                //    foreach (var reportsTt in tt)
+                //    {
+                //        var quantity = reportsTt.Sum(x => x.CheckedPartsQuantity);
+                //        var pph = _orderService.GetOrderById(reportsTt.First().OrderId)?.PartsPerHour;
 
-                        hoursSoldEf += pph.HasValue && pph.Value > 0 ? (int)Math.Ceiling((decimal)quantity / pph.Value) : 0;
-                    }
-                }
+                //        hoursSoldEf += pph.HasValue && pph.Value > 0 ? (int)Math.Ceiling((decimal)quantity / pph.Value) : 0;
+                //    }
+                //}
 
                 var efficiency = hoursSold.HasValue ? (double)hoursSold.Value / workHours : 0;
 
@@ -1726,7 +1772,7 @@ namespace Invenio.Admin.Controllers
                     UserName = user.GetFullName(),
                     MonthlyHours = workHours,
                     HoursSold = hoursSold ?? 0,
-                    HoursSoldEf = hoursSoldEf,
+                    //HoursSoldEf = hoursSoldEf,
                     Difference = (hoursSold ?? 0) - workHours,
                     Efficiency = efficiency
                 });

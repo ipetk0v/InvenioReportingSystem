@@ -18,6 +18,7 @@ namespace Invenio.Core.Domain.Users
         //private ICollection<ShoppingCartItem> _shoppingCartItems;
         //private ICollection<ReturnRequest> _returnRequests;
         private ICollection<Address> _addresses;
+        private ICollection<UserMonthlyWorkingHours> _monthlyWorkingHourses;
 
         /// <summary>
         /// Ctor
@@ -201,6 +202,12 @@ namespace Invenio.Core.Domain.Users
         {
             get { return _addresses ?? (_addresses = new List<Address>()); }
             protected set { _addresses = value; }
+        }
+
+        public virtual ICollection<UserMonthlyWorkingHours> UserMonthlyWorkingHours
+        {
+            get { return _monthlyWorkingHourses ?? (_monthlyWorkingHourses = new List<UserMonthlyWorkingHours>()); }
+            protected set { _monthlyWorkingHourses = value; }
         }
 
         #endregion

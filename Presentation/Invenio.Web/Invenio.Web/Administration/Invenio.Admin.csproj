@@ -1331,6 +1331,7 @@
     <Compile Include="Models\Users\UserAttributeValueModel.cs" />
     <Compile Include="Models\Users\UserListModel.cs" />
     <Compile Include="Models\Users\UserModel.cs" />
+    <Compile Include="Models\Users\UserMonthlyWorkingHoursModel.cs" />
     <Compile Include="Models\Users\UserReportsModel.cs" />
     <Compile Include="Models\Users\UserRoleModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

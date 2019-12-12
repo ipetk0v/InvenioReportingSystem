@@ -117,6 +117,7 @@ namespace Invenio.Admin.Models.Orders
             [NopResourceDisplayName("Admin.Catalog.Orders.OrderAttributes.Attributes.Fields.Attribute")]
             public string OrderAttribute { get; set; }
 
+            [NopResourceDisplayName("Admin.Catalog.Orders.OrderAttributes.Attributes.Fields.ParentOrderAttributeId")]
             public int ParentOrderAttributeId { get; set; }
             public IList<OrderAttribute> OrderAttributes { get; set; }
 
@@ -195,6 +196,7 @@ namespace Invenio.Admin.Models.Orders
 
             public int ParentOrderAttributeMappingId { get; set; }
 
+            [NopResourceDisplayName("Admin.Catalog.Orders.OrderAttributes.Attributes.Values.Fields.ParentAttributeValueId")]
             public int? ParentAttributeValueId { get; set; }
             public IList<SelectListItem> ParentAttributeValues { get; set; }
 

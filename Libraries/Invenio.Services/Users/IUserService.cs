@@ -44,7 +44,7 @@ namespace Invenio.Services.Users
             string company = null, string phone = null, string zipPostalCode = null,
             string ipAddress = null, bool loadOnlyWithShoppingCart = false, /*ShoppingCartType? sct = null,*/
             int pageIndex = 0, int pageSize = int.MaxValue);
-
+        
         /// <summary>
         /// Gets online Users
         /// </summary>

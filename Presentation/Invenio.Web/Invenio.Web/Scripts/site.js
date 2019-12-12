@@ -17,12 +17,13 @@ function addNewReport() {
     newElement.find('select[name^="Supplier"]').attr("id", uniqId());
     newElement.find('select[name^="Order"]').attr("id", uniqId());
     newElement.find('select[name^="Order"]').hide();
-    newElement.find('select[name^="Part"]').attr("id", uniqId());
-    newElement.find('select[name^="Part"]').hide();
-    newElement.find('select[name^="DeliveryNumber"]').attr("id", uniqId());
-    newElement.find('select[name^="DeliveryNumber"]').hide();
-    newElement.find('select[name^="ChargeNumber"]').attr("id", uniqId());
-    newElement.find('select[name^="ChargeNumber"]').hide();
+    //newElement.find('select[name^="Part"]').attr("id", uniqId());
+    //newElement.find('select[name^="Part"]').hide();
+    //newElement.find('select[name^="DeliveryNumber"]').attr("id", uniqId());
+    //newElement.find('select[name^="DeliveryNumber"]').hide();
+    //newElement.find('select[name^="ChargeNumber"]').attr("id", uniqId());
+    //newElement.find('select[name^="ChargeNumber"]').hide();
+    newElement.find('.attribute-div').empty();
     newElement.find('select[name^="BlockedPart"]').attr("id", uniqId());
     newElement.find('select[name^="BlockedPart"]').parent().parent().attr("hidden", "hidden");
     newElement.find('select[name^="ReworkedPart"]').attr("id", uniqId());
@@ -31,13 +32,13 @@ function addNewReport() {
     var el = newElement.appendTo($('#reports'));
     element.removeAttr('id');
 
-    el.find('#blocked-parts-list').find('.row').not(':first').remove();
-    el.find('#reworked-parts-list').find('.row').not(':first').remove();
+    //el.find('#blocked-parts-list').find('.row').not(':first').remove();
+    //el.find('#reworked-parts-list').find('.row').not(':first').remove();
 
-    el.find('#blocked-parts-list').children().find('input').val(0);
-    el.find('#blocked-parts-list').children().find('option').not(':first').remove();
-    el.find('#reworked-parts-list').children().find('input').val(0);
-    el.find('#reworked-parts-list').children().find('option').not(':first').remove();
+    //el.find('#blocked-parts-list').children().find('input').val(0);
+    //el.find('#blocked-parts-list').children().find('option').not(':first').remove();
+    //el.find('#reworked-parts-list').children().find('input').val(0);
+    //el.find('#reworked-parts-list').children().find('option').not(':first').remove();
     el.find('#CheckedQuantity').val(0);
     el.find('#input-time').val(0);
     el.find('#input-ok').val(0);
@@ -45,6 +46,10 @@ function addNewReport() {
     el.find('#input-time').attr("disabled", "disabled");
     el.find('#input-nok').val(0);
     el.find('#input-reworked').val(0);
+
+    $('html, body').animate({
+        scrollTop: $(document).height()
+    }), 3000;
 }
 
 function addBlockedRow(element) {
@@ -128,6 +133,10 @@ function filterChildDropdown(el) {
             } else {
                 $(el).parent().append(result);
             }
+
+            $('html, body').animate({
+                scrollTop: $(document).height()
+            }), 3000;
         }
     });
 }
@@ -141,9 +150,13 @@ function GetOrderAttribute(element) {
         url: "/Home/GetOrderAttribute",
         data: { "orderId": data },
         success: function (html) {
-            var attrDiv = $('.attribute-div');
+            var attrDiv = element.closest('.col-lg-4').find('.attribute-div');
             attrDiv.empty();
             attrDiv.append(html);
+
+            $('html, body').animate({
+                scrollTop: $(document).height()
+            }), 3000;
         }
     });
 }
