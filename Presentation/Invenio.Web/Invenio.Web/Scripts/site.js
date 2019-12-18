@@ -157,6 +157,8 @@ function GetOrderAttribute(element) {
             $('html, body').animate({
                 scrollTop: $(document).height()
             }), 3000;
+
+            GetDataByOrder(element);
         }
     });
 }
@@ -171,15 +173,18 @@ function RemoveDisabledQuantityAndCriteria(element) {
 
     var blockedPartsDropDown = element.closest(".attribute-div").parent().parent().find('select[name^="BlockedPart"]').parent().parent();
     blockedPartsDropDown.removeAttr("hidden");
-
+    blockedPartsDropDown.find('#BlockedPartId').removeAttr("disabled");
+    
     var reworkedPartsDropDown = element.closest(".attribute-div").parent().parent().find('select[name^="ReworkedPart"]').parent().parent();
     reworkedPartsDropDown.removeAttr("hidden");
+    reworkedPartsDropDown.find('#ReworkedPartId').removeAttr("disabled");
+
 }
 
 function GetDataByOrder(element) {
     element = $(element);
     var data = element.val();
-
+    
     var blockedPartsDropDown = element.parent().parent().parent().find('select[name^="BlockedPart"]');
 
     $.ajax({

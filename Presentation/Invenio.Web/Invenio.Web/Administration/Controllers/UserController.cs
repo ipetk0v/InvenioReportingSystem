@@ -1818,7 +1818,8 @@ namespace Invenio.Admin.Controllers
                 return AccessDeniedKendoGridJson();
 
             if (userId == 0)
-                return new NullJsonResult();
+                return Json(new {});
+                //return new NullJsonResult();
 
             var userMonthlyWorkingHoursList = _userService.GetUserById(userId)?.UserMonthlyWorkingHours.ToList().OrderByDescending(x => x.FirstDateOfMonth);
 

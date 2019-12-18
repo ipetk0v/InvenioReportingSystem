@@ -70,8 +70,8 @@ namespace Invenio.Admin.Controllers
             IReportDetailService reportDetailService,
             ICriteriaService criteriaService,
             IPdfService pdfService,
-            ICustomerService customerService, 
-            IRepository<OrderAttribute> orderAttributesRep, 
+            ICustomerService customerService,
+            IRepository<OrderAttribute> orderAttributesRep,
             IRepository<OrderAttributeValue> attrbuteValuesRep,
             IRepository<OrderAttributeMapping> orderattributeMappingRep)
         {
@@ -861,11 +861,13 @@ namespace Invenio.Admin.Controllers
             {
                 var subReports = groupedReports[new Tuple<DateTime?, string>(dfr.DateOfInspection, dfr.AttrsKey)];
 
-                var valIds = dfr.AttrsKey.Split('_').Select(s => int.Parse(s.Split('=')[1]));
+                var valIds = dfr.AttrsKey.Split('_').Where(x => !string.IsNullOrEmpty(x)).Select(s => int.Parse(s.Split('=')[1]));
                 var attributeValues = _attributeValuesRep.Table.Where(w => valIds.Contains(w.Id))
                     .ToDictionary(w => w.Id, w => w.Name);
 
-                dfr.Attributes = dfr.AttrsKey.Split('_').Select(s => new { AttributeId = int.Parse(s.Split('=')[0]), ValueId = int.Parse(s.Split('=')[1]) })
+                dfr.Attributes = dfr.AttrsKey.Split('_')
+                    .Where(x => !string.IsNullOrEmpty(x))
+                    .Select(s => new { AttributeId = int.Parse(s.Split('=')[0]), ValueId = int.Parse(s.Split('=')[1]) })
                     .ToDictionary(s => s.AttributeId, s => attributeValues.ContainsKey(s.ValueId) ? attributeValues[s.ValueId] : "");
 
 
@@ -1149,14 +1151,14 @@ namespace Invenio.Admin.Controllers
             var partNumbers = string.Empty;
             foreach (var item in result)
             {
-                if (attrPart != null)
+                if (attrPart != null && item.Attributes.Any())
                 {
                     var partName = item.Attributes[attrPart.Id];
                     partNumbers += !string.IsNullOrEmpty(partNumbers) && partNumbers.Contains(partName) ? "" : partName + "; ";
                 }
             }
 
-            return new DailyReportExportModel(allCreterias, result, order, attributes,partNumbers);
+            return new DailyReportExportModel(allCreterias, result, order, attributes, partNumbers);
         }
         #endregion
 
@@ -1431,11 +1433,10 @@ namespace Invenio.Admin.Controllers
                     rng.Value = string.Join("\r\n", allCriterias);
                 }
 
-
                 var num = 17;
                 foreach (var item in model.Items)
                 {
-                    if (attrPart != null)
+                    if (attrPart != null && item.Attributes.Any())
                     {
                         var partName = item.Attributes[attrPart.Id];
                         model.PartNumbers += model.PartNumbers != null && model.PartNumbers.Contains(partName) ? "" : partName + "; ";
@@ -1736,7 +1737,7 @@ namespace Invenio.Admin.Controllers
 
                 if (model.ParseEfficiencySearch().HasValue)
                     workHoursList = workHoursList
-                        .Where(x => x.FirstDateOfMonth.Year == model.ParseEfficiencySearch().Value.Year 
+                        .Where(x => x.FirstDateOfMonth.Year == model.ParseEfficiencySearch().Value.Year
                                     && x.FirstDateOfMonth.Month == model.ParseEfficiencySearch().Value.Month).ToList();
 
                 //if (model.DateTo.HasValue)

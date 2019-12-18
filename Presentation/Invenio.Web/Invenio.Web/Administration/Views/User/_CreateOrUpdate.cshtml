@@ -26,7 +26,7 @@
                 {
                     @Html.RenderBootstrapTabContent("tab-activitylog", @TabActivityLog())
                 }
-                @Html.RenderBootstrapTabContent("tab-umwh", TabUserMonthlyWorkingHours(), true)
+                @Html.RenderBootstrapTabContent("tab-umwh", TabUserMonthlyWorkingHours())
             </div>
         </div>
     </div>
@@ -712,10 +712,12 @@
 
 @helper TabUserMonthlyWorkingHours()
 {
-    <div class="panel panel-default">
-        <div class="panel-body">
-            <div id="umwh-grid"></div>
-            <script>
+    if (Model.Id > 0)
+    {
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div id="umwh-grid"></div>
+                <script>
                 $(document).ready(function() {
                     $("#umwh-grid").kendoGrid({
                         dataSource: {
@@ -841,23 +843,30 @@
                             ]
                         });
                     });
-            </script>
+                </script>
 
 
 
-            <input type="submit" id="btnRefreshumwh" style="display: none" />
-            <script type="text/javascript">
-                $(document).ready(function () {
-                    $('#btnRefreshumwh').click(function () {
-                        //refresh grid
-                        var grid = $("#umwh-grid").data('kendoGrid');
-                        grid.dataSource.read();
+                <input type="submit" id="btnRefreshumwh" style="display: none" />
+                <script type="text/javascript">
+                    $(document).ready(function () {
+                        $('#btnRefreshumwh').click(function () {
+                            //refresh grid
+                            var grid = $("#umwh-grid").data('kendoGrid');
+                            grid.dataSource.read();
 
-                        //return false to don't reload a page
-                        return false;
+                            //return false to don't reload a page
+                            return false;
+                        });
                     });
-                });
-            </script>
+                </script>
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="panel-body">
+            @T("Admin.User.MonthlyHours.SaveBeforeEdit")
+        </div>
+    }
 }
