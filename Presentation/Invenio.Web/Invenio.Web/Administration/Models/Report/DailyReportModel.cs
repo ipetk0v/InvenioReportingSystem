@@ -6,9 +6,15 @@ namespace Invenio.Admin.Models.Report
 {
     public class DailyReportModel : BaseNopEntityModel
     {
+        public DailyReportModel()
+        {
+            AttributeValueIds = new List<int>();
+        }
+
         public DateTime? DateOfInspection { get; set; }
         public string AttrsKey { get; set; }
         public Dictionary<int, string> Attributes { get; set; }
+        public ICollection<int> AttributeValueIds { get; set; }
 
         public long Quantity { get; set; }
 

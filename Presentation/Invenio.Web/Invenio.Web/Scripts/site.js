@@ -283,7 +283,9 @@ function submitReports(errorMessage, returnUrl) {
 
         object.WorkShiftId = $('#WorkShiftId').val();
         object.ReportDate = $("#DateId").val();
-
+        //object.BlockedPart = $('#BlockedPartId');
+        //object.ReworkedPart = $('#ReworkedPartId');
+        
         if (object.WorkShiftId < 1
             || object.CheckedQuantity < 1
             || object.InputTime < 1
@@ -293,6 +295,16 @@ function submitReports(errorMessage, returnUrl) {
 
             errors = true;
         }
+
+        //if (object.BlockedPart.length > 0 && object.BlockedPart.val() < 1) {
+        //    errors = true;
+        //    errorMessage = "Има непопълнен критерии за Блокирана част";
+        //}
+
+        //if (object.ReworkedPart.length > 0 && object.ReworkedPart.val() < 1) {
+        //    errors = true;
+        //    errorMessage = "Има непопълнен критерии за извършен ре";
+        //}
 
         var nokCriteria = new Array();
         var reworkedCriteria = new Array();

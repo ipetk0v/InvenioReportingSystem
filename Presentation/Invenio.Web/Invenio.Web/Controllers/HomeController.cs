@@ -229,6 +229,9 @@ namespace Invenio.Web.Controllers
                     entity.ReportOrderAttributes.Add(roa);
                 }
 
+                if (entity.ReportOrderAttributes.Any())
+                    _reportService.UpdateReport(entity);
+
                 foreach (var nokCriteria in report.NokCriteria)
                 {
                     if (nokCriteria.CriteriaId == 0)

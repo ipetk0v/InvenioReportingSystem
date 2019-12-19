@@ -1,5 +1,6 @@
 ﻿@using System.Collections
 @using Invenio.Admin.Models.Report
+@using Invenio.Core.Domain.Criterias
 @using Invenio.Core.Domain.Orders
 @using Newtonsoft.Json
 @model Invenio.Admin.Models.Report.DailyReportModelList
@@ -12,11 +13,16 @@
     //page title
     ViewBag.Title = T("Admin.ContentManagement.Report").Text;
     //active menu item (system name)
-    Html.SetActiveMenuItemSystemName("Report");
+    Html.SetActiveMenuItemSystemName("Reports");
 
     int? filterByReportId = ViewBag.FilterByReportPostId;
 
     var attributes = (IEnumerable<OrderAttribute>)ViewBag.Attributes;
+    var criteries = (IList<Criteria>)ViewBag.Criteries;
+    var blockedCriteries = criteries.Where(x => x.CriteriaType == CriteriaType.BlockedParts).ToList();
+    var reworkedCriteries = criteries.Where(x => x.CriteriaType == CriteriaType.ReworkParts).ToList();
+    var blockedPartsCount = blockedCriteries.Any() ? blockedCriteries.Count() : 0;
+    var reworkedPartsCount = reworkedCriteries.Any() ? reworkedCriteries.Count() : 0;
 }
 
 @Html.AntiForgeryToken()
@@ -57,20 +63,22 @@
                             <td>#: FirstRunOkParts#</td>
                             <td>#: BlockedParts#</td>
                             <td>#: NokParts#</td>
-                            <td>#: Dod1#</td>
-                            <td>#: Dod2#</td>
-                            <td>#: Dod3#</td>
-                            <td>#: Dod4#</td>
-                            <td>#: Dod5#</td>
-                            <td>#: Dod6#</td>
-                            <td>#: Dod7#</td>
-                            <td>#: Dod8#</td>
+                            @if (blockedPartsCount > 0)
+                            {
+                                for (var i = 1; i <= blockedPartsCount; i++)
+                                {
+                                    <td>#: Dod@(i)#</td>
+                                }
+                            }
                             <td>#: NokPercentage#</td>
                             <td>#: ReworkedParts#</td>
-                            <td>#: Dor1#</td>
-                            <td>#: Dor2#</td>
-                            <td>#: Dor3#</td>
-                            <td>#: Dor4#</td>
+                            @if (reworkedPartsCount > 0)
+                            {
+                                for (var i = 1; i <= reworkedPartsCount; i++)
+                                {
+                                    <td>#: Dor@(i)#</td>
+                                }
+                            }
                             <td>#: ReworkedPercentage#</td>
                         </tr>
                     </script>
@@ -82,8 +90,7 @@
                                 title: "@T("Admin.Report.DailyFinalReport.DateOfInspection")",
                                 type: "date",
                                 format: "{0:dd MMM yyyy}"
-                            },
-                            {
+                            },{
                                 field: "Quantity",
                                 title: "@T("Admin.Report.DailyFinalReport.Quantity")"
                             }, {
@@ -95,57 +102,12 @@
                             }, {
                                 field: "NokParts",
                                 title: "@T("Admin.Report.DailyFinalReport.NokParts")"
-                            },
-                            {
-                                field: "Dod1",
-                                title: "@T("1")"
-                            },
-                            {
-                                field: "Dod2",
-                                title: "@T("2")"
-                            },
-                            {
-                                field: "Dod3",
-                                title: "@T("3")"
-                            },
-                            {
-                                field: "Dod4",
-                                title: "@T("4")"
-                            },
-                            {
-                                field: "Dod5",
-                                title: "@T("5")"
-                            },
-                            {
-                                field: "Dod6",
-                                title: "@T("6")"
-                            },
-                            {
-                                field: "Dod7",
-                                title: "@T("7")"
-                            },
-                            {
-                                field: "Dod8",
-                                title: "@T("8")"
-                            },
-                            {
+                            },{
                                 field: "NokPercentage",
                                 title: "@T("Admin.Report.DailyFinalReport.NokPercentage")"
                             }, {
                                 field: "ReworkedParts",
                                 title: "@T("Admin.Report.DailyFinalReport.ReworkedParts")"
-                            }, {
-                                field: "Dor1",
-                                title: "@T("1")"
-                            }, {
-                                field: "Dor2",
-                                title: "@T("2")"
-                            }, {
-                                field: "Dor3",
-                                title: "@T("3")"
-                            }, {
-                                field: "Dor4",
-                                title: "@T("4")"
                             }, {
                                 field: "ReworkedPercentage",
                                 title: "@T("Admin.Report.DailyFinalReport.ReworkedPercentage")"
@@ -153,20 +115,36 @@
                         ];
 
                         var attrColumns = @Html.Raw(JsonConvert.SerializeObject(attributes));
+                        var blockedCriteries = @Html.Raw(JsonConvert.SerializeObject(blockedCriteries));
+                        var reworkedCriteries = @Html.Raw(JsonConvert.SerializeObject(reworkedCriteries));
 
+                        console.log(blockedCriteries)
+                        console.log(reworkedCriteries)
+
+                        blockedCriteries.forEach(function(item, index) {
+                            columns.splice(index + 7, 0,
+                                {
+                                    title: (index + 1).toString(),
+                                    value: 'Dod' + (index + 1)
+                                });
+                        });
+
+                        reworkedCriteries.forEach(function(item, index) {
+                            columns.splice(index + 5, 0,
+                                {
+                                    title: (index + 1).toString(),
+                                    value: 'Dor' + (index + 1)
+                                });
+                        });
 
                         attrColumns.forEach(function(item, index) {
                             columns.splice(index + 1, 0,
                                 {
                                     title: item.Name,
                                     value: 'Attribute_'+item.AttributeValueId
-
                                 });
                         });
-
-                        console.log(columns);
-
-
+                        
                         $(document).ready(function() {
                             $("#final-reports-grid").kendoGrid({
                                 dataSource: {
@@ -190,11 +168,6 @@
                                         // Cancel the changes
                                         this.cancelChanges();
                                     },
-                                    //aggregate: [{ field: "Quantity", aggregate: "sum" },
-                                    //    { field: "BlockedParts", aggregate: "sum" },
-                                    //    { field: "ReworkedParts", aggregate: "sum" },
-                                    //    { field: "NokParts", aggregate: "sum" }
-                                    //],
                                     pageSize: @(defaultGridPageSize),
                                     serverPaging: true,
                                     serverFiltering: true,

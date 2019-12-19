@@ -730,7 +730,10 @@ namespace Invenio.Admin.Controllers
                 .ToList()
                 .OrderBy(w => w.ParentOrderAttributeId);
 
+            var criteries = _criteriaService.GetAllCriteriaValues(Id);
+
             ViewBag.Attributes = attributes;
+            ViewBag.Criteries = criteries;
 
             var model = new DailyReportModelList
             {
@@ -846,8 +849,12 @@ namespace Invenio.Admin.Controllers
             var groupedReports = reports.GroupBy(c => new
             {
                 Date = c.DateOfInspection?.Date,
-                AttrsKey = string.Join("_", c.ReportOrderAttributes.OrderBy(o => o.AttributeId).ThenBy(o => o.AttributeValueId).Select(s => s.AttributeId.ToString() + "=" + s.AttributeValueId.ToString())),
-            }).ToDictionary(w => new Tuple<DateTime?, string>(w.Key.Date?.Date, w.Key.AttrsKey), w => w);
+                AttrsKey = string.Join("_", c.ReportOrderAttributes
+                                                .OrderBy(o => o.AttributeId)
+                                                .ThenBy(o => o.AttributeValueId)
+                                                .Select(s => s.AttributeId.ToString() + "=" + s.AttributeValueId.ToString())),
+            })
+            .ToDictionary(w => new Tuple<DateTime?, string>(w.Key.Date?.Date, w.Key.AttrsKey), w => w);
 
             var dfrs = groupedReports.Select(x => new DailyReportModel
             {
@@ -870,6 +877,10 @@ namespace Invenio.Admin.Controllers
                     .Select(s => new { AttributeId = int.Parse(s.Split('=')[0]), ValueId = int.Parse(s.Split('=')[1]) })
                     .ToDictionary(s => s.AttributeId, s => attributeValues.ContainsKey(s.ValueId) ? attributeValues[s.ValueId] : "");
 
+                dfr.AttributeValueIds = dfr.AttrsKey.Split('_')
+                    .Where(x => !string.IsNullOrEmpty(x))
+                    .Select(s => int.Parse(s.Split('=')[1]))
+                    .ToList();
 
                 dfr.NokParts = subReports.Sum(x => x.NokPartsQuantity);
                 dfr.ReworkedParts = subReports.Sum(x => x.ReworkPartsQuantity);
@@ -889,14 +900,16 @@ namespace Invenio.Admin.Controllers
                 {
                     DateOfInspection = x.Report.DateOfInspection,
                     Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
-                    Quantity = x.Quantity
+                    Quantity = x.Quantity,
+                    Attributes = x.Report.ReportOrderAttributes
                 })
                 .Select(x => new ReportDetailsModel
                 {
                     CriteriaId = x.Key.Criteria.Id,
                     Quantity = x.Key.Quantity,
                     CriteriaType = x.Key.Criteria.CriteriaType,
-                    DateOfInspection = x.Key.DateOfInspection
+                    DateOfInspection = x.Key.DateOfInspection,
+                    Attributes = x.Key.Attributes
                 })
                 .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.BlockedParts).ToList();
 
@@ -913,20 +926,17 @@ namespace Invenio.Admin.Controllers
                 foreach (var dailyReportModel in dfrs)
                 {
                     var quantity = blokedRepDetails
-                        .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
-                                    && x.CriteriaId == criteria.Id)
-                        //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                        //&& x.ChargeNumber == dailyReportModel.ChargeNumber)
+                        .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection 
+                                                       && x.CriteriaId == criteria.Id 
+                                                       && x.Attributes.All(v => dailyReportModel.AttributeValueIds.Contains(v.AttributeValueId)))
                         .Sum(x => x.Quantity);
 
                     if (quantity == 0)
                         continue;
 
                     var entity = dfrs
-                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection);
-                    //&& x.PartNumber == dailyReportModel.PartNumber
-                    //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                    //&& x.ChargeNumber == dailyReportModel.ChargeNumber);
+                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection 
+                                                                && x.AttributeValueIds.All(v => dailyReportModel.AttributeValueIds.Contains(v)));
 
                     if (entity == null)
                         continue;
@@ -942,16 +952,18 @@ namespace Invenio.Admin.Controllers
             var reworkedRepDetails = repDetails
                 .GroupBy(x => new
                 {
-                    DateOfInspection = x.Report.DateOfInspection,
+                    x.Report.DateOfInspection,
                     Criteria = _criteriaService.GetCriteriaById(x.CriteriaId),
-                    Quantity = x.Quantity
+                    x.Quantity,
+                    Attributes = x.Report.ReportOrderAttributes
                 })
                 .Select(x => new ReportDetailsModel
                 {
                     CriteriaId = x.Key.Criteria.Id,
                     Quantity = x.Key.Quantity,
                     CriteriaType = x.Key.Criteria.CriteriaType,
-                    DateOfInspection = x.Key.DateOfInspection
+                    DateOfInspection = x.Key.DateOfInspection,
+                    Attributes = x.Key.Attributes
                 })
                 .Where(x => _criteriaService.GetCriteriaById(x.CriteriaId).CriteriaType == CriteriaType.ReworkParts).ToList();
 
@@ -964,19 +976,16 @@ namespace Invenio.Admin.Controllers
                 {
                     var quantity = reworkedRepDetails
                         .Where(x => x.DateOfInspection == dailyReportModel.DateOfInspection
-                                    && x.CriteriaId == criteria.Id)
-                        //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                        //&& x.ChargeNumber == dailyReportModel.ChargeNumber)
+                                    && x.CriteriaId == criteria.Id
+                                    && x.Attributes.All(v => dailyReportModel.AttributeValueIds.Contains(v.AttributeValueId)))
                         .Sum(x => x.Quantity);
 
                     if (quantity == 0)
                         continue;
 
                     var entity = dfrs
-                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection);
-                    //&& x.PartNumber == dailyReportModel.PartNumber
-                    //&& x.DeliveryNumber == dailyReportModel.DeliveryNumber
-                    //&& x.ChargeNumber == dailyReportModel.ChargeNumber);
+                        .FirstOrDefault(x => x.DateOfInspection == dailyReportModel.DateOfInspection
+                                             && x.AttributeValueIds.All(v => dailyReportModel.AttributeValueIds.Contains(v)));
 
                     if (entity == null)
                         continue;
@@ -1192,6 +1201,8 @@ namespace Invenio.Admin.Controllers
 
             var rowDailyCount = model.Items.Count();
             var attributesCount = model.Attributes.Count;
+            var blockedCriteriaCount = model.BlockedCriterias.Count;
+            var reworkedCriteriaCount = model.ReworkedCriterias.Count;
 
             var attrPart = model.Attributes.FirstOrDefault(x => x.Name.ToLower().Contains("parts"));
 
@@ -1199,7 +1210,7 @@ namespace Invenio.Admin.Controllers
             {
                 var pck = new ExcelPackage();
                 var ws = pck.Workbook.Worksheets.Add("100% Report");
-                ws.View.ZoomScale = 82;
+                ws.View.ZoomScale = 100;
 
                 using (var rng = ws.Cells["F6:Q10"])
                 {
@@ -1211,7 +1222,7 @@ namespace Invenio.Admin.Controllers
                     rng.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
                 }
 
-                using (var rng = ws.Cells[15, 1, rowDailyCount + 16, 22 + attributesCount])
+                using (var rng = ws.Cells[15, 1, rowDailyCount + 16, 12 + attributesCount + blockedCriteriaCount + reworkedCriteriaCount])
                 {
                     rng.Style.Border.Top.Style = ExcelBorderStyle.Thin;
                     rng.Style.Border.Left.Style = ExcelBorderStyle.Thin;
@@ -1219,17 +1230,17 @@ namespace Invenio.Admin.Controllers
                     rng.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
                 }
 
-                using (var rng = ws.Cells[15, 1, 16, 22 + attributesCount])
+                using (var rng = ws.Cells[15, 1, 16, 12 + attributesCount + blockedCriteriaCount + reworkedCriteriaCount])
                 {
                     rng.Style.Border.BorderAround(ExcelBorderStyle.Medium);
                 }
 
-                using (var rng = ws.Cells[17, 1, 16 + rowDailyCount, 22 + attributesCount])
+                using (var rng = ws.Cells[17, 1, 16 + rowDailyCount, 12 + attributesCount + blockedCriteriaCount + reworkedCriteriaCount])
                 {
                     rng.Style.Border.BorderAround(ExcelBorderStyle.Medium);
                 }
 
-                using (var rng = ws.Cells[15, 1, 16 + rowDailyCount, 22 + attributesCount])
+                using (var rng = ws.Cells[15, 1, 16 + rowDailyCount, 12 + attributesCount + blockedCriteriaCount + reworkedCriteriaCount])
                 {
 
                     rng.Style.Border.Diagonal.Style = ExcelBorderStyle.Thin;
@@ -1268,56 +1279,56 @@ namespace Invenio.Admin.Controllers
                 }
 
 
-                using (var rng = ws.Cells[rowDailyCount + 19, 15 + attributesCount, rowDailyCount + 19 + 1, 15 + attributesCount])
+                using (var rng = ws.Cells[rowDailyCount + 19, 15 + attributesCount + blockedCriteriaCount, rowDailyCount + 19 + 1, 15 + attributesCount + blockedCriteriaCount])
                 {
                     rng.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
                 }
 
-                using (var rng = ws.Cells[rowDailyCount + 19, 19 + attributesCount, rowDailyCount + 19 + 1, 22 + attributesCount])
+                using (var rng = ws.Cells[rowDailyCount + 19, 8 + attributesCount + blockedCriteriaCount, rowDailyCount + 19 + 1, 12 + attributesCount + blockedCriteriaCount])
                 {
-                    rng.Style.Border.Top.Style = ExcelBorderStyle.Medium;
-                    rng.Style.Border.Left.Style = ExcelBorderStyle.Medium;
-                    rng.Style.Border.Right.Style = ExcelBorderStyle.Medium;
-                    rng.Style.Border.Bottom.Style = ExcelBorderStyle.Medium;
+                    rng.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                    rng.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                    rng.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                    rng.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
                 }
 
-                using (var rng = ws.Cells[rowDailyCount + 18, 18 + attributesCount, rowDailyCount + 18, 22 + attributesCount])
+                using (var rng = ws.Cells[rowDailyCount + 18, 18 + attributesCount + blockedCriteriaCount, rowDailyCount + 18, 22 + attributesCount + blockedCriteriaCount])
                 {
                     rng.Style.Font.Bold = true;
                 }
 
-                ws.Cells[19 + rowDailyCount, 17 + attributesCount].Value = "Quantities";
-                ws.Cells[20 + rowDailyCount, 17 + attributesCount].Value = "Percentages";
-                ws.Cells[18 + rowDailyCount, 18 + attributesCount].Value = "Total checked";
-                ws.Cells[18 + rowDailyCount, 19 + attributesCount].Value = "Total OK";
-                ws.Cells[18 + rowDailyCount, 20 + attributesCount].Value = "Total Blocked";
-                ws.Cells[18 + rowDailyCount, 21 + attributesCount].Value = "Total NOK";
-                ws.Cells[18 + rowDailyCount, 22 + attributesCount].Value = "Total Reworked";
+                ws.Cells[19 + rowDailyCount, 7 + attributesCount + blockedCriteriaCount].Value = "Quantities";
+                ws.Cells[20 + rowDailyCount, 7 + attributesCount + blockedCriteriaCount].Value = "Percentages";
+                ws.Cells[18 + rowDailyCount, 8 + attributesCount + blockedCriteriaCount].Value = "Total checked";
+                ws.Cells[18 + rowDailyCount, 9 + attributesCount + blockedCriteriaCount].Value = "Total OK";
+                ws.Cells[18 + rowDailyCount, 10 + attributesCount + blockedCriteriaCount].Value = "Total Blocked";
+                ws.Cells[18 + rowDailyCount, 11 + attributesCount + blockedCriteriaCount].Value = "Total NOK";
+                ws.Cells[18 + rowDailyCount, 12 + attributesCount + blockedCriteriaCount].Value = "Total Reworked";
 
-                ws.Cells[19 + rowDailyCount, 18 + attributesCount].Style.Border.BorderAround(ExcelBorderStyle.Medium);
+                ws.Cells[19 + rowDailyCount, 8 + attributesCount + blockedCriteriaCount].Style.Border.BorderAround(ExcelBorderStyle.Medium);
 
-                ws.Cells[19 + rowDailyCount, 18 + attributesCount].Formula = $"=SUM({ws.Cells[17, 3 + attributesCount].Address}:{ws.Cells[16 + rowDailyCount, 3 + attributesCount].Address})";
-                ws.Cells[19 + rowDailyCount, 19 + attributesCount].Formula = $"=SUM({ws.Cells[17, 4 + attributesCount].Address}:{ws.Cells[16 + rowDailyCount, 4 + attributesCount].Address})";
-                ws.Cells[19 + rowDailyCount, 20 + attributesCount].Formula = $"=SUM({ws.Cells[17, 6 + attributesCount].Address}:{ws.Cells[16 + rowDailyCount, 5 + attributesCount].Address})";
-                ws.Cells[19 + rowDailyCount, 21 + attributesCount].Formula = $"=SUM({ws.Cells[17, 6 + attributesCount].Address}:{ws.Cells[16 + rowDailyCount, 6 + attributesCount].Address})";
-                ws.Cells[19 + rowDailyCount, 22 + attributesCount].Formula = $"=SUM({ws.Cells[17, 17 + attributesCount].Address}:{ws.Cells[16 + rowDailyCount, 17 + attributesCount].Address})";
+                ws.Cells[19 + rowDailyCount, 8 + attributesCount + blockedCriteriaCount].Formula = $"=SUM({ws.Cells[17, 3 + attributesCount].Address}:{ws.Cells[16 + rowDailyCount, 3 + attributesCount].Address})";
+                ws.Cells[19 + rowDailyCount, 9 + attributesCount + blockedCriteriaCount].Formula = $"=SUM({ws.Cells[17, 4 + attributesCount].Address}:{ws.Cells[16 + rowDailyCount, 4 + attributesCount].Address})";
+                ws.Cells[19 + rowDailyCount, 10 + attributesCount + blockedCriteriaCount].Formula = $"=SUM({ws.Cells[17, 5 + attributesCount].Address}:{ws.Cells[16 + rowDailyCount, 5 + attributesCount].Address})";
+                ws.Cells[19 + rowDailyCount, 11 + attributesCount + blockedCriteriaCount].Formula = $"=SUM({ws.Cells[17, 6 + attributesCount].Address}:{ws.Cells[16 + rowDailyCount, 6 + attributesCount].Address})";
+                ws.Cells[19 + rowDailyCount, 12 + attributesCount + blockedCriteriaCount].Formula = $"=SUM({ws.Cells[17, 9 + attributesCount + blockedCriteriaCount].Address}:{ws.Cells[16 + rowDailyCount, 9 + attributesCount + blockedCriteriaCount].Address})";
 
-                var totalCheckedAddress = ws.Cells[19 + rowDailyCount, 18 + attributesCount].Address;
+                var totalCheckedAddress = ws.Cells[19 + rowDailyCount, 8 + attributesCount + blockedCriteriaCount].Address;
 
-                ws.Cells[20 + rowDailyCount, 19 + attributesCount].Formula = $"={ws.Cells[19 + rowDailyCount, 19 + attributesCount].Address}/{totalCheckedAddress}";
-                ws.Cells[20 + rowDailyCount, 19 + attributesCount].Style.Numberformat.Format = "#0.00%";
+                ws.Cells[20 + rowDailyCount, 9 + attributesCount + blockedCriteriaCount].Formula = $"={ws.Cells[19 + rowDailyCount, 9 + attributesCount + blockedCriteriaCount].Address}/{totalCheckedAddress}";
+                ws.Cells[20 + rowDailyCount, 9 + attributesCount + blockedCriteriaCount].Style.Numberformat.Format = "#0.00%";
 
-                ws.Cells[20 + rowDailyCount, 20 + attributesCount].Formula = $"={ws.Cells[19 + rowDailyCount, 20 + attributesCount].Address}/{totalCheckedAddress}";
-                ws.Cells[20 + rowDailyCount, 20 + attributesCount].Style.Numberformat.Format = "#0.00%";
+                ws.Cells[20 + rowDailyCount, 10 + attributesCount + blockedCriteriaCount].Formula = $"={ws.Cells[19 + rowDailyCount, 10 + attributesCount + blockedCriteriaCount].Address}/{totalCheckedAddress}";
+                ws.Cells[20 + rowDailyCount, 10 + attributesCount + blockedCriteriaCount].Style.Numberformat.Format = "#0.00%";
 
-                ws.Cells[20 + rowDailyCount, 21 + attributesCount].Formula = $"={ws.Cells[19 + rowDailyCount, 21 + attributesCount].Address}/{totalCheckedAddress}";
-                ws.Cells[20 + rowDailyCount, 21 + attributesCount].Style.Numberformat.Format = "#0.00%";
+                ws.Cells[20 + rowDailyCount, 11 + attributesCount + blockedCriteriaCount].Formula = $"={ws.Cells[19 + rowDailyCount, 11 + attributesCount + blockedCriteriaCount].Address}/{totalCheckedAddress}";
+                ws.Cells[20 + rowDailyCount, 11 + attributesCount + blockedCriteriaCount].Style.Numberformat.Format = "#0.00%";
 
-                ws.Cells[20 + rowDailyCount, 22 + attributesCount].Formula = $"={ws.Cells[19 + rowDailyCount, 22 + attributesCount].Address}/{totalCheckedAddress}";
-                ws.Cells[20 + rowDailyCount, 22 + attributesCount].Style.Numberformat.Format = "#0.00%";
+                ws.Cells[20 + rowDailyCount, 12 + attributesCount + blockedCriteriaCount].Formula = $"={ws.Cells[19 + rowDailyCount, 12 + attributesCount + blockedCriteriaCount].Address}/{totalCheckedAddress}";
+                ws.Cells[20 + rowDailyCount, 12 + attributesCount + blockedCriteriaCount].Style.Numberformat.Format = "#0.00%";
 
 
-                using (var rng = ws.Cells[rowDailyCount + 18, 17 + attributesCount, rowDailyCount + 18 + 2, 22 + attributesCount])
+                using (var rng = ws.Cells[rowDailyCount + 18, 7 + attributesCount + blockedCriteriaCount, rowDailyCount + 18 + 2, 12 + attributesCount + blockedCriteriaCount])
                 {
                     rng.Style.Font.Name = "Arial CE";
                     rng.Style.Font.Size = 10;
@@ -1328,10 +1339,10 @@ namespace Invenio.Admin.Controllers
 
                 ws.Column(1).Width = 3.8;
                 ws.Column(2).Width = 14.5;
-                ws.Column(6 + attributesCount - 1).Width = 14.5;
-                ws.Column(7 + attributesCount - 1).Width = 14.5;
-                ws.Column(8 + attributesCount - 1).Width = 6.5;
-                ws.Column(9 + attributesCount - 1).Width = 6.5;
+                ws.Column(6 + attributesCount - 1 + blockedCriteriaCount).Width = 14.5;
+                ws.Column(7 + attributesCount - 1 + blockedCriteriaCount).Width = 14.5;
+                ws.Column(8 + attributesCount - 1 + blockedCriteriaCount).Width = 6.5;
+                ws.Column(9 + attributesCount - 1 + blockedCriteriaCount).Width = 6.5;
 
                 for (var i = 3; i < 3 + attributesCount; i++)
                     ws.Column(i).Width = 9.4;
@@ -1339,11 +1350,11 @@ namespace Invenio.Admin.Controllers
                 for (var i = 7 + attributesCount; i <= 14 + attributesCount; i++)
                     ws.Column(i).Width = 5.5;
 
-                for (var i = 15 + attributesCount; i <= 20 + attributesCount; i++)
+                for (var i = 10 + attributesCount ; i <= 20 + attributesCount; i++)
                     ws.Column(i).Width = 13;
 
-                ws.Column(15 + attributesCount).Width = 26;
-                ws.Column(22 + attributesCount).Width = 14.2;
+                ws.Column(7 + attributesCount + blockedCriteriaCount).Width = 26;
+                ws.Column(10 + attributesCount + blockedCriteriaCount).Width = 14.2;
 
                 ws.Row(15).Height = 30;
                 ws.Row(16).Height = 30;
@@ -1367,13 +1378,11 @@ namespace Invenio.Admin.Controllers
                     ws.Cells[16, 3 + k++].Value = attr.Name;
                 }
 
-
                 ws.Cells[15, 3 + attributesCount].Value = "Quantity";
                 ws.Cells[16, 3 + attributesCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.Quantity")?.ResourceValue;
 
                 ws.Cells[15, 4 + attributesCount].Value = "First run OK parts";
                 ws.Cells[16, 4 + attributesCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.FirstRunOkParts")?.ResourceValue;
-
 
                 ws.Cells[15, 5 + attributesCount].Value = "Blocked parts";
                 ws.Cells[16, 5 + attributesCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.BlockedParts")?.ResourceValue;
@@ -1381,52 +1390,65 @@ namespace Invenio.Admin.Controllers
                 ws.Cells[15, 6 + attributesCount].Value = "NOK parts";
                 ws.Cells[16, 6 + attributesCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.NokParts")?.ResourceValue;
 
-
-                ws.Cells[15, 7 + attributesCount, 15, 7 + attributesCount + 7].Merge = true;
-                using (var rng = ws.Cells[15, 7 + attributesCount, 15, 7 + attributesCount + 7])
+                ws.Cells[15, 7 + attributesCount, 15, 7 + attributesCount + blockedCriteriaCount - 1].Merge = true;
+                using (var rng = ws.Cells[15, 7 + attributesCount, 15, 7 + attributesCount + blockedCriteriaCount - 1])
                 {
                     rng.Value = "Due to   (Razlog)";
                 }
 
-                ws.Cells[16, 7 + attributesCount].Value = "1";
-                ws.Cells[16, 8 + attributesCount].Value = "2";
-                ws.Cells[16, 9 + attributesCount].Value = "3";
-                ws.Cells[16, 10 + attributesCount].Value = "4";
-                ws.Cells[16, 11 + attributesCount].Value = "5";
-                ws.Cells[16, 12 + attributesCount].Value = "6";
-                ws.Cells[16, 13 + attributesCount].Value = "7";
-                ws.Cells[16, 14 + attributesCount].Value = "8";
+                var t = 1;
+                foreach (var blc in model.BlockedCriterias)
+                {
+                    ws.Cells[16, 7 + attributesCount + (t - 1)].Value = t;
+                    t++;
+                }
 
-                ws.Cells[15, 15 + attributesCount].Value = "Description of blocked parts";
-                ws.Cells[16, 15 + attributesCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.DescriptionOfBlockedParts")?.ResourceValue;
+                //ws.Cells[16, 7 + attributesCount].Value = "1";
+                //ws.Cells[16, 8 + attributesCount].Value = "2";
+                //ws.Cells[16, 9 + attributesCount].Value = "3";
+                //ws.Cells[16, 10 + attributesCount].Value = "4";
+                //ws.Cells[16, 11 + attributesCount].Value = "5";
+                //ws.Cells[16, 12 + attributesCount].Value = "6";
+                //ws.Cells[16, 13 + attributesCount].Value = "7";
+                //ws.Cells[16, 14 + attributesCount].Value = "8";
+
+                ws.Cells[15, 7 + attributesCount + blockedCriteriaCount].Value = "Description of blocked parts";
+                ws.Cells[16, 7 + attributesCount + blockedCriteriaCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.DescriptionOfBlockedParts")?.ResourceValue;
 
 
 
-                ws.Cells[15, 16 + attributesCount].Value = "NOK percentage";
-                ws.Cells[16, 16 + attributesCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.NokPercentage")?.ResourceValue;
+                ws.Cells[15, 8 + attributesCount + blockedCriteriaCount].Value = "NOK percentage";
+                ws.Cells[16, 8 + attributesCount + blockedCriteriaCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.NokPercentage")?.ResourceValue;
 
-                ws.Cells[15, 17 + attributesCount].Value = "Reworked parts";
-                ws.Cells[16, 17 + attributesCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.ReworkedParts")?.ResourceValue;
+                ws.Cells[15, 9 + attributesCount + blockedCriteriaCount].Value = "Reworked parts";
+                ws.Cells[16, 9 + attributesCount + blockedCriteriaCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.ReworkedParts")?.ResourceValue;
 
 
-                ws.Cells[15, 18 + attributesCount, 15, 18 + attributesCount + 3].Merge = true;
-                using (var rng = ws.Cells[15, 18 + attributesCount, 15, 18 + attributesCount + 3])
+                ws.Cells[15, 10 + attributesCount + blockedCriteriaCount, 15, 10 + attributesCount + blockedCriteriaCount + reworkedCriteriaCount - 1].Merge = true;
+                using (var rng = ws.Cells[15, 10 + attributesCount + blockedCriteriaCount, 15, 10 + attributesCount + blockedCriteriaCount])
                 {
                     rng.Value = "Due to";
                 }
 
-                ws.Cells[16, 18 + attributesCount].Value = "9";
-                ws.Cells[16, 19 + attributesCount].Value = "10";
-                ws.Cells[16, 20 + attributesCount].Value = "11";
-                ws.Cells[16, 21 + attributesCount].Value = "12";
+                var ta = 1;
+                foreach (var blc in model.ReworkedCriterias)
+                {
+                    ws.Cells[16, 10 + attributesCount + blockedCriteriaCount + (ta - 1)].Value = ta;
+                    ta++;
+                }
+
+                //ws.Cells[16, 10 + attributesCount + blockedCriteriaCount].Value = "9";
+                //ws.Cells[16, 11 + attributesCount + blockedCriteriaCount].Value = "10";
+                //ws.Cells[16, 12 + attributesCount + blockedCriteriaCount].Value = "11";
+                //ws.Cells[16, 13 + attributesCount + blockedCriteriaCount].Value = "12";
 
 
-                ws.Cells[15, 22 + attributesCount].Value = "Rework percentage";
-                ws.Cells[16, 22 + attributesCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.ReworkedPercentage").ResourceValue;
+                ws.Cells[15, 10 + attributesCount + blockedCriteriaCount + reworkedCriteriaCount].Value = "Rework percentage";
+                ws.Cells[16, 10 + attributesCount + blockedCriteriaCount + reworkedCriteriaCount].Value = _localizationService.GetLocaleStringResourceByName("Admin.Report.DailyFinalReport.ReworkedPercentage").ResourceValue;
 
 
-                ws.Cells[17, 15 + attributesCount, 16 + rowDailyCount, 15 + attributesCount].Merge = true;
-                using (var rng = ws.Cells[17, 15 + attributesCount, 16 + rowDailyCount, 15 + attributesCount])
+                ws.Cells[17, 7 + attributesCount + blockedCriteriaCount, 16 + rowDailyCount, 7 + attributesCount + blockedCriteriaCount].Merge = true;
+                using (var rng = ws.Cells[17, 7 + attributesCount + blockedCriteriaCount, 16 + rowDailyCount, 7 + attributesCount + blockedCriteriaCount])
                 {
                     var j = 1;
                     var allCriterias = _criteriaService.GetAllCriteriaValues(orderId).OrderBy(x => x.Id).ToList().Select(s => j++ + ". " + s.Description).ToList();
@@ -1458,25 +1480,54 @@ namespace Invenio.Admin.Controllers
                     ws.Cells[num, 4 + attributesCount].Value = item.FirstRunOkParts;
                     ws.Cells[num, 5 + attributesCount].Value = item.BlockedParts;
                     ws.Cells[num, 6 + attributesCount].Value = item.NokParts;
-                    ws.Cells[num, 7 + attributesCount].Value = item.Dod1;
-                    ws.Cells[num, 8 + attributesCount].Value = item.Dod2;
-                    ws.Cells[num, 9 + attributesCount].Value = item.Dod3;
-                    ws.Cells[num, 10 + attributesCount].Value = item.Dod4;
-                    ws.Cells[num, 11 + attributesCount].Value = item.Dod5;
-                    ws.Cells[num, 12 + attributesCount].Value = item.Dod6;
-                    ws.Cells[num, 13 + attributesCount].Value = item.Dod7;
-                    ws.Cells[num, 14 + attributesCount].Value = item.Dod8;
 
-                    ws.Cells[num, 16 + attributesCount].Formula = string.Format(@"={0}/{1}", ws.Cells[num, 6 + attributesCount].Address, ws.Cells[num, 3 + attributesCount].Address);
-                    ws.Cells[num, 16 + attributesCount].Style.Numberformat.Format = "#0.00%";
+                    BindingFlags bindingFlags = BindingFlags.Public |
+                                                BindingFlags.NonPublic |
+                                                BindingFlags.Instance |
+                                                BindingFlags.Static;
 
-                    ws.Cells[num, 17 + attributesCount].Value = item.ReworkedParts;
-                    ws.Cells[num, 18 + attributesCount].Value = item.Dor1;
-                    ws.Cells[num, 19 + attributesCount].Value = item.Dor2;
-                    ws.Cells[num, 20 + attributesCount].Value = item.Dor3;
-                    ws.Cells[num, 21 + attributesCount].Value = item.Dor4;
-                    ws.Cells[num, 22 + attributesCount].Formula = string.Format(@"={0}/{1}", ws.Cells[num, 17 + attributesCount].Address, ws.Cells[num, 3 + attributesCount].Address);
-                    ws.Cells[num, 22 + attributesCount].Style.Numberformat.Format = "#0.00%";
+                    var fieldIndex = 1;
+                    foreach (var blc in model.BlockedCriterias)
+                    {
+                        var field = item.GetType().GetFields(bindingFlags).FirstOrDefault(x => x.Name.Contains("Dod" + fieldIndex.ToString()));
+                        if (field == null) continue;
+
+                        var val = field.GetValue(item);
+                        ws.Cells[num, 7 + attributesCount + (fieldIndex - 1)].Value = val;
+                        fieldIndex++;
+                    }
+
+                    //ws.Cells[num, 7 + attributesCount].Value = item.Dod1;
+                    //ws.Cells[num, 8 + attributesCount].Value = item.Dod2;
+                    //ws.Cells[num, 9 + attributesCount].Value = item.Dod3;
+                    //ws.Cells[num, 10 + attributesCount].Value = item.Dod4;
+                    //ws.Cells[num, 11 + attributesCount].Value = item.Dod5;
+                    //ws.Cells[num, 12 + attributesCount].Value = item.Dod6;
+                    //ws.Cells[num, 13 + attributesCount].Value = item.Dod7;
+                    //ws.Cells[num, 14 + attributesCount].Value = item.Dod8;
+
+                    ws.Cells[num, 8 + attributesCount + blockedCriteriaCount].Formula = $@"={ws.Cells[num, 6 + attributesCount + blockedCriteriaCount].Address}/{ws.Cells[num, 3 + attributesCount + blockedCriteriaCount].Address}";
+                    ws.Cells[num, 8 + attributesCount + blockedCriteriaCount].Style.Numberformat.Format = "#0.00%";
+
+                    ws.Cells[num, 9 + attributesCount + blockedCriteriaCount].Value = item.ReworkedParts;
+
+                    var fieldIndex2 = 1;
+                    foreach (var blc in model.ReworkedCriterias)
+                    {
+                        var field = item.GetType().GetFields(bindingFlags).FirstOrDefault(x => x.Name.Contains("Dor" + fieldIndex2.ToString()));
+                        if (field == null) continue;
+
+                        var val = field.GetValue(item);
+                        ws.Cells[num, 10 + attributesCount + blockedCriteriaCount + (fieldIndex2 - 1)].Value = val;
+                        fieldIndex2++;
+                    }
+
+                    //ws.Cells[num, 10 + attributesCount + blockedCriteriaCount].Value = item.Dor1;
+                    //ws.Cells[num, 11 + attributesCount + blockedCriteriaCount].Value = item.Dor2;
+                    //ws.Cells[num, 12 + attributesCount + blockedCriteriaCount].Value = item.Dor3;
+                    //ws.Cells[num, 13 + attributesCount + blockedCriteriaCount].Value = item.Dor4;
+                    ws.Cells[num, 10 + attributesCount + blockedCriteriaCount + reworkedCriteriaCount].Formula = $@"={ws.Cells[num, 17 + attributesCount + blockedCriteriaCount].Address}/{ws.Cells[num, 3 + attributesCount + blockedCriteriaCount].Address}";
+                    ws.Cells[num, 10 + attributesCount + blockedCriteriaCount + reworkedCriteriaCount].Style.Numberformat.Format = "#0.00%";
 
 
                     num++;
