@@ -118,22 +118,23 @@
                         var blockedCriteries = @Html.Raw(JsonConvert.SerializeObject(blockedCriteries));
                         var reworkedCriteries = @Html.Raw(JsonConvert.SerializeObject(reworkedCriteries));
 
-                        console.log(blockedCriteries)
-                        console.log(reworkedCriteries)
+                        //console.log(blockedCriteries)
+                        //console.log(reworkedCriteries)
+                        //console.log(columns)
 
-                        blockedCriteries.forEach(function(item, index) {
+                        reworkedCriteries.forEach(function(item, index) {
                             columns.splice(index + 7, 0,
                                 {
                                     title: (index + 1).toString(),
-                                    value: 'Dod' + (index + 1)
+                                    value: 'Dor' + (index + 1)
                                 });
                         });
 
-                        reworkedCriteries.forEach(function(item, index) {
+                        blockedCriteries.forEach(function (item, index) {
                             columns.splice(index + 5, 0,
                                 {
                                     title: (index + 1).toString(),
-                                    value: 'Dor' + (index + 1)
+                                    value: 'Dod' + (index + 1)
                                 });
                         });
 
